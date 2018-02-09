@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 clc;
+=======
+clc;close all;
+>>>>>>> parent of 011151c... clear all denne gang
 eps0=8.854187817*10^-12; %F/m
 mu0=4*pi*10^-7; %N/A^2
 c=1/sqrt(eps0*mu0); %m/s
