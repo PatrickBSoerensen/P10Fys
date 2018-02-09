@@ -1,4 +1,7 @@
+<<<<<<< HEAD
 clc;close all;clear all;
+=======
+>>>>>>> 85213325c2241f2820b52ca435f251db1fb5b082
 eps0=8.854187817*10^-12; %F/m
 mu0=4*pi*10^-7; %N/A^2
 c=1/sqrt(eps0*mu0); %m/s
