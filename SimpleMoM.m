@@ -20,22 +20,8 @@ new = Antenna(length, segmentslin, segmentscirc, radii, centrum);
 r = sqrt(new.Lin-circshift(new.Lin,-1)+(new.Radii).^2);
 green = (exp((1i.*k.*r))./4.*pi.*r).*(1+(1i./r.*k)-1./(r.*k).^2 ...
 -(new.Lin-circshift(new.Lin,-1)).^2./r.^2.*(1+3.*1i./(k.*r)-3./(k.*r).^2));
-<<<<<<< HEAD
-<<<<<<< HEAD
 
 coord = CreateCoord(new);
-tHat(:,1) = -new.Radii*sin(coord(:,3));
-tHat(:,2) = 0;
-tHat(:,3) = coord(:,1);
-zHat = pi/2;
-gam = cos(tHat*zHat)^(-1);
-=======
-     
-coord = CreateCoord(new);
-=======
-     
-coord = CreateCoord(new);
->>>>>>> bba7ea85b35afe405619ccc057110e3e32cb450b
 tHat(1:new.SegmentsCircle,1) ... 
     = -new.Radii.*sin(linspace(-pi/2, 0, new.SegmentsCircle));%x coord
 tHat(new.SegmentsCircle+1:new.SegmentsCircle+new.SegmentsLine-2,1) ... 
@@ -50,10 +36,6 @@ zHat = tHat;
 zHat(:,1) = 0; %x coord
 zHat(:,2) = 0; %y coord
 zHat(:,3) = 1; %z coord
-<<<<<<< HEAD
->>>>>>> bba7ea85b35afe405619ccc057110e3e32cb450b
-=======
->>>>>>> bba7ea85b35afe405619ccc057110e3e32cb450b
 alpha = 1;
 gamma = acos(dot(tHat,zHat,2));%Overvej om dot skal bruges
 f = coord(:,1:2);
