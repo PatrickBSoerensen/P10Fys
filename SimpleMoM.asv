@@ -59,6 +59,9 @@ for i=1:new.SegmentsCircle+new.SegmentsLine
     G2 = @(y1)arrayfun(@(phimark)coord(i,3).*coord(:,3).*integral(Func2, 0, pi),y1);
     G3 = @(y1)arrayfun(@(phimark)coord(i,3).*coord(:,3).*integral(Func3, 0, pi),y1);
     
+    Ztt = @(z)(T1(i)+T2(i))*T1*(sin(gamma(i))*sin(gamma)*G2+cos(gamma(i))*cos(gamma)*G1)-1/k^2*TD(i)*TD*G1;
+    Zto = @(z)(T1(i)+T2(i))*T1*sin(gamma(i))*G3+1/k^2*alpha/rho*TD(i)*TD*G1;
+    Zot = @(z)(T1(i)+T2(i))*T1*sin(gamma)*G3+1/k^2*alpha/rho(i)*TD(i)*TD*G1;
     Zoo = @(z)(T1(i)+T2(i))*T1*(G2-1/k^2*alpha^2/(rho(i)*rho)*G1);
 
     
