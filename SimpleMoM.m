@@ -8,13 +8,7 @@ lambda=c/f;
 w=2*pi*f;
 k=w/c;
 
-length = 0.995;
-segmentslin = 10;
-segmentscirc = 20;
-radii = 0.2;
-centrum = (0:0);
-
-new = Antenna(length, segmentslin, segmentscirc, radii, centrum);
+new = Antenna(0.995, 10, 20, 0.2, [0,0]);
 
 % greenres = Green(new, k);
 r = sqrt(new.Lin-circshift(new.Lin,-1)+(new.Radii).^2);
