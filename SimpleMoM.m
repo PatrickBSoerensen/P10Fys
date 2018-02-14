@@ -8,20 +8,13 @@ lambda=c/f;
 w=2*pi*f;
 k=w/c;
 
-length = 0.995;
-segmentslin = 10;
-segmentscirc = 20;
-radii = 0.2;
-centrum = (0:0);
+new = Antenna(0.995, 10, 20, 0.2, [0,0]);
 
-new = Antenna(length, segmentslin, segmentscirc, radii, centrum);
-
-% greenres = Green(new, k);
-r = sqrt(new.Lin-circshift(new.Lin,-1)+(new.Radii).^2);
 green = (exp((1i.*k.*r))./4.*pi.*r).*(1+(1i./r.*k)-1./(r.*k).^2 ...
 -(new.Lin-circshift(new.Lin,-1)).^2./r.^2.*(1+3.*1i./(k.*r)-3./(k.*r).^2));
 
 coord = CreateCoord(new);
+testing = linspace(-pi/2, 0, new.SegmentsCircle);
 tHat(1:new.SegmentsCircle,1) ... 
     = -new.Radii.*sin(linspace(-pi/2, 0, new.SegmentsCircle));%x coord
 tHat(new.SegmentsCircle+1:new.SegmentsCircle+new.SegmentsLine-2,1) ... 
@@ -30,22 +23,42 @@ tHat(new.SegmentsCircle+new.SegmentsLine-1: ...
     2*new.SegmentsCircle+new.SegmentsLine-2,1)...
     = -new.Radii.*sin(linspace(0, pi/2, new.SegmentsCircle));%x coord
 tHat(:,2) = 0;%y coord
+
 tHat(:,3) = 1;%z coord
-tHat = tHat./(tHat(:,1).^2+tHat(:,2).^2+tHat(:,3).^2);
+
+tHat(1:new.SegmentsCircle,3) ... 
+    = new.Radii.*cos(linspace(-pi/2, 0, new.SegmentsCircle));%z coord
+tHat(new.SegmentsCircle+1:new.SegmentsCircle+new.SegmentsLine-2,3) ... 
+    = 1;%z coord
+tHat(new.SegmentsCircle+new.SegmentsLine-1: ... 
+    2*new.SegmentsCircle+new.SegmentsLine-2,3)...
+    = new.Radii.*cos(linspace(0, pi/2, new.SegmentsCircle));%z coord
+tHat = tHat./sqrt(tHat(:,1).^2+tHat(:,2).^2+tHat(:,3).^2);
 zHat = tHat;
+
 zHat(:,1) = 0; %x coord
 zHat(:,2) = 0; %y coord
 zHat(:,3) = 1; %z coord
+
+gamma = acos(dot(tHat,zHat,2));
+
 alpha = 1;
-gamma = acos(dot(tHat,zHat,2));%Overvej om dot skal bruges
+beta = 2;
+
 f = coord(:,1:2);
+%Should be changed to evaluate in centre points
 f1 = @(z)(z-circshift(coord(:,1),1))/(coord(:,1)-circshift(coord(:,1),1));
 f2 = @(z)(circshift(coord(:,1),-1)-z)/(circshift(coord(:,1),-1)-coord(:,1));
+
 T1 = @(z, phi) f1.*exp(1i.*alpha.*phi)*tHat;
 T2 = @(z, phi) f2.*exp(1i.*alpha.*phi)*zHat;
-TD = 4;
+T3 = @(z, phi) f1.*exp(-1i.*beta.*phi)*tHat;
+T4 = @(z, phi) f2.*exp(-1i.*beta.*phi)*zHat;
 
+TD = 4;
 TDtbm = 1/(-new.Radii*sin(coord(:,3)));
+
+Z = [];
 
 % 2*new.SegmentsCircle+new.SegmentsLine
 for i=1:new.SegmentsCircle+new.SegmentsLine
