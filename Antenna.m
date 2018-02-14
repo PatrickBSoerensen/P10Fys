@@ -61,6 +61,7 @@ classdef Antenna
                       
            coord(ant.SegmentsCircle+1:ant.SegmentsCircle+ant.SegmentsLine-2,1) = ant.Lin(1,:);
            coord(ant.SegmentsCircle+1:ant.SegmentsCircle+ant.SegmentsLine-2,2) = ant.Radii;%Should be expanded with centre
+           coord(ant.SegmentsCircle:ant.SegmentsCircle+ant.SegmentsLine-2,3) = (ant.Length-2.*ant.Radii)/ant.SegmentsLine;
            
            coord(ant.SegmentsCircle+ant.SegmentsLine-1:2*ant.SegmentsCircle+ant.SegmentsLine-2,1) = ant.CircTop(:,2);
            coord(ant.SegmentsCircle+ant.SegmentsLine-1:2*ant.SegmentsCircle+ant.SegmentsLine-2,2) = ant.CircTop(:,1);%Should be expanded with centre

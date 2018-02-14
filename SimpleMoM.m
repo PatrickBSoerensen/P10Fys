@@ -29,7 +29,25 @@ tHat(:,3) = coord(:,1);
 zHat = pi/2;
 gam = cos(tHat*zHat)^(-1);
 =======
+     
+coord = CreateCoord(new);
+tHat(1:new.SegmentsCircle,1) ... 
+    = -new.Radii.*sin(linspace(-pi/2, 0, new.SegmentsCircle));%x coord
+tHat(new.SegmentsCircle+1:new.SegmentsCircle+new.SegmentsLine-2,1) ... 
+    = 0;%x coord
+tHat(new.SegmentsCircle+new.SegmentsLine-1: ... 
+    2*new.SegmentsCircle+new.SegmentsLine-2,1)...
+    = -new.Radii.*sin(linspace(0, pi/2, new.SegmentsCircle));%x coord
+tHat(:,2) = 0;%y coord
+tHat(:,3) = 1;%z coord
+tHat = tHat./(tHat(:,1).^2+tHat(:,2).^2+tHat(:,3).^2);
+zHat = tHat;
+zHat(:,1) = 0; %x coord
+zHat(:,2) = 0; %y coord
+zHat(:,3) = 1; %z coord
+>>>>>>> bba7ea85b35afe405619ccc057110e3e32cb450b
 alpha = 1;
+gamma = acos(dot(tHat,zHat,2));%Overvej om dot skal bruges
 f = coord(:,1:2);
 f1 = @(z)(z-circshift(coord(:,1),1))/(coord(:,1)-circshift(coord(:,1),1));
 f2 = @(z)(circshift(coord(:,1),-1)-z)/(circshift(coord(:,1),-1)-coord(:,1));
@@ -37,6 +55,7 @@ T1 = @(z, phi) f1.*exp(1i.*alpha.*phi)*tHat;
 T2 = @(z, phi) f2.*exp(1i.*alpha.*phi)*zHat;
 TD = 4;
 
+TDtbm = 1/(-new.Radii*sin(coord(:,3)));
 
 % 2*new.SegmentsCircle+new.SegmentsLine
 for i=1:new.SegmentsCircle+new.SegmentsLine
@@ -50,6 +69,9 @@ for i=1:new.SegmentsCircle+new.SegmentsLine
     G2 = @(y1)arrayfun(@(phimark)coord(i,3).*coord(:,3).*integral(Func2, 0, pi),y1);
     G3 = @(y1)arrayfun(@(phimark)coord(i,3).*coord(:,3).*integral(Func3, 0, pi),y1);
     
+    Ztt = @(z)(T1(i)+T2(i))*T1*(sin(gamma(i))*sin(gamma)*G2+cos(gamma(i))*cos(gamma)*G1)-1/k^2*TD(i)*TD*G1;
+    Zto = @(z)(T1(i)+T2(i))*T1*sin(gamma(i))*G3+1/k^2*alpha/rho*TD(i)*TD*G1;
+    Zot = @(z)(T1(i)+T2(i))*T1*sin(gamma)*G3+1/k^2*alpha/rho(i)*TD(i)*TD*G1;
     Zoo = @(z)(T1(i)+T2(i))*T1*(G2-1/k^2*alpha^2/(rho(i)*rho)*G1);
 
     
