@@ -20,13 +20,15 @@ new = Antenna(length, segmentslin, segmentscirc, radii, centrum);
 r = sqrt(new.Lin-circshift(new.Lin,-1)+(new.Radii).^2);
 green = (exp((1i.*k.*r))./4.*pi.*r).*(1+(1i./r.*k)-1./(r.*k).^2 ...
 -(new.Lin-circshift(new.Lin,-1)).^2./r.^2.*(1+3.*1i./(k.*r)-3./(k.*r).^2));
+<<<<<<< HEAD
 
-gam = cos(tHat*zHat)^(-1);
 coord = CreateCoord(new);
 tHat(:,1) = -new.Radii*sin(coord(:,3));
 tHat(:,2) = 0;
 tHat(:,3) = coord(:,1);
 zHat = pi/2;
+gam = cos(tHat*zHat)^(-1);
+=======
 alpha = 1;
 f = coord(:,1:2);
 f1 = @(z)(z-circshift(coord(:,1),1))/(coord(:,1)-circshift(coord(:,1),1));
@@ -35,7 +37,6 @@ T1 = @(z, phi) f1.*exp(1i.*alpha.*phi)*tHat;
 T2 = @(z, phi) f2.*exp(1i.*alpha.*phi)*zHat;
 TD = 4;
 
-TDtbm = 1/rho;
 
 % 2*new.SegmentsCircle+new.SegmentsLine
 for i=1:new.SegmentsCircle+new.SegmentsLine
@@ -49,9 +50,6 @@ for i=1:new.SegmentsCircle+new.SegmentsLine
     G2 = @(y1)arrayfun(@(phimark)coord(i,3).*coord(:,3).*integral(Func2, 0, pi),y1);
     G3 = @(y1)arrayfun(@(phimark)coord(i,3).*coord(:,3).*integral(Func3, 0, pi),y1);
     
-    Ztt = @(z)(T1(i)+T2(i))*T1*(sin(gam(i))*sin(gam)*G2+cos(gam(i))*cos(gam)*G1)-1/k^2*TD(i)*TD*G1;
-    Zto = @(z)(T1(i)+T2(i))*T1*sin(gam(i))*G3+1/k^2*alpha/rho*TD(i)*TD*G1;
-    Zot = @(z)(T1(i)+T2(i))*T1*sin(gam)*G3+1/k^2*alpha/rho(i)*TD(i)*TD*G1;
     Zoo = @(z)(T1(i)+T2(i))*T1*(G2-1/k^2*alpha^2/(rho(i)*rho)*G1);
 
     
