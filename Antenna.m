@@ -51,7 +51,7 @@ classdef Antenna
             ant.CircTopTest = circtop;
         end
         
-        function coord = coordcreate(ant)
+        function coord = CoordCreate(ant)
            coord = [];
            coord(1:ant.SegmentsCircle,1) = ant.CircBot(:,2);
            coord(1:ant.SegmentsCircle,2) = ant.CircBot(:,1);%Should be expanded with centre
@@ -64,15 +64,15 @@ classdef Antenna
         end
         
         function green = Green(ant, k)
-           coord = ant.coordcreate(ant);
+           coord = CoordCreate(ant);
            
            f0=@(z) (0.5-z).*(1.0-z)/(0.5-0)/(1.0-0);
            f1=@(z) (0-z).*(1.0-z)/(0-0.5)/(1.0-0.5);
            f2=@(z) (0-z).*(0.5-z)/(0-1)/(0.5-1);
            %For lin
            for i = 1:2*ant.SegmentsCircle+ant.SegmentsLine
-                    dist = sqrt((coord(i,1) - coord(:,1)).^2 + (coord(i,2) - coord(:,2)).^2 ...
-                    +2*coord(i,1)*coord(:,2)*(1-cos(phi-phimark)));
+%                     dist = sqrt((coord(i,1) - coord(:,1)).^2 + (coord(i,2) - coord(:,2)).^2 ...
+%                     +2*coord(i,1)*coord(:,2)*(1-cos(phi-phimark)));
            
                if i < length(ant.CircBot)
                
