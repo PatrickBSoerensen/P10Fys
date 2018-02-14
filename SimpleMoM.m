@@ -24,19 +24,20 @@ green = (exp((1i.*k.*r))./4.*pi.*r).*(1+(1i./r.*k)-1./(r.*k).^2 ...
 tHat = 1;
 zHat = pi/2;
 gam = cos(tHat*zHat)^(-1);
-coord = new.CreateCoord(new);
+coord = CreateCoord(new);
 alpha = 4;
 
-for i=N:TotalElements
-    R = sqrt((coord(i,1)-coord(:,1)).^2+(coord(i,2)-coord(:,2))^2-2*coord(i,2)*coord(i,2)*cos(phi-phimark));
+
+for i=1:2*new.SegmentsCircle+new.SegmentsLine
+    R = sqrt((coord(i,1)-coord(:,1)).^2+(coord(i,2)-coord(:,2)).^2-2.*coord(i,2).*coord(i,2).*cos(0-0));
     
-    Func1 = @(phimark) cos(alpha*phimark)*exp(-1i*k*R)/R;
-    Func2 = @(phimark) cos(phimark)*cos(alpha*phimark)*exp(-1i*k*R)/R;
-    Func3 = @(phimark) sin(phimark)*sin(alpha*mark)*exp(-1i*k*R)/R;
+    Func1 = @(phimark) cos(alpha.*phimark).*exp(-1i.*k.*R)./R;
+    Func2 = @(phimark) cos(phimark).*cos(alpha.*phimark).*exp(-1i.*k.*R)./R;
+    Func3 = @(phimark) sin(phimark).*sin(alpha.*mark).*exp(-1i.*k.*R)./R;
     %Add delta_p delta_q before integral (lenght of segments)
-    G1 = integral(Func1, 0, pi);
-    G2 = integral(Func2, 0, pi);
-    G3 = integral(Func3, 0, pi);
+    G1 = @(y1)arrayfun(@(phimark)coord(i,3).*coord(:,3).*integral(Func1, 0, pi),y1);
+    G2 = @(y1)arrayfun(@(phimark)coord(i,3).*coord(:,3).*integral(Func2, 0, pi),y1);
+    G3 = @(y1)arrayfun(@(phimark)coord(i,3).*coord(:,3).*integral(Func3, 0, pi),y1);
 
     Ztt = T(i)*T*(sin(gam(i))*sin(gam)*G2+cos(gam(i))*cos(gam)*G1)-1/k^2*TD(i)*TD*G1;
     Zto = T(i)*T*sin(gam(i))*G3+1/k^2*alpha/rho*TD(i)*TD*G1;

@@ -11,6 +11,7 @@ classdef Antenna
         CircBotTest;
         CircTop;
         CircTopTest;
+        Coord;
     end
     
     methods
@@ -49,18 +50,27 @@ classdef Antenna
             circtop(:,1) = radii*cos(dist);
             circtop(:,2) = (length/2)-radii+radii*sin(dist);
             ant.CircTopTest = circtop;
+            ant.Coord = CreateCoord(ant);
         end
         
         function coord = CreateCoord(ant)
            coord = [];
            coord(1:ant.SegmentsCircle,1) = ant.CircBot(:,2);
            coord(1:ant.SegmentsCircle,2) = ant.CircBot(:,1);%Should be expanded with centre
+           coord(1:ant.SegmentsCircle,3) = pi/(2*ant.SegmentsCircle);
            
-           coord(ant.SegmentsCircle+1:ant.SegmentsCircle+ant.SegmentsLine,1) = ant.Lin(:,1);
-           coord(ant.SegmentsCircle+1:ant.SegmentsCircle+ant.SegmentsLine,2) = ant.Radii;%Should be expanded with centre
+           a=ant.SegmentsCircle+1;
+           b=ant.SegmentsCircle+ant.SegmentsLine-1;
            
-           coord(ant.SegmentsCircle+ant.SegmentsLine+1:2*ant.SegmentsCircle+ant.SegmentsLine,1) = ant.CircTop(:,2);
-           coord(ant.SegmentsCircle+ant.SegmentsLine+1:2*ant.SegmentsCircle+ant.SegmentsLine,2) = ant.CircTop(:,1);%Should be expanded with centre
+           coord(ant.SegmentsCircle+1:ant.SegmentsCircle+ant.SegmentsLine-2,1) = ant.Lin(1,:);
+           coord(ant.SegmentsCircle+1:ant.SegmentsCircle+ant.SegmentsLine-2,2) = ant.Radii;%Should be expanded with centre
+           coord(ant.SegmentsCircle+1:ant.SegmentsCircle+ant.SegmentsLine-2,3) = (ant.Length-2.*ant.Radii)/ant.SegmentsLine;
+           
+           coord(ant.SegmentsCircle+ant.SegmentsLine-1:2*ant.SegmentsCircle+ant.SegmentsLine-2,1) = ant.CircTop(:,2);
+           coord(ant.SegmentsCircle+ant.SegmentsLine-1:2*ant.SegmentsCircle+ant.SegmentsLine-2,2) = ant.CircTop(:,1);%Should be expanded with centre
+           coord(ant.SegmentsCircle+ant.SegmentsLine-1:2*ant.SegmentsCircle+ant.SegmentsLine-2,3) = pi/(2*ant.SegmentsCircle);%Should be expanded with centre
+           
+           
         end
         
         function green = Green(ant, k)
