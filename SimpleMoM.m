@@ -16,7 +16,7 @@ centrum = (0:0);
 
 new = Antenna(length, segmentslin, segmentscirc, radii, centrum);
 
-greenres = Green(new, k);
+% greenres = Green(new, k);
 r = sqrt(new.Lin-circshift(new.Lin,-1)+(new.Radii).^2);
 green = (exp((1i.*k.*r))./4.*pi.*r).*(1+(1i./r.*k)-1./(r.*k).^2 ...
 -(new.Lin-circshift(new.Lin,-1)).^2./r.^2.*(1+3.*1i./(k.*r)-3./(k.*r).^2));
@@ -24,7 +24,7 @@ green = (exp((1i.*k.*r))./4.*pi.*r).*(1+(1i./r.*k)-1./(r.*k).^2 ...
 tHat = 1;
 zHat = pi/2;
 gam = cos(tHat*zHat)^(-1);
-coord = CreateCoord(new);
+coord = new.CreateCoord(new);
 alpha = 4;
 
 for i=N:TotalElements
