@@ -40,15 +40,22 @@ zHat(:,3) = 1; %z coord
 gamma = acos(dot(tHat,zHat,2));
 
 alpha = 1;
+beta = 2;
 
 f = coord(:,1:2);
+%Should be changed to evaluate in centre points
 f1 = @(z)(z-circshift(coord(:,1),1))/(coord(:,1)-circshift(coord(:,1),1));
 f2 = @(z)(circshift(coord(:,1),-1)-z)/(circshift(coord(:,1),-1)-coord(:,1));
+
 T1 = @(z, phi) f1.*exp(1i.*alpha.*phi)*tHat;
 T2 = @(z, phi) f2.*exp(1i.*alpha.*phi)*zHat;
-TD = 4;
+T3 = @(z, phi) f1.*exp(-1i.*beta.*phi)*tHat;
+T4 = @(z, phi) f2.*exp(-1i.*beta.*phi)*zHat;
 
+TD = 4;
 TDtbm = 1/(-new.Radii*sin(coord(:,3)));
+
+Z = [];
 
 % 2*new.SegmentsCircle+new.SegmentsLine
 for i=1:new.SegmentsCircle+new.SegmentsLine
