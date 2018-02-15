@@ -26,7 +26,8 @@ classdef Antenna
             cylinderlen = length-2.*radii;
             Lin = linspace(-cylinderlen./2, cylinderlen./2, segmentsline);
             ant.Lin = Lin(2:segmentsline-1);
-            ant.LinTest = linspace(-cylinderlen./2+segmentsline./2, cylinderlen./2-segmentsline./2, segmentsline-1);
+            seglen = cylinderlen/segmentsline;
+            ant.LinTest = linspace(-cylinderlen./2+seglen./2, cylinderlen./2-seglen./2, segmentsline-1);
             %Splitting lower circ part
             arclength = pi/(2*segmentscircle);
             dist = linspace(-pi/2, 0, segmentscircle);
@@ -34,7 +35,7 @@ classdef Antenna
             circbot(:,1) = radii*cos(dist);
             circbot(:,2) = (-length/2)+radii+radii*sin(dist);
             ant.CircBot = circbot;
-            dist = linspace(-pi/2+arclength, 0-arclength, segmentscircle-1);
+            dist = linspace(-pi/2+arclength/2, 0-arclength/2, segmentscircle-1);
             circbot = [];
             circbot(:,1) = radii*cos(dist);
             circbot(:,2) = (-length/2)+radii+radii*sin(dist);
@@ -45,7 +46,7 @@ classdef Antenna
             circtop(:,1) = radii*cos(dist);
             circtop(:,2) = (length/2)-radii+radii*sin(dist);
             ant.CircTop = circtop;            
-            dist = linspace(-pi/2+arclength, 0-arclength, segmentscircle-1);
+            dist = linspace(0+arclength/2, pi/2-arclength/2, segmentscircle-1);
             circtop = [];
             circtop(:,1) = radii*cos(dist);
             circtop(:,2) = (length/2)-radii+radii*sin(dist);
@@ -65,9 +66,22 @@ classdef Antenna
            
            coord(ant.SegmentsCircle+ant.SegmentsLine-1:2*ant.SegmentsCircle+ant.SegmentsLine-2,1) = ant.CircTop(:,2);
            coord(ant.SegmentsCircle+ant.SegmentsLine-1:2*ant.SegmentsCircle+ant.SegmentsLine-2,2) = ant.CircTop(:,1);%Should be expanded with centre
-           coord(ant.SegmentsCircle+ant.SegmentsLine-1:2*ant.SegmentsCircle+ant.SegmentsLine-2,3) = pi/(2*ant.SegmentsCircle);%Should be expanded with centre
+           coord(ant.SegmentsCircle+ant.SegmentsLine-1:2*ant.SegmentsCircle+ant.SegmentsLine-2,3) = pi/(2*ant.SegmentsCircle);%Should be expanded with centre  
+        end
+        
+        function coord = CreateTestCoord(ant)
+           coord = [];
+           coord(1:ant.SegmentsCircle-1,1) = ant.CircBotTest(:,2);
+           coord(1:ant.SegmentsCircle-1,2) = ant.CircBotTest(:,1);%Should be expanded with centre
+           coord(1:ant.SegmentsCircle-1,3) = pi/(2*ant.SegmentsCircle);
+                      
+           coord(ant.SegmentsCircle:ant.SegmentsCircle+ant.SegmentsLine-2,1) = ant.LinTest(1,:);
+           coord(ant.SegmentsCircle:ant.SegmentsCircle+ant.SegmentsLine-2,2) = ant.Radii;%Should be expanded with centre
+           coord(ant.SegmentsCircle:ant.SegmentsCircle+ant.SegmentsLine-2,3) = (ant.Length-2.*ant.Radii)/ant.SegmentsLine;
            
-           
+           coord(ant.SegmentsCircle+ant.SegmentsLine-1:2*ant.SegmentsCircle+ant.SegmentsLine-3,1) = ant.CircTopTest(:,2);
+           coord(ant.SegmentsCircle+ant.SegmentsLine-1:2*ant.SegmentsCircle+ant.SegmentsLine-3,2) = ant.CircTopTest(:,1);%Should be expanded with centre
+           coord(ant.SegmentsCircle+ant.SegmentsLine-1:2*ant.SegmentsCircle+ant.SegmentsLine-3,3) = pi/(2*ant.SegmentsCircle);%Should be expanded with centre  
         end
         
         function green = Green(ant, k)

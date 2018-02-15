@@ -47,20 +47,21 @@ beta = 2;
 f = coord(:,1:2);
 %Basis triangle functions
 %Should be changed to evaluate in centre points
-T1 = @(z)(z-circshift(coord(:,1),1))/(coord(:,1)-circshift(coord(:,1),1));
-T2 = @(z)(circshift(coord(:,1),-1)-z)/(circshift(coord(:,1),-1)-coord(:,1));
+testingpoints = CreateTestCoord(new);
+T1 = (testingpoints(:,1)-circshift(coord(1:47,1),1))/(coord(1:47,1)-circshift(coord(1:47,1),1));
+T2 = (circshift(coord(1:47,1),-1)-testingpoints(:,1))/(circshift(coord(1:47,1),-1)-coord(1:47,1));
 
-ftan = @(z, phi) f1.*exp(1i.*alpha.*phi)*tHat;
-fpan = @(z, phi) f2.*exp(1i.*alpha.*phi)*zHat;
-ftbn = @(z, phi) f1.*exp(-1i.*beta.*phi)*tHat;
-Tpbn = @(z, phi) f2.*exp(-1i.*beta.*phi)*zHat;
+ftan = @(z, phi) T1.*exp(1i.*alpha.*phi)*tHat;%T, alpha, n. Expansions function
+fpan = @(z, phi) T2.*exp(1i.*alpha.*phi)*zHat;%Phi, alpha, n. Expansions function
+ftbn = @(z, phi) T1.*exp(-1i.*beta.*phi)*tHat;%T, beta, n. Test function
+Tpbn = @(z, phi) T2.*exp(-1i.*beta.*phi)*zHat;%Phi, beta, n. Test function
 
 TD = 4;
 wo = linspace(-pi/2, 0, new.SegmentsCircle);
-TDtbm = 1/(new.Radii*cos(wo)).*-new.Radii*sin(wo).*f1.*exp(1i*beta*phi);
-TDtan = 1/(new.Radii*cos(wo)).*-new.Radii*sin(wo).*f1.*exp(1i*alpha*phimark);
-TDpbm = -f1./(new.Radii*cos(wo)).*-new.Radii*sin(wo).*1i.*beta.*exp(1i*beta*phi);
-TDpan = 1i.*alpha.*f1/(new.Radii*cos(wo)).*exp(1i*alpha*phimark);
+TDtbm = 1./(new.Radii.*cos(wo)).*-new.Radii.*sin(wo).*T1.*exp(1i*beta*phi);
+TDtan = 1./(new.Radii.*cos(wo)).*-new.Radii*sin(wo).*T1.*exp(1i*alpha*phimark);
+TDpbm = -T1./(new.Radii.*cos(wo)).*-new.Radii*sin(wo).*1i.*beta.*exp(1i*beta*phi);
+TDpan = 1i.*alpha.*T1/(new.Radii.*cos(wo)).*exp(1i*alpha*phimark);
 
 Z = [];
 
