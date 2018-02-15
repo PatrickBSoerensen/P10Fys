@@ -45,14 +45,15 @@ alpha = 1;
 beta = 2;
 
 f = coord(:,1:2);
+%Basis triangle functions
 %Should be changed to evaluate in centre points
-f1 = @(z)(z-circshift(coord(:,1),1))/(coord(:,1)-circshift(coord(:,1),1));
-f2 = @(z)(circshift(coord(:,1),-1)-z)/(circshift(coord(:,1),-1)-coord(:,1));
+T1 = @(z)(z-circshift(coord(:,1),1))/(coord(:,1)-circshift(coord(:,1),1));
+T2 = @(z)(circshift(coord(:,1),-1)-z)/(circshift(coord(:,1),-1)-coord(:,1));
 
-T1 = @(z, phi) f1.*exp(1i.*alpha.*phi)*tHat;
-T2 = @(z, phi) f2.*exp(1i.*alpha.*phi)*zHat;
-T3 = @(z, phi) f1.*exp(-1i.*beta.*phi)*tHat;
-T4 = @(z, phi) f2.*exp(-1i.*beta.*phi)*zHat;
+ftan = @(z, phi) f1.*exp(1i.*alpha.*phi)*tHat;
+fpan = @(z, phi) f2.*exp(1i.*alpha.*phi)*zHat;
+ftbn = @(z, phi) f1.*exp(-1i.*beta.*phi)*tHat;
+Tpbn = @(z, phi) f2.*exp(-1i.*beta.*phi)*zHat;
 
 TD = 4;
 wo = linspace(-pi/2, 0, new.SegmentsCircle);
