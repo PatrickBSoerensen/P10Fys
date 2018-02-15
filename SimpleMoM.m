@@ -23,7 +23,6 @@ tHat(new.SegmentsCircle+new.SegmentsLine-1: ...
     2*new.SegmentsCircle+new.SegmentsLine-2,1)...
     = -new.Radii.*sin(linspace(0, pi/2, new.SegmentsCircle));%x coord
 tHat(:,2) = 0;%y coord
-
 tHat(:,3) = 1;%z coord
 
 tHat(1:new.SegmentsCircle,3) ... 
@@ -56,7 +55,11 @@ T3 = @(z, phi) f1.*exp(-1i.*beta.*phi)*tHat;
 T4 = @(z, phi) f2.*exp(-1i.*beta.*phi)*zHat;
 
 TD = 4;
-TDtbm = 1/(-new.Radii*sin(coord(:,3)));
+wo = linspace(-pi/2, 0, new.SegmentsCircle);
+TDtbm = 1/(new.Radii*cos(wo)).*-new.Radii*sin(wo).*f1.*exp(1i*beta*phi);
+TDtan = 1/(new.Radii*cos(wo)).*-new.Radii*sin(wo).*f1.*exp(1i*alpha*phimark);
+TDpbm = -f1./(new.Radii*cos(wo)).*-new.Radii*sin(wo).*1i.*beta.*exp(1i*beta*phi);
+TDpan = 1i.*alpha.*f1/(new.Radii*cos(wo)).*exp(1i*alpha*phimark);
 
 Z = [];
 

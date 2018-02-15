@@ -7,7 +7,7 @@ f=146.5*10^6;
 lambda=c/f;
 w=2*pi*f;
 k=w/c;
-
+r=1;
 new = Antenna(0.995, 10, 20, 0.2, [0,0]);
 
 green = (exp((1i.*k.*r))./4.*pi.*r).*(1+(1i./r.*k)-1./(r.*k).^2 ...
@@ -23,9 +23,8 @@ tHat(new.SegmentsCircle+new.SegmentsLine-1: ...
     2*new.SegmentsCircle+new.SegmentsLine-2,1)...
     = -new.Radii.*sin(linspace(0, pi/2, new.SegmentsCircle));%x coord
 tHat(:,2) = 0;%y coord
-<<<<<<< HEAD
 tHat(:,3) = 1;%z coord
-=======
+
 tHat(1:new.SegmentsCircle,3) ... 
     = new.Radii.*cos(linspace(-pi/2, 0, new.SegmentsCircle));%z coord
 tHat(new.SegmentsCircle+1:new.SegmentsCircle+new.SegmentsLine-2,3) ... 
@@ -33,7 +32,6 @@ tHat(new.SegmentsCircle+1:new.SegmentsCircle+new.SegmentsLine-2,3) ...
 tHat(new.SegmentsCircle+new.SegmentsLine-1: ... 
     2*new.SegmentsCircle+new.SegmentsLine-2,3)...
     = new.Radii.*cos(linspace(0, pi/2, new.SegmentsCircle));%z coord
->>>>>>> 6cb576d38a7d7266a2392c6d65953fa55a7ec28c
 tHat = tHat./sqrt(tHat(:,1).^2+tHat(:,2).^2+tHat(:,3).^2);
 zHat = tHat;
 
@@ -44,24 +42,26 @@ zHat(:,3) = 1; %z coord
 gamma = acos(dot(tHat,zHat,2));
 
 alpha = 1;
-<<<<<<< HEAD
-gamma = acos(dot(tHat,zHat,2));%Overvej om dot skal bruges
-=======
+beta = 2;
 
->>>>>>> 6cb576d38a7d7266a2392c6d65953fa55a7ec28c
 f = coord(:,1:2);
+%Should be changed to evaluate in centre points
 f1 = @(z)(z-circshift(coord(:,1),1))/(coord(:,1)-circshift(coord(:,1),1));
 f2 = @(z)(circshift(coord(:,1),-1)-z)/(circshift(coord(:,1),-1)-coord(:,1));
 
 T1 = @(z, phi) f1.*exp(1i.*alpha.*phi)*tHat;
 T2 = @(z, phi) f2.*exp(1i.*alpha.*phi)*zHat;
-T1 = @(z, phi) f1.*exp(1i.*alpha.*phi)*tHat;
-T2 = @(z, phi) f2.*exp(1i.*alpha.*phi)*zHat;
-
+T3 = @(z, phi) f1.*exp(-1i.*beta.*phi)*tHat;
+T4 = @(z, phi) f2.*exp(-1i.*beta.*phi)*zHat;
 
 TD = 4;
+wo = linspace(-pi/2, 0, new.SegmentsCircle);
+TDtbm = 1/(new.Radii*cos(wo)).*-new.Radii*sin(wo).*f1.*exp(1i*beta*phi);
+TDtan = 1/(new.Radii*cos(wo)).*-new.Radii*sin(wo).*f1.*exp(1i*alpha*phimark);
+TDpbm = -f1./(new.Radii*cos(wo)).*-new.Radii*sin(wo).*1i.*beta.*exp(1i*beta*phi);
+TDpan = 1i.*alpha.*f1/(new.Radii*cos(wo)).*exp(1i*alpha*phimark);
 
-TDtbm = 1/(-new.Radii*sin(coord(:,3)));
+Z = [];
 
 % 2*new.SegmentsCircle+new.SegmentsLine
 for i=1:new.SegmentsCircle+new.SegmentsLine
