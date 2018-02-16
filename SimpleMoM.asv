@@ -39,6 +39,10 @@ zHat(:,1) = 0; %x coord
 zHat(:,2) = 0; %y coord
 zHat(:,3) = 1; %z coord
 
+phiHat(:,1) = 0; %x coord
+phiHat(:,2) = 1; %y coord
+phiHat(:,3) = 0; %z coord
+
 gamma = acos(dot(tHat,zHat,2));
 
 alpha = 1;
@@ -54,7 +58,9 @@ T1 = [0;T1];
 T2 = (coord(2:size(coord),1)-testingpoints(:,1))./coord(1:testend,1);
 T2 = [T2;0];
 T1D = 1/coord(1:testend,1);
+T1D = [T1D,0];
 T2D = -1/coord(1:testend,1);
+T2D = [T2D,0];
 
 FT = [T1,T2];%Full T functions
 
@@ -63,15 +69,12 @@ fpan = @(z, phi) T2.*exp(1i.*alpha.*phi)*zHat;%Phi, alpha, n. Expansions functio
 ftbn = @(z, phi) T1.*exp(-1i.*beta.*phi)*tHat;%T, beta, n. Test function
 Tpbn = @(z, phi) T2.*exp(-1i.*beta.*phi)*zHat;%Phi, beta, n. Test function
 
-TD = 4;
-% wo = linspace(-pi/2, 0, new.SegmentsCircle);
-% TDtbm = 1./(new.Radii.*cos(wo)).*-new.Radii.*sin(wo).*T1.*exp(1i*beta*phi);
-% TDtan = 1./(new.Radii.*cos(wo)).*-new.Radii*sin(wo).*T1.*exp(1i*alpha*phimark);
-% TDpbm = -T1./(new.Radii.*cos(wo)).*-new.Radii*sin(wo).*1i.*beta.*exp(1i*beta*phi);
-% TDpan = 1i.*alpha.*T1/(new.Radii.*cos(wo)).*exp(1i*alpha*phimark);
-
-N = new.SegmentsCircle+new.SegmentsLine;
+N = 2*new.SegmentsCircle+new.SegmentsLine-2;
 Z = zeros(2*N,2*N);
+btthe = (1:N);
+btphi = (1:N);
+bphithe = (1:N);
+bphiphi = (1:N);
 
 for i=1:N
     for j=1:N
@@ -83,24 +86,57 @@ for i=1:N
        +(coord(i,2)-coord(j,2)).^2-2.*coord(i,2).*coord(j,2).*cos(1-phimark));    
     end
     
-    Func1 = @(phimark) cos(alpha.*phimark).*exp(-1i.*k.*R(phimark))./Rphimark;
-    Func2 = @(phimark) cos(phimark).*cos(alpha.*phimark).*exp(-1i.*k.*R)./R;
-    Func3 = @(phimark) sin(phimark).*sin(alpha.*phimark).*exp(-1i.*k.*R)./R;
+    Func1 = @(phimark) cos(alpha.*phimark).*exp(-1i.*k.*R(phimark))./R(phimark);
+    Func2 = @(phimark) cos(phimark).*cos(alpha.*phimark).*exp(-1i.*k.*R(phimark))./R(phimark);
+    Func3 = @(phimark) sin(phimark).*sin(alpha.*phimark).*exp(-1i.*k.*R(phimark))./R(phimark);
     
-    G1 = coord(i,3).*coord(:,3).*integral(Func1, 0, pi);
-    G2 = coord(i,3).*coord(:,3).*integral(@(phimark) (Func2), 0, pi);
-    G3 = coord(i,3).*coord(:,3).*integral(@(phimark) (Func3), 0, pi);
-    
-    Ztt = (T1(i)+T2(i))*(T1(j)+T2(j))*(sin(gamma(i))*sin(gamma)*G2+cos(gamma(i))*cos(gamma)*G1)-1/k^2*TD(i)*TD*G1;
-    Zto = (T1(i)+T2(i))*(T1(j)+T2(j))*sin(gamma(i))*G3+1/k^2*alpha/rho*T1D(i)*T2*G1;
-    Zot = (T1(i)+T2(i))*(T1(j)+T2(j))*sin(gamma)*G3+1/k^2*alpha/rho(i)*T1(i)*T2D*G1;
-    Zoo = (T1(i)+T2(i))*(T1(j)+T2(j))*(G2-1/k^2*alpha^2/(rho(i)*rho)*G1);
-    
+    G1 = coord(i,3).*coord(j,3).*integral(Func1, 0, pi);
+    G2 = coord(i,3).*coord(j,3).*integral(Func2, 0, pi);
+    G3 = coord(i,3).*coord(j,3).*integral(Func3, 0, pi);
+       
+    Ztt = (T1(i)+T2(i)).*(T1(j)+T2(j)).*(sin(gamma(i)).*sin(gamma(j)).*G2+cos(gamma(i)).*cos(gamma(j)).*G1)-1./k.^2.*(T1D(i)+T2D(i)).*(T1D(j)+T2D(j)).*G1;
+    Zto = 1i.*((T1(i)+T2(i)).*(T1(j)+T2(j)).*sin(gamma(i)).*G3+1./k.^2.*alpha./coord(j,2).*(T1D(i)+T2D(i)).*(T1(j)+T2(j)).*G1);
+    Zot = 1i.*((T1(i)+T2(i)).*(T1(j)+T2(j)).*sin(gamma(j)).*G3+1./k.^2.*alpha./coord(i,2).*(T1(i)+T2(i)).*(T1D(j)+T2D(j)).*G1);
+    Zoo = -(T1(i)+T2(i)).*(T1(j)+T2(j)).*(G2-1/k.^2.*alpha.^2/(coord(i,2).*coord(j,2)).*G1);
+   
     Z(i,j) = Ztt;
     Z(i+N,j) = Zto;
     Z(i,j+N) = Zot;
     Z(i+N,j+N) = Zoo;
-    
     end
+    thetai = pi/2;
+    J0 = besselj(0, k*coord(i,2)*sin(thetai));
+    J1 = besselj(1, k*coord(i,2)*sin(thetai));
+    J2 = besselj(2, k*coord(i,2)*sin(thetai));
+    
+    btthe(i) = pi*1i^(alpha)*(T1(i)+T2(i))*coord(i,3)...
+        *exp(1i*k*coord(i,1)*cos(thetai))*(cos(thetai)...
+        *sin(gamma(i)*1i*(J2-J0)-2*sin(thetai)*cos(gamma(i))*J1));
+    
+    bphithe(i) = -pi*1i^(alpha)*(T1(i)+T2(i))*coord(i,3)...
+        *exp(1i*k*coord(i,1)*cos(thetai))*(cos(thetai)...
+        *(J2+J0));
+    
+    btphi(i) = pi*1i^(alpha)*(T1(i)+T2(i))*coord(i,3)...
+        *exp(1i*k*coord(i,1)*sin(thetai))*(sin(gamma(i))...
+        *(J2-J0));
+    
+    bphiphi(i) = pi*1i^(alpha+1)*(T1(i)+T2(i))*coord(i,3)...
+        *exp(1i*k*coord(i,1)*sin(thetai))*(J2-J0);
 end
+invZ = Z^(-1);
+bthe = [btthe, bphithe];
+xtthe = invZ*bthe.';
+xphithe = invZ*bphithe.';
+bphi = [btphi,bphiphi];
+xtphi = invZ*bphi.';
+xphiphi = invZ*bphiphi.';
+ftn = T1.*exp(1i.*alpha.*0);%T, alpha, n. Expansions function
+fpn = T2.*exp(1i.*alpha.*0);%Phi, alpha, n. Expansions function
+J1 = sum(xtthe(1:48).*ftn+xtthe(49:96).*fpn);
+Jthe = xtthe*ftn+2*xtthe;
+Jphi
 
+% b calculations for non plane waves 
+% bt = -1i./(w.*mu0).*(T1.*T2).*coord(i,3).*integral((@(phi) exp(-1i.*alpha.*phi)),0,2*pi).*tHat.*E(r);
+% bo = -1i./(w.*mu0).*(T1.*T2).*coord(i,3).*integral((@(phi) exp(-1i.*alpha.*phi)),0,2*pi).*phiHat.*E(r);
