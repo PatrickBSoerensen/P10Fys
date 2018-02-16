@@ -48,8 +48,15 @@ f = coord(:,1:2);
 %Basis triangle functions
 %Should be changed to evaluate in centre points
 testingpoints = CreateTestCoord(new);
-T1 = (testingpoints(:,1)-circshift(coord(1:47,1),1))/(coord(1:47,1)-circshift(coord(1:47,1),1));
-T2 = (circshift(coord(1:47,1),-1)-testingpoints(:,1))/(circshift(coord(1:47,1),-1)-coord(1:47,1));
+testend = size(testingpoints(:,1));
+T1 = (testingpoints(:,1)-coord(1:testend,1))./coord(1:testend,1);
+T1 = [0;T1];
+T2 = (coord(2:size(coord),1)-testingpoints(:,1))./coord(1:testend,1);
+T2 = [T2;0];
+T1D = 1/coord(1:testend,1);
+T2D = -1/coord(1:testend,1);
+
+FT = [T1,T2];%Full T functions
 
 ftan = @(z, phi) T1.*exp(1i.*alpha.*phi)*tHat;%T, alpha, n. Expansions function
 fpan = @(z, phi) T2.*exp(1i.*alpha.*phi)*zHat;%Phi, alpha, n. Expansions function
@@ -57,30 +64,43 @@ ftbn = @(z, phi) T1.*exp(-1i.*beta.*phi)*tHat;%T, beta, n. Test function
 Tpbn = @(z, phi) T2.*exp(-1i.*beta.*phi)*zHat;%Phi, beta, n. Test function
 
 TD = 4;
-wo = linspace(-pi/2, 0, new.SegmentsCircle);
-TDtbm = 1./(new.Radii.*cos(wo)).*-new.Radii.*sin(wo).*T1.*exp(1i*beta*phi);
-TDtan = 1./(new.Radii.*cos(wo)).*-new.Radii*sin(wo).*T1.*exp(1i*alpha*phimark);
-TDpbm = -T1./(new.Radii.*cos(wo)).*-new.Radii*sin(wo).*1i.*beta.*exp(1i*beta*phi);
-TDpan = 1i.*alpha.*T1/(new.Radii.*cos(wo)).*exp(1i*alpha*phimark);
+% wo = linspace(-pi/2, 0, new.SegmentsCircle);
+% TDtbm = 1./(new.Radii.*cos(wo)).*-new.Radii.*sin(wo).*T1.*exp(1i*beta*phi);
+% TDtan = 1./(new.Radii.*cos(wo)).*-new.Radii*sin(wo).*T1.*exp(1i*alpha*phimark);
+% TDpbm = -T1./(new.Radii.*cos(wo)).*-new.Radii*sin(wo).*1i.*beta.*exp(1i*beta*phi);
+% TDpan = 1i.*alpha.*T1/(new.Radii.*cos(wo)).*exp(1i*alpha*phimark);
 
-Z = [];
+N = new.SegmentsCircle+new.SegmentsLine;
+Z = zeros(2*N,2*N);
 
-% 2*new.SegmentsCircle+new.SegmentsLine
-for i=1:new.SegmentsCircle+new.SegmentsLine
-    R = sqrt((coord(i,1)-coord(:,1)).^2+(coord(i,2)-coord(:,2)).^2-2.*coord(i,2).*coord(i,2).*cos(0-0));
+for i=1:N
+    for j=1:N
+    if i==j
+       R = @(phimark) sqrt((coord(i,3)/4)^.2 ... 
+       +2*coord(i,2).^2.*(1-cos(phimark)));
+    else
+       R = @(phimark) sqrt((coord(i,1)-coord(j,1)).^2 ...
+       +(coord(i,2)-coord(j,2)).^2-2.*coord(i,2).*coord(j,2).*cos(1-phimark));    
+    end
     
-    Func1 = @(phimark) cos(alpha.*phimark).*exp(-1i.*k.*R)./R;
-    Func2 = @(phimark) cos(phimark).*cos(alpha.*phimark).*exp(-1i.*k.*R)./R;
-    Func3 = @(phimark) sin(phimark).*sin(alpha.*mark).*exp(-1i.*k.*R)./R;
+    Func1 = @(phimark) cos(alpha.*phimark).*exp(-1i.*k.*R(phimark))./R(phimark);
+    Func2 = @(phimark) cos(phimark).*cos(alpha.*phimark).*exp(-1i.*k.*R(phimark))./R(phimark);
+    Func3 = @(phimark) sin(phimark).*sin(alpha.*phimark).*exp(-1i.*k.*R(phimark))./R(phimark);
     
-    G1 = @(y1)arrayfun(@(phimark)coord(i,3).*coord(:,3).*integral(Func1, 0, pi),y1);
-    G2 = @(y1)arrayfun(@(phimark)coord(i,3).*coord(:,3).*integral(Func2, 0, pi),y1);
-    G3 = @(y1)arrayfun(@(phimark)coord(i,3).*coord(:,3).*integral(Func3, 0, pi),y1);
+    G1 = coord(i,3).*coord(:,3).*integral(Func1, 0, pi);
+    G2 = coord(i,3).*coord(:,3).*integral(Func2, 0, pi);
+    G3 = coord(i,3).*coord(:,3).*integral(Func3, 0, pi);
     
-    Ztt = @(z)(T1(i)+T2(i))*T1*(sin(gamma(i))*sin(gamma)*G2+cos(gamma(i))*cos(gamma)*G1)-1/k^2*TD(i)*TD*G1;
-    Zto = @(z)(T1(i)+T2(i))*T1*sin(gamma(i))*G3+1/k^2*alpha/rho*TD(i)*TD*G1;
-    Zot = @(z)(T1(i)+T2(i))*T1*sin(gamma)*G3+1/k^2*alpha/rho(i)*TD(i)*TD*G1;
-    Zoo = @(z)(T1(i)+T2(i))*T1*(G2-1/k^2*alpha^2/(rho(i)*rho)*G1);
-
+    Ztt = (T1(i)+T2(i)).*(T1(j)+T2(j)).*(sin(gamma(i)).*sin(gamma(j)).*G2+cos(gamma(i)).*cos(gamma(j)).*G1)-1./k.^2.*TD(i).*TD(j).*G1;
+    Zto = (T1(i)+T2(i)).*(T1(j)+T2(j)).*sin(gamma(i)).*G3+1./k^2.*alpha./coord(j,2).*T1D(i).*T2(j).*G1;
+    Zot = (T1(i)+T2(i)).*(T1(j)+T2(j)).*sin(gamma(j)).*G3+1./k.^2.*alpha./coord(i,2).*T1(i).*T2D(j).*G1;
+    Zoo = (T1(i)+T2(i)).*(T1(j)+T2(j)).*(G2-1/k.^2.*alpha.^2/(coord(i,2).*coord(j,2)).*G1);
     
+    Z(i,j) = Ztt;
+    Z(i+N,j) = Zto;
+    Z(i,j+N) = Zot;
+    Z(i+N,j+N) = Zoo;
+    
+    end
 end
+
