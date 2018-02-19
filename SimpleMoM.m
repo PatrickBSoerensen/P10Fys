@@ -248,14 +248,6 @@ figure(1)
 pcolor(real(Ethethe))
 shading interp
 
-figure(2)
-pcolor(real(Ethephi))
-shading interp
-
-figure(3)
-pcolor(real(Ephithe))
-shading interp
-
 figure(4)
 pcolor(real(Ephiphi))
 shading interp
