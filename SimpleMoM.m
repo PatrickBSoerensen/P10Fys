@@ -8,15 +8,10 @@ f=146.5*10^6;
 lambda=c/f;
 w=2*pi*f;
 k=w/c;
-r=1;
 length = 0.995;
 new = Antenna(length, 10, 15, 0.2, [0,0]);
 
-green = (exp((1i.*k.*r))./4.*pi.*r).*(1+(1i./r.*k)-1./(r.*k).^2 ...
--(new.Lin-circshift(new.Lin,-1)).^2./r.^2.*(1+3.*1i./(k.*r)-3./(k.*r).^2));
-
 coord = CreateCoord(new);
-testing = linspace(-pi/2, 0, new.SegmentsCircle);
 tHat(1:new.SegmentsCircle,1) ... 
     = -new.Radii.*sin(linspace(-pi/2, 0, new.SegmentsCircle));%x coord
 tHat(new.SegmentsCircle+1:new.SegmentsCircle+new.SegmentsLine-2,1) ... 
@@ -49,22 +44,20 @@ gamma = acos(dot(tHat,zHat,2));
 
 beta = 2;
 
-f = coord(:,1:2);
+N = 2*new.SegmentsCircle+new.SegmentsLine-2;
 %Basis triangle functions
 testingpoints = CreateTestCoord(new);
-testend = size(testingpoints(:,1));
-T1 = (testingpoints(:,1)-coord(1:testend,1))./coord(1:testend,1);
+T1 = (testingpoints(:,1)-coord(1:N-1,1))./coord(1:N-1,1);
 T1 = [0;T1];
-T2 = (coord(2:size(coord),1)-testingpoints(:,1))./coord(1:testend,1);
+T2 = (coord(2:N,1)-testingpoints(:,1))./coord(1:N-1,1);
 T2 = [T2;0];
-T1D = 1/coord(1:testend,1);
-T1D = [T1D,0];
-T2D = -1/coord(1:testend,1);
-T2D = [T2D,0];
+T1D = 1./coord(1:N-1,3);
+T1D = [T1D;0];
+T2D = -1./coord(1:N-1,3);
+T2D = [T2D;0];
 
 FT = [T1,T2];%Full T functions
 
-N = 2*new.SegmentsCircle+new.SegmentsLine-2;
 Z = zeros(2*N,2*N);
 btthe = (1:N);
 btphi = (1:N);
