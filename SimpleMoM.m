@@ -59,6 +59,10 @@ btthe = (1:N);
 btphi = (1:N);
 bphithe = (1:N);
 bphiphi = (1:N);
+btthe0 = (1:N);
+btphi0 = (1:N);
+bphithe0 = (1:N);
+bphiphi0 = (1:N);
 %% Setting field calculation
 xsteps = 100;
 zsteps = 100;
@@ -146,11 +150,10 @@ for i=1:N
 end
 
 %% Actual script
-for alpha=1:4
+for alpha=1:6
     alpha
     %beta should also turn into a loop
     beta = alpha;
-    beta = 2;
     ftan = @(z, phi) T1.*exp(1i.*alpha.*phi)*tHat;%T, alpha, n. Expansions function
     fpan = @(z, phi) T2.*exp(1i.*alpha.*phi)*zHat;%Phi, alpha, n. Expansions function
     ftbn = @(z, phi) T1.*exp(-1i.*beta.*phi)*tHat;%T, beta, n. Test function
@@ -224,6 +227,19 @@ for alpha=1:4
     phiS = 0;
     
     for i=1:N
+        r = sqrt((rz(i,:).').^2+(rx(i,:)).^2);
+        B = -(1i*w*mu0)/(2*pi)*(exp(-1i*k*r)./r);
+
+        Ethethe = B*(xtthe(i)*btthe(i)+xphithe(i)*bphithe(i))*cos(alpha*phiS)+Ethethe;
+    
+        Ephithe = 1i*B*(xtthe(i)*btphi(i)+xphithe(i)*bphiphi(i))*sin(alpha*phiS)+Ephithe;
+    
+        Ethephi = 1i*B*(xtphi(i)*btthe(i)+xphiphi(i)*bphithe(i))*sin(alpha*phiS)+Ethephi;
+    
+        Ephiphi = B*(xtphi(i)*btphi(i)+xphiphi(i)*bphiphi(i))*cos(alpha*phiS)+Ephiphi;
+        
+        rx = (-coord(:,2)-x);
+
         r = sqrt((rz(i,:).').^2+(rx(i,:)).^2);
         B = -(1i*w*mu0)/(2*pi)*(exp(-1i*k*r)./r);
 

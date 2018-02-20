@@ -29,29 +29,56 @@ classdef Antenna
             seglen = cylinderlen/segmentsline;
             ant.LinTest = linspace(-cylinderlen./2+seglen./2, cylinderlen./2-seglen./2, segmentsline-1);
             %Splitting lower circ part
-            arclength = pi/(2*segmentscircle);
-            dist = linspace(-pi/2, 0, segmentscircle);
-            circbot = [];
-            circbot(:,1) = radii*cos(dist);
-            circbot(:,2) = (-length/2)+radii+radii*sin(dist);
-            ant.CircBot = circbot;
-            dist = linspace(-pi/2+arclength/2, 0-arclength/2, segmentscircle-1);
-            circbot = [];
-            circbot(:,1) = radii*cos(dist);
-            circbot(:,2) = (-length/2)+radii+radii*sin(dist);
-            ant.CircBotTest = circbot;
+            ant.CircBot = CreateCirc(ant, 1, 0);
+            ant.CircBotTest = CreateCirc(ant, 1, 1);
             %Splitting upper circ part
-            dist = linspace(0, pi/2, segmentscircle);
-            circtop = [];
-            circtop(:,1) = radii*cos(dist);
-            circtop(:,2) = (length/2)-radii+radii*sin(dist);
-            ant.CircTop = circtop;            
-            dist = linspace(0+arclength/2, pi/2-arclength/2, segmentscircle-1);
-            circtop = [];
-            circtop(:,1) = radii*cos(dist);
-            circtop(:,2) = (length/2)-radii+radii*sin(dist);
-            ant.CircTopTest = circtop;
+            ant.CircTop = CreateCirc(ant, 0, 0);            
+            ant.CircTopTest = CreateCirc(ant, 0, 1);
+            %Creating full coordinate matrix
             ant.Coord = CreateCoord(ant);
+        end
+        
+        function circ = CreateCirc(ant, bot, test)
+            arclength = pi/(2*ant.SegmentsCircle);
+            circ = [];
+            if test
+                if bot
+                    dist = linspace(-pi/2+arclength/2, 0-arclength/2, ant.SegmentsCircle-1);
+                    circ(:,2) = (-ant.Length/2)+ant.Radii+ant.Radii*sin(dist);
+                else
+                    dist = linspace(0+arclength/2, pi/2-arclength/2, ant.SegmentsCircle-1);
+                    circ(:,2) = (ant.Length/2)-ant.Radii+ant.Radii*sin(dist);
+                end
+                circ(:,1) = ant.Radii*cos(dist);
+            else
+                if bot
+                    dist = linspace(-pi/2, 0, ant.SegmentsCircle);
+                    circ(:,2) = (-ant.Length/2)+ant.Radii+ant.Radii*sin(dist);
+                else
+                    dist = linspace(0, pi/2, ant.SegmentsCircle);
+                    circ(:,2) = (ant.Length/2)-ant.Radii+ant.Radii*sin(dist);
+                end
+                circ(:,1) = ant.Radii*cos(dist);
+            end
+        end
+        
+        function coord = NewCreateCoord(ant, test)
+           coord = [];
+           if test
+           else
+           end
+           coord(1:ant.SegmentsCircle,1) = ant.CircBot(:,2);
+           coord(1:ant.SegmentsCircle,2) = ant.CircBot(:,1);%Should be expanded with centre
+           coord(1:ant.SegmentsCircle,3) = pi/(2*ant.SegmentsCircle)*ant.Radii;
+                      
+           coord(ant.SegmentsCircle+1:ant.SegmentsCircle+ant.SegmentsLine-2,1) = ant.Lin(1,:);
+           coord(ant.SegmentsCircle+1:ant.SegmentsCircle+ant.SegmentsLine-2,2) = ant.Radii;%Should be expanded with centre
+           coord(ant.SegmentsCircle:ant.SegmentsCircle+ant.SegmentsLine-2,3) = (ant.Length-2.*ant.Radii)/ant.SegmentsLine;
+           
+           coord(ant.SegmentsCircle+ant.SegmentsLine-1:2*ant.SegmentsCircle+ant.SegmentsLine-2,1) = ant.CircTop(:,2);
+           coord(ant.SegmentsCircle+ant.SegmentsLine-1:2*ant.SegmentsCircle+ant.SegmentsLine-2,2) = ant.CircTop(:,1);%Should be expanded with centre
+           coord(ant.SegmentsCircle+ant.SegmentsLine-1:2*ant.SegmentsCircle+ant.SegmentsLine-2,3) = pi/(2*ant.SegmentsCircle)*ant.Radii;%Should be expanded with centre  
+       
         end
         
         function coord = CreateCoord(ant)
