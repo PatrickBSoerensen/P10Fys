@@ -12,8 +12,7 @@ k=w/c;
 length = 0.995;
 new = Antenna(length, 20, 20, 0.2, [0,0]);
 
-%Creating coordinates, redundant as info is also in Antenna
-coord = CreateCoord(new);
+coord = new.Coord;
 %Unit vectors should be part of Antenna class
 tHat(1:new.SegmentsCircle,1) ... 
     = -new.Radii.*sin(linspace(-pi/2, 0, new.SegmentsCircle));%x coord
@@ -44,7 +43,7 @@ gamma = acos(dot(tHat,zHat,2));
 N = 2*new.SegmentsCircle+new.SegmentsLine-2;
 %Basis triangle functions
 %Should be made Antenna property
-testingpoints = CreateTestCoord(new);
+testingpoints = new.CoordTest;
 T1 = (testingpoints(:,1)-coord(1:N-1,1))./coord(1:N-1,1);
 T1 = [0;T1];
 T2 = (coord(2:N,1)-testingpoints(:,1))./coord(1:N-1,1);
@@ -94,7 +93,6 @@ for i=1:N
         Ztphi = 1i*(sin(gamma(i))*((T1(i)+T2(i))*(T1(j)+T2(j)))*G3+(1/k^2)*(alpha/coord(j,2))*((T1D(i)+T2D(i))*(T1(j)*T2(j)))*G1);
         Zphit = 1i*(((T1(i)+T2(i)).*(T1(j)+T2(j)))*sin(gamma(j))*G3+(1/k^2)*(alpha/coord(i,2))*(((T1(i)+T2(i))*(T1D(j)+T2D(j))).*G1));
         Zphiphi = -(T1(i)+T2(i)).*(T1(j)+T2(j)).*(G2-1/k.^2.*alpha.^2/(coord(i,2).*coord(j,2)).*G1);
-        
         
         Z(i,j) = Ztt;
         Z(i+N,j) = Ztphi;
@@ -254,11 +252,11 @@ for alpha=1:4
         Ethephi = 1i*B*(xtphi(i)*btthe(i)+xphiphi(i)*bphithe(i))*sin(alpha*phiS)+Ethephi;
         Ephiphi = B*(xtphi(i)*btphi(i)+xphiphi(i)*bphiphi(i))*cos(alpha*phiS)+Ephiphi;
     end
-figure(1)
+figure(2)
 pcolor(real(Ethethe))
 shading interp
 
-figure(4)
+figure(3)
 pcolor(real(Ephiphi))
 shading interp    
 end
