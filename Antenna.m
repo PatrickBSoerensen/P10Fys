@@ -65,20 +65,12 @@ classdef Antenna
         function coord = NewCreateCoord(ant, test)
            coord = [];
            if test
+               segcirc = ant.SegmentsCircle;
+               circ = ant.CircBotTest;
            else
+               segcirc = ant.SegmentsCircle;
            end
-           coord(1:ant.SegmentsCircle,1) = ant.CircBot(:,2);
-           coord(1:ant.SegmentsCircle,2) = ant.CircBot(:,1);%Should be expanded with centre
-           coord(1:ant.SegmentsCircle,3) = pi/(2*ant.SegmentsCircle)*ant.Radii;
-                      
-           coord(ant.SegmentsCircle+1:ant.SegmentsCircle+ant.SegmentsLine-2,1) = ant.Lin(1,:);
-           coord(ant.SegmentsCircle+1:ant.SegmentsCircle+ant.SegmentsLine-2,2) = ant.Radii;%Should be expanded with centre
-           coord(ant.SegmentsCircle:ant.SegmentsCircle+ant.SegmentsLine-2,3) = (ant.Length-2.*ant.Radii)/ant.SegmentsLine;
            
-           coord(ant.SegmentsCircle+ant.SegmentsLine-1:2*ant.SegmentsCircle+ant.SegmentsLine-2,1) = ant.CircTop(:,2);
-           coord(ant.SegmentsCircle+ant.SegmentsLine-1:2*ant.SegmentsCircle+ant.SegmentsLine-2,2) = ant.CircTop(:,1);%Should be expanded with centre
-           coord(ant.SegmentsCircle+ant.SegmentsLine-1:2*ant.SegmentsCircle+ant.SegmentsLine-2,3) = pi/(2*ant.SegmentsCircle)*ant.Radii;%Should be expanded with centre  
-       
         end
         
         function coord = CreateCoord(ant)

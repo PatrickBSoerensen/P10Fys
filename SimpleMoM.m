@@ -68,8 +68,8 @@ xsteps = 100;
 zsteps = 100;
 x = linspace(-length*2, length*2, xsteps);
 z = linspace(-length, length, zsteps);
-rz = (coord(:,1)-z);
-rx = (coord(:,2)-x);
+rz = (z-coord(:,1));
+rx = (x-coord(:,2));
 %% calculating for alpha 0
 alpha = 0;
 for i=1:N
@@ -85,7 +85,7 @@ for i=1:N
         Func1 = @(phimark) cos(alpha.*phimark).*exp(-1i.*k.*R(phimark))./R(phimark);
         Func2 = @(phimark) cos(phimark).*cos(alpha.*phimark).*exp(-1i.*k.*R(phimark))./R(phimark);
         Func3 = @(phimark) sin(phimark).*sin(alpha.*phimark).*exp(-1i.*k.*R(phimark))./R(phimark);
-    
+        %Should possibly integrate to 2*pi
         G1 = coord(i,3).*coord(j,3).*integral(Func1, 0, pi);
         G2 = coord(i,3).*coord(j,3).*integral(Func2, 0, pi);
         G3 = coord(i,3).*coord(j,3).*integral(Func3, 0, pi);
@@ -100,6 +100,7 @@ for i=1:N
         Z(i,j+N) = Zphit;
         Z(i+N,j+N) = Zphiphi;
     end
+    %Indfaldsvinklen af plan bølgen
     thetai = pi/2;
     
     J0 = besselj(alpha-1, k*coord(i,2)*sin(thetai));
@@ -148,19 +149,19 @@ for i=1:N
         Ethephi = 0;
         Ephiphi = B/2 * xNulAlphaPhi(i) * btphi0(i);
         
-        rx = (-coord(:,2)-x);
+        rx = (x+coord(:,2));
         r = sqrt((rz(i,:).').^2+(rx(i,:)).^2);
         B = -(1i*w*mu0)/(2*pi)*(exp(-1i*k*r)./r);
         
-        Ethethe = B/2 * xNulAlphaThe(i) * btthe0(i);
-        Ephiphi = B/2 * xNulAlphaPhi(i) * btphi0(i);
+        Ethethe = B/2 * xNulAlphaThe(i) * btthe0(i)+Ethethe;
+        Ephiphi = B/2 * xNulAlphaPhi(i) * btphi0(i)+Ephiphi;
         
 end
 
 %% Actual script
-for alpha=1:6
+for alpha=1:4
     alpha
-    %beta should also turn into a loop
+    %beta should propably also turn into a loop
     beta = alpha;
     ftan = @(z, phi) T1.*exp(1i.*alpha.*phi)*tHat;%T, alpha, n. Expansions function
     fpan = @(z, phi) T2.*exp(1i.*alpha.*phi)*zHat;%Phi, alpha, n. Expansions function
@@ -180,7 +181,7 @@ for alpha=1:6
         Func1 = @(phimark) cos(alpha.*phimark).*exp(-1i.*k.*R(phimark))./R(phimark);
         Func2 = @(phimark) cos(phimark).*cos(alpha.*phimark).*exp(-1i.*k.*R(phimark))./R(phimark);
         Func3 = @(phimark) sin(phimark).*sin(alpha.*phimark).*exp(-1i.*k.*R(phimark))./R(phimark);
-    
+        %Should possibly integrate to 2*pi
         G1 = coord(i,3).*coord(j,3).*integral(Func1, 0, pi);
         G2 = coord(i,3).*coord(j,3).*integral(Func2, 0, pi);
         G3 = coord(i,3).*coord(j,3).*integral(Func3, 0, pi);
@@ -195,7 +196,6 @@ for alpha=1:6
         Z(i,j+N) = Zphit;
         Z(i+N,j+N) = Zphiphi;
         end
-        thetai = pi/2;
         
         J0 = besselj(alpha-1, k*coord(i,2)*sin(thetai));
         J1 = besselj(alpha, k*coord(i,2)*sin(thetai));
@@ -239,24 +239,18 @@ for alpha=1:6
         B = -(1i*w*mu0)/(2*pi)*(exp(-1i*k*r)./r);
 
         Ethethe = B*(xtthe(i)*btthe(i)+xphithe(i)*bphithe(i))*cos(alpha*phiS)+Ethethe;
-    
         Ephithe = 1i*B*(xtthe(i)*btphi(i)+xphithe(i)*bphiphi(i))*sin(alpha*phiS)+Ephithe;
-    
         Ethephi = 1i*B*(xtphi(i)*btthe(i)+xphiphi(i)*bphithe(i))*sin(alpha*phiS)+Ethephi;
-    
         Ephiphi = B*(xtphi(i)*btphi(i)+xphiphi(i)*bphiphi(i))*cos(alpha*phiS)+Ephiphi;
         
-        rx = (-coord(:,2)-x);
+        rx = (x-coord(:,2));
 
         r = sqrt((rz(i,:).').^2+(rx(i,:)).^2);
         B = -(1i*w*mu0)/(2*pi)*(exp(-1i*k*r)./r);
 
-        Ethethe = B*(xtthe(i)*btthe(i)+xphithe(i)*bphithe(i))*cos(alpha*phiS)+Ethethe;
-    
+        Ethethe = B*(xtthe(i)*btthe(i)+xphithe(i)*bphithe(i))*cos(alpha*phiS)+Ethethe;    
         Ephithe = 1i*B*(xtthe(i)*btphi(i)+xphithe(i)*bphiphi(i))*sin(alpha*phiS)+Ephithe;
-    
         Ethephi = 1i*B*(xtphi(i)*btthe(i)+xphiphi(i)*bphithe(i))*sin(alpha*phiS)+Ethephi;
-    
         Ephiphi = B*(xtphi(i)*btphi(i)+xphiphi(i)*bphiphi(i))*cos(alpha*phiS)+Ephiphi;
     end
 figure(1)
