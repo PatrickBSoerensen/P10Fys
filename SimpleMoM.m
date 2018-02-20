@@ -147,6 +147,14 @@ for i=1:N
         Ephithe = 0;
         Ethephi = 0;
         Ephiphi = B/2 * xNulAlphaPhi(i) * btphi0(i);
+        
+        rx = (-coord(:,2)-x);
+        r = sqrt((rz(i,:).').^2+(rx(i,:)).^2);
+        B = -(1i*w*mu0)/(2*pi)*(exp(-1i*k*r)./r);
+        
+        Ethethe = B/2 * xNulAlphaThe(i) * btthe0(i);
+        Ephiphi = B/2 * xNulAlphaPhi(i) * btphi0(i);
+        
 end
 
 %% Actual script
