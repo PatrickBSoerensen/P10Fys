@@ -1,5 +1,5 @@
 clc;
-%%
+%% Setting up constants
 eps0=8.854187817*10^-12; %F/m
 mu0=4*pi*10^-7; %N/A^2
 c=1/sqrt(eps0*mu0); %m/s
@@ -8,10 +8,13 @@ f=146.5*10^6;
 lambda=c/f;
 w=2*pi*f;
 k=w/c;
+% Creation of antenna, length defined for use in area setup
 length = 0.995;
-new = Antenna(length, 10, 15, 0.2, [0,0]);
+new = Antenna(length, 20, 20, 0.2, [0,0]);
 
+%Creating coordinates, redundant as info is also in Antenna
 coord = CreateCoord(new);
+%Unit vectors should be part of Antenna class
 tHat(1:new.SegmentsCircle,1) ... 
     = -new.Radii.*sin(linspace(-pi/2, 0, new.SegmentsCircle));%x coord
 tHat(new.SegmentsCircle+1:new.SegmentsCircle+new.SegmentsLine-2,1) ... 
@@ -35,13 +38,14 @@ zHat = tHat;
 zHat(:,1) = 0; %x coord
 zHat(:,2) = 0; %y coord
 zHat(:,3) = 1; %z coord
-
+%Gamma should also be part of Antenna as it is specific
 gamma = acos(dot(tHat,zHat,2));
-
+%beta should also turn into a loop
 beta = 2;
-
+%N should be Antenna property
 N = 2*new.SegmentsCircle+new.SegmentsLine-2;
 %Basis triangle functions
+%Should be made Antenna property
 testingpoints = CreateTestCoord(new);
 T1 = (testingpoints(:,1)-coord(1:N-1,1))./coord(1:N-1,1);
 T1 = [0;T1];
@@ -51,13 +55,12 @@ T1D = 1./coord(1:N-1,3);
 T1D = [T1D;0];
 T2D = -1./coord(1:N-1,3);
 T2D = [T2D;0];
-
+%Setting size of Z matrix and b vectors
 Z = zeros(2*N,2*N);
 btthe = (1:N);
 btphi = (1:N);
 bphithe = (1:N);
 bphiphi = (1:N);
-    
 %% calculating for alpha 0
 alpha = 0;
 for i=1:N
@@ -67,7 +70,7 @@ for i=1:N
             +2*coord(i,2).^2.*(1-cos(phimark)));
         else
             R = @(phimark) sqrt((coord(i,1)-coord(j,1)).^2 ...
-            +(coord(i,2)-coord(j,2)).^2-2.*coord(i,2).*coord(j,2).*cos(1-phimark));    
+            +(coord(i,2)-coord(j,2)).^2-2.*coord(i,2).*coord(j,2).*(1-cos(phimark)));    
         end
     
         Func1 = @(phimark) cos(alpha.*phimark).*exp(-1i.*k.*R(phimark))./R(phimark);
@@ -88,16 +91,15 @@ for i=1:N
         Z(i,j+N) = Zphit;
         Z(i+N,j+N) = Zphiphi;
     end
-    
     thetai = pi/2;
-        
+    
     J0 = besselj(alpha-1, k*coord(i,2)*sin(thetai));
     J1 = besselj(alpha, k*coord(i,2)*sin(thetai));
     J2 = besselj(alpha+1, k*coord(i,2)*sin(thetai));
-
+    %Zero order b
     btthe0(i) = pi*1i^(alpha)*(T1(i)+T2(i))*coord(i,3)...
     *exp(1i*k*coord(i,1)*cos(thetai))*(cos(thetai)...
-    *sin(gamma(i)*1i*(J2-J0)-2*sin(thetai)*cos(gamma(i))*J1));
+    *sin(gamma(i))*1i*(J2-J0)-2*sin(thetai)*cos(gamma(i))*J1);
     
     bphithe0(i) = -pi*1i^(alpha)*(T1(i)+T2(i))*coord(i,3)...
     *exp(1i*k*coord(i,1)*cos(thetai))*(cos(thetai)...
@@ -110,7 +112,7 @@ for i=1:N
     bphiphi0(i) = pi*1i^(alpha+1)*(T1(i)+T2(i))*coord(i,3)...
     *exp(1i*k*coord(i,1)*sin(thetai))*(J2-J0);
 end
-    
+
 invZ = Z^(-1);
 bthe = [btthe0, bphithe0];
 xthe = invZ*bthe.';
@@ -122,29 +124,32 @@ xtphi = xphi(1:N);
 xphiphi = xphi(N+1:2*N);
 ftn = (T1+T2).*exp(1i.*alpha.*0);%T, alpha, n. Expansions function
 fpn = (T1+T2).*exp(1i.*alpha.*0);%Phi, alpha, n. Expansions function
-xNulAlphaThe=xtthe.*ftn;%.*tHat;
-xNulAlphaPhi=xtphi.*fpn;%.*tHat;  
+xNulAlphaThe = xtthe.*ftn;% I tHat retning
+xNulAlphaPhi = xtphi.*fpn;% I phiHat retning
 
-Jthe=0;
-Jphi=0;
+Jthe=xtthe.*ftn;
+Jphi=xtphi.*fpn;
 %% Setting field calculation
-xstep = 100;
-zstep = 100;
-x = linspace(-length*2, length*2, xstep);
-z = linspace(-length, length, zstep);
+xsteps = 150;
+zsteps = 150;
+x = linspace(-length*2, length*2, xsteps);
+z = linspace(-length, length, zsteps);
 Ethe = x.*z';
 Ethe(:,:) = 0;
 Ephi = Ethe;
 rz = (coord(:,1)-z);
 rx = (coord(:,2)-x);
-Ethethe = 0;
-Ephithe = 0;
-Ethephi = 0;
-Ephiphi = 0;
-
+Ethethe = B/2 * xNulAlphaThe(i) * btthe0(i);
+    
+        Ephithe = 0;
+    
+        Ethephi = 0;
+    
+Ephiphi = B/2 * xNulAlphaPhi(i) * btphi0(i);
 
 %% Actual script
-for alpha=1:2
+for alpha=1:8
+    alpha
     ftan = @(z, phi) T1.*exp(1i.*alpha.*phi)*tHat;%T, alpha, n. Expansions function
     fpan = @(z, phi) T2.*exp(1i.*alpha.*phi)*zHat;%Phi, alpha, n. Expansions function
     ftbn = @(z, phi) T1.*exp(-1i.*beta.*phi)*tHat;%T, beta, n. Test function
@@ -157,7 +162,7 @@ for alpha=1:2
             +2*coord(i,2).^2.*(1-cos(phimark)));
         else
             R = @(phimark) sqrt((coord(i,1)-coord(j,1)).^2 ...
-            +(coord(i,2)-coord(j,2)).^2-2.*coord(i,2).*coord(j,2).*cos(1-phimark));    
+            +(coord(i,2)-coord(j,2)).^2-2.*coord(i,2).*coord(j,2).*(1-cos(phimark)));
         end
         
         Func1 = @(phimark) cos(alpha.*phimark).*exp(-1i.*k.*R(phimark))./R(phimark);
@@ -186,7 +191,7 @@ for alpha=1:2
     
         btthe(i) = pi*1i^(alpha)*(T1(i)+T2(i))*coord(i,3)...
         *exp(1i*k*coord(i,1)*cos(thetai))*(cos(thetai)...
-        *sin(gamma(i)*1i*(J2-J0)-2*sin(thetai)*cos(gamma(i))*J1));
+        *sin(gamma(i))*1i*(J2-J0)-2*sin(thetai)*cos(gamma(i))*J1);
     
         bphithe(i) = -pi*1i^(alpha)*(T1(i)+T2(i))*coord(i,3)...
         *exp(1i*k*coord(i,1)*cos(thetai))*(cos(thetai)...
@@ -198,7 +203,6 @@ for alpha=1:2
     
         bphiphi(i) = pi*1i^(alpha+1)*(T1(i)+T2(i))*coord(i,3)...
         *exp(1i*k*coord(i,1)*sin(thetai))*(J2-J0);
-    
     end
     
     invZ = Z^(-1);
@@ -213,11 +217,12 @@ for alpha=1:2
     ftn = (T1+T2).*exp(1i.*alpha.*0);%T, alpha, n. Expansions function
     fpn = (T1+T2).*exp(1i.*alpha.*0);%Phi, alpha, n. Expansions function
     phi=0;
-    Jthe = xNulAlphaThe+2*sum(xtthe.*ftn.*cos(alpha.*phi)+xphithe.*ftn.*sin(alpha.*phi))+Jthe;
-    Jphi = xNulAlphaPhi+2*sum(xtphi.*fpn.*sin(alpha.*phi)+xphiphi.*fpn.*cos(alpha.*phi))+Jphi;
+
+    Jthe = Jthe+2*(xtthe.*ftn.*cos(alpha.*phi)+xphithe.*ftn.*sin(alpha.*phi));
+    Jphi = Jphi+2*(xtphi.*fpn.*sin(alpha.*phi)+xphiphi.*fpn.*cos(alpha.*phi));
     phiS = 0;
     
-    for i=1:N    
+    for i=1:N
         r = sqrt((rz(i,:).').^2+(rx(i,:)).^2);
         B = -(1i*w*mu0)/(2*pi)*(exp(-1i*k*r)./r);
 
@@ -230,24 +235,19 @@ for alpha=1:2
     
         Ephiphi = B/2 * xNulAlphaPhi(i) * btphi0(i) ...
         + B*(xtphi(i)*btphi(i)+xphiphi(i)*bphiphi(i))*cos(alpha*phiS)+Ephiphi;
-    
-    figure(1)   
-    pcolor(real(Ethethe))
-    shading interp
     end
-end
 figure(1)
 pcolor(real(Ethethe))
 shading interp
 
-figure(2)
-pcolor(real(Ethephi))
-shading interp
-
-figure(3)
-pcolor(real(Ephithe))
-shading interp
-
 figure(4)
 pcolor(real(Ephiphi))
-shading interp
+shading interp    
+end
+% figure(1)
+% pcolor(real(Ethethe))
+% shading interp
+% 
+% figure(4)
+% pcolor(real(Ephiphi))
+% shading interp
