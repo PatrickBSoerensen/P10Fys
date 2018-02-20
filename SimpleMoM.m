@@ -89,12 +89,13 @@ for i=1:N
         G1 = coord(i,3).*coord(j,3).*integral(Func1, 0, pi);
         G2 = coord(i,3).*coord(j,3).*integral(Func2, 0, pi);
         G3 = coord(i,3).*coord(j,3).*integral(Func3, 0, pi);
-       
+        
         Ztt = (T1(i)+T2(i)).*(T1(j)+T2(j)).*(sin(gamma(i)).*sin(gamma(j)).*G2+cos(gamma(i)).*cos(gamma(j)).*G1)-1./k.^2.*(T1D(i)+T2D(i)).*(T1D(j)+T2D(j)).*G1;
-        Ztphi = 1i.*((T1(i)+T2(i)).*(T1(j)+T2(j)).*sin(gamma(i)).*G3+1./k.^2.*alpha./coord(j,2).*(T1D(i)+T2D(i)).*(T1(j)+T2(j)).*G1);
-        Zphit = 1i.*((T1(i)+T2(i)).*(T1(j)+T2(j)).*sin(gamma(j)).*G3+1./k.^2.*alpha./coord(i,2).*(T1(i)+T2(i)).*(T1D(j)+T2D(j)).*G1);
+        Ztphi = 1i*(sin(gamma(i))*((T1(i)+T2(i))*(T1(j)+T2(j)))*G3+(1/k^2)*(alpha/coord(j,2))*((T1D(i)+T2D(i))*(T1(j)*T2(j)))*G1);
+        Zphit = 1i*(((T1(i)+T2(i)).*(T1(j)+T2(j)))*sin(gamma(j))*G3+(1/k^2)*(alpha/coord(i,2))*(((T1(i)+T2(i))*(T1D(j)+T2D(j))).*G1));
         Zphiphi = -(T1(i)+T2(i)).*(T1(j)+T2(j)).*(G2-1/k.^2.*alpha.^2/(coord(i,2).*coord(j,2)).*G1);
-   
+        
+        
         Z(i,j) = Ztt;
         Z(i+N,j) = Ztphi;
         Z(i,j+N) = Zphit;
@@ -187,8 +188,8 @@ for alpha=1:4
         G3 = coord(i,3).*coord(j,3).*integral(Func3, 0, pi);
        
         Ztt = (T1(i)+T2(i)).*(T1(j)+T2(j)).*(sin(gamma(i)).*sin(gamma(j)).*G2+cos(gamma(i)).*cos(gamma(j)).*G1)-1./k.^2.*(T1D(i)+T2D(i)).*(T1D(j)+T2D(j)).*G1;
-        Ztphi = 1i.*((T1(i)+T2(i)).*(T1(j)+T2(j)).*sin(gamma(i)).*G3+1./k.^2.*alpha./coord(j,2).*(T1D(i)+T2D(i)).*(T1(j)+T2(j)).*G1);
-        Zphit = 1i.*((T1(i)+T2(i)).*(T1(j)+T2(j)).*sin(gamma(j)).*G3+1./k.^2.*alpha./coord(i,2).*(T1(i)+T2(i)).*(T1D(j)+T2D(j)).*G1);
+        Ztphi = 1i*(sin(gamma(i))*((T1(i)+T2(i))*(T1(j)+T2(j)))*G3+(1/k^2)*(alpha/coord(j,2))*((T1D(i)+T2D(i))*(T1(j)*T2(j)))*G1);
+        Zphit = 1i*(((T1(i)+T2(i)).*(T1(j)+T2(j)))*sin(gamma(j))*G3+(1/k^2)*(alpha/coord(i,2))*(((T1(i)+T2(i))*(T1D(j)+T2D(j))).*G1));
         Zphiphi = -(T1(i)+T2(i)).*(T1(j)+T2(j)).*(G2-1/k.^2.*alpha.^2/(coord(i,2).*coord(j,2)).*G1);
    
         Z(i,j) = Ztt;
