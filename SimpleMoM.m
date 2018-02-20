@@ -36,10 +36,6 @@ zHat(:,1) = 0; %x coord
 zHat(:,2) = 0; %y coord
 zHat(:,3) = 1; %z coord
 
-phiHat(:,1) = 0; %x coord
-phiHat(:,2) = 1; %y coord
-phiHat(:,3) = 0; %z coord
-
 gamma = acos(dot(tHat,zHat,2));
 
 beta = 2;
@@ -55,8 +51,6 @@ T1D = 1./coord(1:N-1,3);
 T1D = [T1D;0];
 T2D = -1./coord(1:N-1,3);
 T2D = [T2D;0];
-
-FT = [T1,T2];%Full T functions
 
 Z = zeros(2*N,2*N);
 btthe = (1:N);
@@ -85,18 +79,19 @@ for i=1:N
         G3 = coord(i,3).*coord(j,3).*integral(Func3, 0, pi);
        
         Ztt = (T1(i)+T2(i)).*(T1(j)+T2(j)).*(sin(gamma(i)).*sin(gamma(j)).*G2+cos(gamma(i)).*cos(gamma(j)).*G1)-1./k.^2.*(T1D(i)+T2D(i)).*(T1D(j)+T2D(j)).*G1;
-        Zto = 1i.*((T1(i)+T2(i)).*(T1(j)+T2(j)).*sin(gamma(i)).*G3+1./k.^2.*alpha./coord(j,2).*(T1D(i)+T2D(i)).*(T1(j)+T2(j)).*G1);
-        Zot = 1i.*((T1(i)+T2(i)).*(T1(j)+T2(j)).*sin(gamma(j)).*G3+1./k.^2.*alpha./coord(i,2).*(T1(i)+T2(i)).*(T1D(j)+T2D(j)).*G1);
-        Zoo = -(T1(i)+T2(i)).*(T1(j)+T2(j)).*(G2-1/k.^2.*alpha.^2/(coord(i,2).*coord(j,2)).*G1);
+        Ztphi = 1i.*((T1(i)+T2(i)).*(T1(j)+T2(j)).*sin(gamma(i)).*G3+1./k.^2.*alpha./coord(j,2).*(T1D(i)+T2D(i)).*(T1(j)+T2(j)).*G1);
+        Zphit = 1i.*((T1(i)+T2(i)).*(T1(j)+T2(j)).*sin(gamma(j)).*G3+1./k.^2.*alpha./coord(i,2).*(T1(i)+T2(i)).*(T1D(j)+T2D(j)).*G1);
+        Zphiphi = -(T1(i)+T2(i)).*(T1(j)+T2(j)).*(G2-1/k.^2.*alpha.^2/(coord(i,2).*coord(j,2)).*G1);
    
         Z(i,j) = Ztt;
-        Z(i+N,j) = Zto;
-        Z(i,j+N) = Zot;
-        Z(i+N,j+N) = Zoo;
+        Z(i+N,j) = Ztphi;
+        Z(i,j+N) = Zphit;
+        Z(i+N,j+N) = Zphiphi;
     end
-thetai = pi/2;
+    
+    thetai = pi/2;
         
-    J0 = besselj(0, k*coord(i,2)*sin(thetai));
+    J0 = besselj(alpha-1, k*coord(i,2)*sin(thetai));
     J1 = besselj(alpha, k*coord(i,2)*sin(thetai));
     J2 = besselj(alpha+1, k*coord(i,2)*sin(thetai));
 
@@ -174,18 +169,18 @@ for alpha=1:2
         G3 = coord(i,3).*coord(j,3).*integral(Func3, 0, pi);
        
         Ztt = (T1(i)+T2(i)).*(T1(j)+T2(j)).*(sin(gamma(i)).*sin(gamma(j)).*G2+cos(gamma(i)).*cos(gamma(j)).*G1)-1./k.^2.*(T1D(i)+T2D(i)).*(T1D(j)+T2D(j)).*G1;
-        Zto = 1i.*((T1(i)+T2(i)).*(T1(j)+T2(j)).*sin(gamma(i)).*G3+1./k.^2.*alpha./coord(j,2).*(T1D(i)+T2D(i)).*(T1(j)+T2(j)).*G1);
-        Zot = 1i.*((T1(i)+T2(i)).*(T1(j)+T2(j)).*sin(gamma(j)).*G3+1./k.^2.*alpha./coord(i,2).*(T1(i)+T2(i)).*(T1D(j)+T2D(j)).*G1);
-        Zoo = -(T1(i)+T2(i)).*(T1(j)+T2(j)).*(G2-1/k.^2.*alpha.^2/(coord(i,2).*coord(j,2)).*G1);
+        Ztphi = 1i.*((T1(i)+T2(i)).*(T1(j)+T2(j)).*sin(gamma(i)).*G3+1./k.^2.*alpha./coord(j,2).*(T1D(i)+T2D(i)).*(T1(j)+T2(j)).*G1);
+        Zphit = 1i.*((T1(i)+T2(i)).*(T1(j)+T2(j)).*sin(gamma(j)).*G3+1./k.^2.*alpha./coord(i,2).*(T1(i)+T2(i)).*(T1D(j)+T2D(j)).*G1);
+        Zphiphi = -(T1(i)+T2(i)).*(T1(j)+T2(j)).*(G2-1/k.^2.*alpha.^2/(coord(i,2).*coord(j,2)).*G1);
    
         Z(i,j) = Ztt;
-        Z(i+N,j) = Zto;
-        Z(i,j+N) = Zot;
-        Z(i+N,j+N) = Zoo;
+        Z(i+N,j) = Ztphi;
+        Z(i,j+N) = Zphit;
+        Z(i+N,j+N) = Zphiphi;
         end
         thetai = pi/2;
         
-        J0 = besselj(0, k*coord(i,2)*sin(thetai));
+        J0 = besselj(alpha-1, k*coord(i,2)*sin(thetai));
         J1 = besselj(alpha, k*coord(i,2)*sin(thetai));
         J2 = besselj(alpha+1, k*coord(i,2)*sin(thetai));
     
@@ -235,10 +230,22 @@ for alpha=1:2
     
         Ephiphi = B/2 * xNulAlphaPhi(i) * btphi0(i) ...
         + B*(xtphi(i)*btphi(i)+xphiphi(i)*bphiphi(i))*cos(alpha*phiS)+Ephiphi;
+    
+    figure(1)   
+    pcolor(real(Ethethe))
+    shading interp
     end
 end
 figure(1)
 pcolor(real(Ethethe))
+shading interp
+
+figure(2)
+pcolor(real(Ethephi))
+shading interp
+
+figure(3)
+pcolor(real(Ephithe))
 shading interp
 
 figure(4)

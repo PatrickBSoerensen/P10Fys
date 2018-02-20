@@ -8,15 +8,10 @@ f=146.5*10^6;
 lambda=c/f;
 w=2*pi*f;
 k=w/c;
-r=1;
 length = 0.995;
 new = Antenna(length, 10, 15, 0.2, [0,0]);
 
-green = (exp((1i.*k.*r))./4.*pi.*r).*(1+(1i./r.*k)-1./(r.*k).^2 ...
--(new.Lin-circshift(new.Lin,-1)).^2./r.^2.*(1+3.*1i./(k.*r)-3./(k.*r).^2));
-
 coord = CreateCoord(new);
-testing = linspace(-pi/2, 0, new.SegmentsCircle);
 tHat(1:new.SegmentsCircle,1) ... 
     = -new.Radii.*sin(linspace(-pi/2, 0, new.SegmentsCircle));%x coord
 tHat(new.SegmentsCircle+1:new.SegmentsCircle+new.SegmentsLine-2,1) ... 
@@ -41,30 +36,22 @@ zHat(:,1) = 0; %x coord
 zHat(:,2) = 0; %y coord
 zHat(:,3) = 1; %z coord
 
-phiHat(:,1) = 0; %x coord
-phiHat(:,2) = 1; %y coord
-phiHat(:,3) = 0; %z coord
-
 gamma = acos(dot(tHat,zHat,2));
 
 beta = 2;
 
-f = coord(:,1:2);
+N = 2*new.SegmentsCircle+new.SegmentsLine-2;
 %Basis triangle functions
 testingpoints = CreateTestCoord(new);
-testend = size(testingpoints(:,1));
-T1 = (testingpoints(:,1)-coord(1:testend,1))./coord(1:testend,1);
+T1 = (testingpoints(:,1)-coord(1:N-1,1))./coord(1:N-1,1);
 T1 = [0;T1];
-T2 = (coord(2:size(coord),1)-testingpoints(:,1))./coord(1:testend,1);
+T2 = (coord(2:N,1)-testingpoints(:,1))./coord(1:N-1,1);
 T2 = [T2;0];
-T1D = 1/coord(1:testend,1);
-T1D = [T1D,0];
-T2D = -1/coord(1:testend,1);
-T2D = [T2D,0];
+T1D = 1./coord(1:N-1,3);
+T1D = [T1D;0];
+T2D = -1./coord(1:N-1,3);
+T2D = [T2D;0];
 
-FT = [T1,T2];%Full T functions
-
-N = 2*new.SegmentsCircle+new.SegmentsLine-2;
 Z = zeros(2*N,2*N);
 btthe = (1:N);
 btphi = (1:N);
@@ -92,18 +79,19 @@ for i=1:N
         G3 = coord(i,3).*coord(j,3).*integral(Func3, 0, pi);
        
         Ztt = (T1(i)+T2(i)).*(T1(j)+T2(j)).*(sin(gamma(i)).*sin(gamma(j)).*G2+cos(gamma(i)).*cos(gamma(j)).*G1)-1./k.^2.*(T1D(i)+T2D(i)).*(T1D(j)+T2D(j)).*G1;
-        Zto = 1i.*((T1(i)+T2(i)).*(T1(j)+T2(j)).*sin(gamma(i)).*G3+1./k.^2.*alpha./coord(j,2).*(T1D(i)+T2D(i)).*(T1(j)+T2(j)).*G1);
-        Zot = 1i.*((T1(i)+T2(i)).*(T1(j)+T2(j)).*sin(gamma(j)).*G3+1./k.^2.*alpha./coord(i,2).*(T1(i)+T2(i)).*(T1D(j)+T2D(j)).*G1);
-        Zoo = -(T1(i)+T2(i)).*(T1(j)+T2(j)).*(G2-1/k.^2.*alpha.^2/(coord(i,2).*coord(j,2)).*G1);
+        Ztphi = 1i.*((T1(i)+T2(i)).*(T1(j)+T2(j)).*sin(gamma(i)).*G3+1./k.^2.*alpha./coord(j,2).*(T1D(i)+T2D(i)).*(T1(j)+T2(j)).*G1);
+        Zphit = 1i.*((T1(i)+T2(i)).*(T1(j)+T2(j)).*sin(gamma(j)).*G3+1./k.^2.*alpha./coord(i,2).*(T1(i)+T2(i)).*(T1D(j)+T2D(j)).*G1);
+        Zphiphi = -(T1(i)+T2(i)).*(T1(j)+T2(j)).*(G2-1/k.^2.*alpha.^2/(coord(i,2).*coord(j,2)).*G1);
    
         Z(i,j) = Ztt;
-        Z(i+N,j) = Zto;
-        Z(i,j+N) = Zot;
-        Z(i+N,j+N) = Zoo;
+        Z(i+N,j) = Ztphi;
+        Z(i,j+N) = Zphit;
+        Z(i+N,j+N) = Zphiphi;
     end
-thetai = pi/2;
+    
+    thetai = pi/2;
         
-    J0 = besselj(0, k*coord(i,2)*sin(thetai));
+    J0 = besselj(alpha-1, k*coord(i,2)*sin(thetai));
     J1 = besselj(alpha, k*coord(i,2)*sin(thetai));
     J2 = besselj(alpha+1, k*coord(i,2)*sin(thetai));
 
@@ -149,8 +137,10 @@ Ethe(:,:) = 0;
 Ephi = Ethe;
 rz = (coord(:,1)-z);
 rx = (coord(:,2)-x);
-
-r = sqrt((rz(:,:)).^2+(rx(:,:)).^2);
+Ethethe = 0;
+Ephithe = 0;
+Ethephi = 0;
+Ephiphi = 0;
 
 
 %% Actual script
@@ -179,18 +169,18 @@ for alpha=1:2
         G3 = coord(i,3).*coord(j,3).*integral(Func3, 0, pi);
        
         Ztt = (T1(i)+T2(i)).*(T1(j)+T2(j)).*(sin(gamma(i)).*sin(gamma(j)).*G2+cos(gamma(i)).*cos(gamma(j)).*G1)-1./k.^2.*(T1D(i)+T2D(i)).*(T1D(j)+T2D(j)).*G1;
-        Zto = 1i.*((T1(i)+T2(i)).*(T1(j)+T2(j)).*sin(gamma(i)).*G3+1./k.^2.*alpha./coord(j,2).*(T1D(i)+T2D(i)).*(T1(j)+T2(j)).*G1);
-        Zot = 1i.*((T1(i)+T2(i)).*(T1(j)+T2(j)).*sin(gamma(j)).*G3+1./k.^2.*alpha./coord(i,2).*(T1(i)+T2(i)).*(T1D(j)+T2D(j)).*G1);
-        Zoo = -(T1(i)+T2(i)).*(T1(j)+T2(j)).*(G2-1/k.^2.*alpha.^2/(coord(i,2).*coord(j,2)).*G1);
+        Ztphi = 1i.*((T1(i)+T2(i)).*(T1(j)+T2(j)).*sin(gamma(i)).*G3+1./k.^2.*alpha./coord(j,2).*(T1D(i)+T2D(i)).*(T1(j)+T2(j)).*G1);
+        Zphit = 1i.*((T1(i)+T2(i)).*(T1(j)+T2(j)).*sin(gamma(j)).*G3+1./k.^2.*alpha./coord(i,2).*(T1(i)+T2(i)).*(T1D(j)+T2D(j)).*G1);
+        Zphiphi = -(T1(i)+T2(i)).*(T1(j)+T2(j)).*(G2-1/k.^2.*alpha.^2/(coord(i,2).*coord(j,2)).*G1);
    
         Z(i,j) = Ztt;
-        Z(i+N,j) = Zto;
-        Z(i,j+N) = Zot;
-        Z(i+N,j+N) = Zoo;
+        Z(i+N,j) = Ztphi;
+        Z(i,j+N) = Zphit;
+        Z(i+N,j+N) = Zphiphi;
         end
         thetai = pi/2;
         
-        J0 = besselj(0, k*coord(i,2)*sin(thetai));
+        J0 = besselj(alpha-1, k*coord(i,2)*sin(thetai));
         J1 = besselj(alpha, k*coord(i,2)*sin(thetai));
         J2 = besselj(alpha+1, k*coord(i,2)*sin(thetai));
     
@@ -227,33 +217,37 @@ for alpha=1:2
     Jphi = xNulAlphaPhi+2*sum(xtphi.*fpn.*sin(alpha.*phi)+xphiphi.*fpn.*cos(alpha.*phi))+Jphi;
     phiS = 0;
     
-    for i=1:xstep
-        for j=1:zstep
+    for i=1:N    
+        r = sqrt((rz(i,:).').^2+(rx(i,:)).^2);
         B = -(1i*w*mu0)/(2*pi)*(exp(-1i*k*r)./r);
-        
-        Ethethe = B/2 * xNulAlphaThe * btthe0 ...
-        + B*(xtthe*btthe+xphithe*bphithe)*cos(alpha*phiS)+Ethethe;
+
+        Ethethe = B/2 * xNulAlphaThe(i) * btthe0(i) ...
+        + B*(xtthe(i)*btthe(i)+xphithe(i)*bphithe(i))*cos(alpha*phiS)+Ethethe;
     
-        Ephithe = 1i*B*(xtthe*btphi+xphithe*bphiphi)*sin(alpha*phiS)+Ephithe;
+        Ephithe = 1i*B*(xtthe(i)*btphi(i)+xphithe(i)*bphiphi(i))*sin(alpha*phiS)+Ephithe;
     
-        Ethephi = 1i*B*(xtphi*btthe+xphiphi*bphithe)*sin(alpha*phiS)+Ethephi;
+        Ethephi = 1i*B*(xtphi(i)*btthe(i)+xphiphi(i)*bphithe(i))*sin(alpha*phiS)+Ethephi;
     
-        Ephiphi = B/2 * xNulAlphaPhi * btphi0 ...
-        + B*(xtphi*btphi+xphiphi*bphiphi)*cos(alpha*phiS)+Ephiphi;
-        end
+        Ephiphi = B/2 * xNulAlphaPhi(i) * btphi0(i) ...
+        + B*(xtphi(i)*btphi(i)+xphiphi(i)*bphiphi(i))*cos(alpha*phiS)+Ephiphi;
+    
+    figure(1)   
+    pcolor(real(Ethethe))
+    shading interp
     end
 end
-% xstep = 100;
-% zstep = 50;
-% x = linspace(-length*2, length*2, xstep);
-% z = linspace(-length, length, zstep);
-% Ethe = x.*z';
-% Ethe(:,:) = 0;
-% Ephi = Ethe;
-% for j=1:xstep
-%     for i=1:zstep
-%     r = x(j)-z(i);%Distance from antenna element to point
-%     Ethe(i,j) = -1i*w*mu0*(exp(-1i*k*r)/4*pi*r)*sum(exp(1i*k*R*r)*secterm*coord(:,3));
-%     Ephi(i,j) = -1i*w*mu0*(exp(-1i*k*r)/4*pi*r)*sum(exp(1i*k*R*r)*secterm*coord(:,3));
-%     end
-% end
+figure(1)
+pcolor(real(Ethethe))
+shading interp
+
+figure(2)
+pcolor(real(Ethephi))
+shading interp
+
+figure(3)
+pcolor(real(Ephithe))
+shading interp
+
+figure(4)
+pcolor(real(Ephiphi))
+shading interp
