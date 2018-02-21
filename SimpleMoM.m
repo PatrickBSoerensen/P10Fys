@@ -236,6 +236,7 @@ for alpha=1:4
     phiS = 0;
     
     for i=1:N
+        rx = (x+coord(:,2));
         r = sqrt((rz(i,:).').^2+(rx(i,:)).^2);
         B = -(1i*w*mu0)/(2*pi)*(exp(-1i*k*r)./r);
 
