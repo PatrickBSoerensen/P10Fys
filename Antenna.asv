@@ -65,12 +65,29 @@ classdef Antenna
         function coord = NewCreateCoord(ant, test)
            coord = [];
            if test
-               segcirc = ant.SegmentsCircle;
-               circ = ant.CircBotTest;
+               segcirc = ant.SegmentsCircle-1;
+               circbot = ant.CircBotTest;
+               circtop = ant.CircTopTest;
            else
                segcirc = ant.SegmentsCircle;
+               circbot = ant.CircBot;
+               circtop = ant.CircTop;
            end
+           coord(1:segcirc,1) = circbot(:,2);
+           coord(1:segcirc,2) = circbot(:,1);%Should be expanded with centre
+           coord(1:segcirc,3) = pi/(2*ant.SegmentsCircle)*ant.Radii;
            
+           coord(segcirc+1:segcirc+ant.SegmentsLine-2,1) = ant.Lin(1,:);
+           coord(segcirc+1:segcirc+ant.SegmentsLine-2,2) = ant.Radii;%Should be expanded with centre
+           coord(segcirc:segcirc+ant.SegmentsLine-2,3) = (ant.Length-2.*ant.Radii)/ant.SegmentsLine;
+          
+           coord(segcirc+ant.SegmentsLine-1:2*segcirc+ant.SegmentsLine-2,1) = circtop(:,2);
+           coord(segcirc+ant.SegmentsLine-1:2*segcirc+ant.SegmentsLine-2,2) = circtop(:,1);%Should be expanded with centre
+           coord(segcirc+ant.SegmentsLine-1:2*segcirc+ant.SegmentsLine-2,3) = pi/(2*ant.SegmentsCircle)*ant.Radii;%Should be expanded with centre  
+        
+           coord(ant.SegmentsCircle+ant.SegmentsLine-1:2*ant.SegmentsCircle+ant.SegmentsLine-3,1) = ant.CircTopTest(:,2);
+           coord(ant.SegmentsCircle+ant.SegmentsLine-1:2*ant.SegmentsCircle+ant.SegmentsLine-3,2) = ant.CircTopTest(:,1);%Should be expanded with centre
+           coord(ant.SegmentsCircle+ant.SegmentsLine-1:2*ant.SegmentsCircle+ant.SegmentsLine-3,3) = pi/(2*ant.SegmentsCircle)*ant.Radii;%Should be expanded with cent
         end
         
         function coord = CreateCoord(ant)
