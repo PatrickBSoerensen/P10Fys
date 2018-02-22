@@ -40,13 +40,14 @@ btthe0 = (1:N);
 btphi0 = (1:N);
 bphithe0 = (1:N);
 bphiphi0 = (1:N);
-%% Setting field calculation
+%% Setting up field calculations
+SingularityProtection = 0.000001;
 xsteps = 100;
 zsteps = 100;
 x = linspace(-length*2, length*2, xsteps);
 z = linspace(-length*2, length*2, zsteps);
 rz = (z-coord(:,1));
-rx = (x-coord(:,2)-0.001);
+rx = (x-coord(:,2)-SingularityProtection);
 %% calculating for alpha 0
 alpha = 0
 for i=1:N
@@ -58,7 +59,7 @@ for i=1:N
             R = @(phimark) sqrt((coord(i,1)-coord(j,1)).^2 ...
             +(coord(i,2)-coord(j,2)).^2-2.*coord(i,2).*coord(j,2).*(1-cos(phimark)));    
         end
-    
+        
         Func1 = @(phimark) cos(alpha.*phimark).*exp(-1i.*k.*R(phimark))./R(phimark);
         Func2 = @(phimark) cos(phimark).*cos(alpha.*phimark).*exp(-1i.*k.*R(phimark))./R(phimark);
         Func3 = @(phimark) sin(phimark).*sin(alpha.*phimark).*exp(-1i.*k.*R(phimark))./R(phimark);
@@ -129,7 +130,7 @@ for i=1:N
         Ethephi = 0;
         Ephiphi = B/2 * xNulAlphaPhi(i) * btphi0(i);
         
-        rx = (x+coord(:,2)+0.001);
+        rx = (x+coord(:,2)+SingularityProtection);
         r = sqrt((rz(i,:).').^2+(rx(i,:)).^2);
         B = -(1i*w*mu0)/(2*pi)*(exp(-1i*k*r)./r);
         
@@ -215,7 +216,7 @@ for alpha=1:2
     phiS = 0;
     
     for i=1:N
-        rx = (x+coord(:,2)+0.001);
+        rx = (x+coord(:,2)+SingularityProtection);
         r = sqrt((rz(i,:).').^2+(rx(i,:)).^2);
         B = -(1i*w*mu0)/(2*pi)*(exp(-1i*k*r)./r);
 
@@ -224,7 +225,7 @@ for alpha=1:2
         Ethephi = 1i*B*(xtphi(i)*btthe(i)+xphiphi(i)*bphithe(i))*sin(alpha*phiS)+Ethephi;
         Ephiphi = B*(xtphi(i)*btphi(i)+xphiphi(i)*bphiphi(i))*cos(alpha*phiS)+Ephiphi;
         
-        rx = (x-coord(:,2)-0.001);
+        rx = (x-coord(:,2)-SingularityProtection);
 
         r = sqrt((rz(i,:).').^2+(rx(i,:)).^2);
         B = -(1i*w*mu0)/(2*pi)*(exp(-1i*k*r)./r);
