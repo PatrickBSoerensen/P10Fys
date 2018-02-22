@@ -214,6 +214,10 @@ for alpha=1:2
     Jthe = Jthe+2*(xtthe.*ftn.*cos(alpha.*phi)+xphithe.*ftn.*sin(alpha.*phi));
     Jphi = Jphi+2*(xtphi.*fpn.*sin(alpha.*phi)+xphiphi.*fpn.*cos(alpha.*phi));
     phiS = 0;
+    Jthe(1,1) = 0;
+    Jthe(end,1) = 0;
+    Jphi(1,1) = 0;
+    Jphi(end,1) = 0;
     
     for i=1:N
         rx = (x+coord(:,2)+SingularityProtection);
