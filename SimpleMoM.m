@@ -10,7 +10,7 @@ w=2*pi*f;
 k=w/c;
 % Creation of antenna, length defined for use in area setup
 length = 0.995;
-new = Antenna(length, 20, 20, 0.01, [0,0]);
+new = Antenna(length, 30, 22, 0.01, [0,0]);
 
 coord = new.Coord;
 %Unit vectors should be part of Antenna class
@@ -68,9 +68,9 @@ zsteps = 100;
 x = linspace(-length*2, length*2, xsteps);
 z = linspace(-length*2, length*2, zsteps);
 rz = (z-coord(:,1));
-rx = (x-coord(:,2)+0.001);
+rx = (x-coord(:,2)-0.001);
 %% calculating for alpha 0
-alpha = 0;
+alpha = 0
 for i=1:N
     for j=1:N
         if i==j
@@ -99,8 +99,8 @@ for i=1:N
         Z(i,j+N) = Zphit;
         Z(i+N,j+N) = Zphiphi;
     end
-    %Indfaldsvinklen af plan bølgen
-    thetai = 0;
+    %Indfaldsvinklen af plan bølgen pi/2
+    thetai = pi/2;
     
     J0 = besselj(alpha-1, k*coord(i,2)*sin(thetai));
     J1 = besselj(alpha, k*coord(i,2)*sin(thetai));
@@ -148,7 +148,7 @@ for i=1:N
         Ethephi = 0;
         Ephiphi = B/2 * xNulAlphaPhi(i) * btphi0(i);
         
-        rx = (x+coord(:,2)-0.001);
+        rx = (x+coord(:,2)+0.001);
         r = sqrt((rz(i,:).').^2+(rx(i,:)).^2);
         B = -(1i*w*mu0)/(2*pi)*(exp(-1i*k*r)./r);
         
@@ -158,7 +158,7 @@ for i=1:N
 end
 
 %% Actual script
-for alpha=1:4
+for alpha=1:2
     alpha
     %beta should propably also turn into a loop
     beta = alpha;
@@ -234,7 +234,7 @@ for alpha=1:4
     phiS = 0;
     
     for i=1:N
-        rx = (x+coord(:,2)-0.001);
+        rx = (x+coord(:,2)+0.001);
         r = sqrt((rz(i,:).').^2+(rx(i,:)).^2);
         B = -(1i*w*mu0)/(2*pi)*(exp(-1i*k*r)./r);
 
@@ -253,18 +253,16 @@ for alpha=1:4
         Ethephi = 1i*B*(xtphi(i)*btthe(i)+xphiphi(i)*bphithe(i))*sin(alpha*phiS)+Ethephi;
         Ephiphi = B*(xtphi(i)*btphi(i)+xphiphi(i)*bphiphi(i))*cos(alpha*phiS)+Ephiphi;
     end
-figure(2)
-pcolor(real(Ethethe))
-shading interp
-
-figure(3)
-pcolor(real(Ephiphi))
-shading interp    
 end
-% figure(1)
-% pcolor(real(Ethethe))
+figure(1)
+pcolor(abs(Ethethe))
+shading interp
+% figure(2)
+% pcolor(real(Ethephi))
 % shading interp
-% 
-% figure(4)
-% pcolor(real(Ephiphi))
-% shading interp
+% figure(3)
+% pcolor(real(Ephithe))
+% shading interp    
+figure(4)
+pcolor(abs(Ephiphi))
+shading interp
