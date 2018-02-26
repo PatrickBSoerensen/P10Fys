@@ -40,6 +40,11 @@ btthe0 = (1:N);
 btphi0 = (1:N);
 bphithe0 = (1:N);
 bphiphi0 = (1:N);
+Ethethe = 0;
+Ephithe = 0;
+Ethephi = 0;
+Ephiphi = 0;
+
 %% Setting up field calculations
 SingularityProtection = 0.0001;
 xsteps = 100;
@@ -61,15 +66,9 @@ for i=1:N
 %             
 %             rhop = coord(i+1,2)^2-coord(i,2)^2;
 %             rhoq = coord(j+1,2)^2-coord(j,2)^2;
-<<<<<<< HEAD
-             
+
             R = @(phimark) sqrt((coord(i,1)-coord(j,1)).^2 ...
             +(coord(i,2)-coord(j,2)).^2+2.*coord(i,2).*coord(j,2).*(1-cos(phimark)));
-=======
-%             
-          R = @(phimark) sqrt((coord(i,1)-coord(j,1)).^2 ...
-          +(coord(i,2)-coord(j,2)).^2+2.*coord(i,2).*coord(j,2).*(1-cos(phimark)));
->>>>>>> parent of e09313b... Only needed version
         
 %             R = @(phimark) sqrt((zp-zq).^2 ...
 %             +(rhop-rhoq).^2+2.*rhop.*rhoq.*(1-cos(phimark)));
@@ -128,39 +127,30 @@ xphi = invZ*bphi.';
 xtphi = xphi(1:N);
 xphiphi = xphi(N+1:2*N);
 
-ftn = (T1+T2).*exp(1i.*alpha.*0);%T, alpha, n. Expansions function
-fpn = (T1+T2).*exp(1i.*alpha.*0);%Phi, alpha, n. Expansions function
+ftn = (T1).*exp(1i.*alpha.*0);%T, alpha, n. Expansions function
+fpn = (T2).*exp(1i.*alpha.*0);%Phi, alpha, n. Expansions function
 xNulAlphaThe = xtthe.*ftn;% I tHat retning
 xNulAlphaPhi = xtphi.*fpn;% I phiHat retning
 
 Jthe=xtthe.*ftn;
 Jphi=xtphi.*fpn;
 
-%Trying a subset with only tt
-invZtt = Z(1:N,1:N)^(-1);
-xtt = invZtt*btthe0.';
-xtestThe = xtt.*ftn;% I tHat retning
-Jtest = xtestThe;
-
 for i=1:N
         rx = (x-coord(:,2)-SingularityProtection);
         r = sqrt((rz(i,:).').^2+(rx(i,:)).^2);
         B = -(1i*w*mu0)/(2*pi)*(exp(-1i*k*r)./r);
 
-        Ethethe = B/2 * xNulAlphaThe(i) * btthe0(i);
-        Etest = B/2 * xtestThe(i) * btthe0(i);
+        Ethethe = B/2 * xNulAlphaThe(i) * btthe0(i) + Ethethe;
         Ephithe = 0;
         Ethephi = 0;
-        Ephiphi = B/2 * xNulAlphaPhi(i) * btphi0(i);
+        Ephiphi = B/2 * xNulAlphaPhi(i) * btphi0(i) + Ephiphi;
         
         rx = (x+coord(:,2)+SingularityProtection);
         r = sqrt((rz(i,:).').^2+(rx(i,:)).^2);
         B = -(1i*w*mu0)/(2*pi)*(exp(-1i*k*r)./r);
         
         Ethethe = B/2 * xNulAlphaThe(i) * btthe0(i)+Ethethe;
-        Etest = B/2 * xtestThe(i) * btthe0(i) + Etest;
         Ephiphi = B/2 * xNulAlphaPhi(i) * btphi0(i)+Ephiphi;
-        
 end
 
 %% Actual script
@@ -241,8 +231,8 @@ for alpha=1:2
     xphi = invZ*bphi.';
     xtphi = xphi(1:N);
     xphiphi = xphi(N+1:2*N);
-    ftn = (T1+T2).*exp(1i.*alpha.*0);%T, alpha, n. Expansions function
-    fpn = (T1+T2).*exp(1i.*alpha.*0);%Phi, alpha, n. Expansions function
+    ftn = (T1).*exp(1i.*alpha.*0);%T, alpha, n. Expansions function
+    fpn = (T2).*exp(1i.*alpha.*0);%Phi, alpha, n. Expansions function
     phi=0;
 
     Jthe = Jthe+2*(xtthe.*ftn.*cos(alpha.*phi)+1i*xphithe.*ftn.*sin(alpha.*phi));
@@ -253,19 +243,12 @@ for alpha=1:2
     Jphi(1,1) = 0;
     Jphi(end,1) = 0;
     
-    %Trying a subset with only tt
-    invZtt = Z(1:N,1:N)^(-1);
-    xtt = invZtt*btthe.';
-    xtestThe = xtt.*ftn;% I tHat retning
-    Jtest = Jtest+2*(xtt.*ftn.*cos(alpha.*phi));
-
     for i=1:N
         rx = (x+coord(:,2)+SingularityProtection);
         r = sqrt((rz(i,:).').^2+(rx(i,:)).^2);
         B = -(1i*w*mu0)/(2*pi)*(exp(-1i*k*r)./r);
 
         Ethethe = B*(xtthe(i)*btthe(i)+xphithe(i)*bphithe(i))*cos(alpha*phiS)+Ethethe;
-        Etest = B * xtestThe(i) * btthe(i) + Etest;
         Ephithe = 1i*B*(xtthe(i)*btphi(i)+xphithe(i)*bphiphi(i))*sin(alpha*phiS)+Ephithe;
         Ethephi = 1i*B*(xtphi(i)*btthe(i)+xphiphi(i)*bphithe(i))*sin(alpha*phiS)+Ethephi;
         Ephiphi = B*(xtphi(i)*btphi(i)+xphiphi(i)*bphiphi(i))*cos(alpha*phiS)+Ephiphi;
@@ -276,7 +259,6 @@ for alpha=1:2
         B = -(1i*w*mu0)/(2*pi)*(exp(-1i*k*r)./r);
 
         Ethethe = B*(xtthe(i)*btthe(i)+xphithe(i)*bphithe(i))*cos(alpha*phiS)+Ethethe;
-        Etest = B * xtestThe(i) * btthe(i) + Etest;
         Ephithe = 1i*B*(xtthe(i)*btphi(i)+xphithe(i)*bphiphi(i))*sin(alpha*phiS)+Ephithe;
         Ethephi = 1i*B*(xtphi(i)*btthe(i)+xphiphi(i)*bphithe(i))*sin(alpha*phiS)+Ethephi;
         Ephiphi = B*(xtphi(i)*btphi(i)+xphiphi(i)*bphiphi(i))*cos(alpha*phiS)+Ephiphi;
@@ -284,9 +266,6 @@ for alpha=1:2
 end
 figure(1)
 pcolor(abs(Ethethe))
-shading interp
-figure(2)
-pcolor(abs(Etest))
 shading interp
 % figure(2)
 % pcolor(real(Ethephi))
