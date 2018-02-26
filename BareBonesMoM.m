@@ -33,7 +33,6 @@ T2D = [T2D;0];
 %Setting size of Z matrix and b vectors
 Z = zeros(N,N);
 btthe = (1:N);
-
 btthe0 = (1:N);
 %% Setting up field calculations
 SingularityProtection = 0.0001;
@@ -71,9 +70,7 @@ for i=1:N
         G1 = coord(i,3).*coord(j,3).*integral(Func1, 0, pi);
         G2 = coord(i,3).*coord(j,3).*integral(Func2, 0, pi);
         
-        Ztt = (T1(i)+T2(i)).*(T1(j)+T2(j)).*(sin(gamma(i)).*sin(gamma(j)).*G2+cos(gamma(i)).*cos(gamma(j)).*G1)-1./k.^2.*(T1D(i)+T2D(i)).*(T1D(j)+T2D(j)).*G1;
-        
-        Z(i,j) = Ztt;
+        Z(i,j) = (T1(i)+T2(i)).*(T1(j)+T2(j)).*(sin(gamma(i)).*sin(gamma(j)).*G2+cos(gamma(i)).*cos(gamma(j)).*G1)-1./k.^2.*(T1D(i)+T2D(i)).*(T1D(j)+T2D(j)).*G1;
     end
     %Indfaldsvinklen af plan bølgen pi/2
     thetai = pi/2;
@@ -82,31 +79,28 @@ for i=1:N
     J1 = besselj(alpha, k*coord(i,2)*sin(thetai));
     J2 = besselj(alpha+1, k*coord(i,2)*sin(thetai));
     %Zero order b
-    btthe0(i) = pi*1i^(alpha)*(T1(i)+T2(i))*coord(i,3)...
+    btthe0(i) = -1i/(w*mu0)*pi*1i^(alpha)*(T1(i)+T2(i))*coord(i,3)...
     *exp(1i*k*coord(i,1)*cos(thetai))*(cos(thetai)...
     *sin(gamma(i))*1i*(J2-J0)-2*sin(thetai)*cos(gamma(i))*J1);
-    end
+end
 
 invZ = Z^(-1);
 xthe = invZ*btthe0.';
-
-ftn = (T1+T2).*exp(1i.*alpha.*0);%T, alpha, n. Expansions function
-
-xNulAlphaThe = xthe.*ftn;% I tHat retning
-
+ftn = (T1+T2).*exp(1i.*alpha.*0);%T, alpha, n. Expansions functio
 Jthe=xthe.*ftn;
 
 for i=1:N
+        rx = (x-coord(:,2)-SingularityProtection);
         r = sqrt((rz(i,:).').^2+(rx(i,:)).^2);
         B = -(1i*w*mu0)/(2*pi)*(exp(-1i*k*r)./r);
 
-        Ethethe = B/2 * xNulAlphaThe(i) * btthe0(i);
+        Ethethe = B/2 * Jthe(i) * btthe0(i);
         
         rx = (x+coord(:,2)+SingularityProtection);
         r = sqrt((rz(i,:).').^2+(rx(i,:)).^2);
         B = -(1i*w*mu0)/(2*pi)*(exp(-1i*k*r)./r);
         
-        Ethethe = B/2 * xNulAlphaThe(i) * btthe0(i)+Ethethe;
+        Ethethe = B/2 * Jthe(i) * btthe0(i)+Ethethe;
 end
 
 %% Actual script
@@ -114,11 +108,9 @@ for alpha=1:2
     alpha
     %beta should propably also turn into a loop
     beta = alpha;
-    ftan = @(z, phi) T1.*exp(1i.*alpha.*phi)*tHat;%T, alpha, n. Expansions function
-    fpan = @(z, phi) T2.*exp(1i.*alpha.*phi)*zHat;%Phi, alpha, n. Expansions function
-    ftbn = @(z, phi) T1.*exp(-1i.*beta.*phi)*tHat;%T, beta, n. Test function
-    fpbn = @(z, phi) T2.*exp(-1i.*beta.*phi)*zHat;%Phi, beta, n. Test function
-
+    ftan = @(phi) T1.*exp(1i.*alpha.*phi)*tHat;%T, alpha, n. Expansions function
+    fpan = @(phi) T2.*exp(1i.*alpha.*phi)*zHat;%Phi, alpha, n. Expansions function
+   
     for i=1:N
         for j=1:N
         if i==j
@@ -144,26 +136,25 @@ for alpha=1:2
         G1 = coord(i,3).*coord(j,3).*integral(Func1, 0, pi);
         G2 = coord(i,3).*coord(j,3).*integral(Func2, 0, pi);
        
-        Ztt = (T1(i)+T2(i)).*(T1(j)+T2(j)).*(sin(gamma(i)).*sin(gamma(j)).*G2+cos(gamma(i)).*cos(gamma(j)).*G1)-1./k.^2.*(T1D(i)+T2D(i)).*(T1D(j)+T2D(j)).*G1;
+        Z(i,j) = (T1(i)+T2(i)).*(T1(j)+T2(j)).*(sin(gamma(i)).*sin(gamma(j)).*G2+cos(gamma(i)).*cos(gamma(j)).*G1)-1./k.^2.*(T1D(i)+T2D(i)).*(T1D(j)+T2D(j)).*G1;
        
-        Z(i,j) = Ztt;
         end
         
         J0 = besselj(alpha-1, k*coord(i,2)*sin(thetai));
         J1 = besselj(alpha, k*coord(i,2)*sin(thetai));
         J2 = besselj(alpha+1, k*coord(i,2)*sin(thetai));
     
-        btthe(i) = pi*1i^(alpha)*(T1(i)+T2(i))*coord(i,3)...
+        btthe(i) = -1i/(w*mu0)*pi*1i^(alpha)*(T1(i)+T2(i))*coord(i,3)...
         *exp(1i*k*coord(i,1)*cos(thetai))*(cos(thetai)...
         *sin(gamma(i))*1i*(J2-J0)-2*sin(thetai)*cos(gamma(i))*J1);
     end
     
     invZ = Z^(-1);
-    
     xthe = invZ*btthe.';
-    ftn = (T1+T2).*exp(1i.*alpha.*0);%T, alpha, n. Expansions function
     phi=0;
-
+    ftn = (T1+T2).*exp(1i.*alpha.*phi);%T, alpha, n. Expansions function
+    
+    
     Jthe = Jthe+2*(xthe.*ftn.*cos(alpha.*phi));
     phiS = 0;
     Jthe(1,1) = 0;

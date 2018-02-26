@@ -50,11 +50,11 @@ for i=1:N
             R = @(phimark) sqrt((coord(i,3)/4)^.2 ... 
             +2*coord(i,2).^2.*(1-cos(phimark)));
         else
-            zp = coord(i+1,1)^2-coord(i,1)^2;
-            zq = coord(j+1,1)^2-coord(j,1)^2;
-            
-            rhop = coord(i+1,2)^2-coord(i,2)^2;
-            rhoq = coord(j+1,2)^2-coord(j,2)^2;
+%             zp = coord(i+1,1)^2-coord(i,1)^2;
+%             zq = coord(j+1,1)^2-coord(j,1)^2;
+%             
+%             rhop = coord(i+1,2)^2-coord(i,2)^2;
+%             rhoq = coord(j+1,2)^2-coord(j,2)^2;
              
             R = @(phimark) sqrt((coord(i,1)-coord(j,1)).^2 ...
             +(coord(i,2)-coord(j,2)).^2+2.*coord(i,2).*coord(j,2).*(1-cos(phimark)));
@@ -108,6 +108,7 @@ Jthe=xtthe.*ftn;
 Jphi=xtphi.*fpn;
 
 for i=1:N
+        rx = (x-coord(:,2)-SingularityProtection);
         r = sqrt((rz(i,:).').^2+(rx(i,:)).^2);
         B = -(1i*w*mu0)/(2*pi)*(exp(-1i*k*r)./r);
 
@@ -189,8 +190,8 @@ for alpha=1:2
     fpn = (T1+T2).*exp(1i.*alpha.*0);%Phi, alpha, n. Expansions function
     phi=0;
 
-    Jthe = Jthe+2*(xtthe.*ftn.*cos(alpha.*phi)+xphithe.*ftn.*sin(alpha.*phi));
-    Jphi = Jphi+2*(xtphi.*fpn.*sin(alpha.*phi)+xphiphi.*fpn.*cos(alpha.*phi));
+    Jthe = Jthe+2*(xtthe.*ftn.*cos(alpha.*phi)+1i*xphithe.*ftn.*sin(alpha.*phi));
+    Jphi = Jphi+2*(1i*xtphi.*fpn.*sin(alpha.*phi)+xphiphi.*fpn.*cos(alpha.*phi));
     phiS = 0;
     Jthe(1,1) = 0;
     Jthe(end,1) = 0;
