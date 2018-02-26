@@ -31,15 +31,10 @@ T1D = [T1D;0];
 T2D = -1./coord(1:N-1,3);
 T2D = [T2D;0];
 %Setting size of Z matrix and b vectors
-Z = zeros(2*N,2*N);
+Z = zeros(N,N);
 btthe = (1:N);
-btphi = (1:N);
-bphithe = (1:N);
-bphiphi = (1:N);
+
 btthe0 = (1:N);
-btphi0 = (1:N);
-bphithe0 = (1:N);
-bphiphi0 = (1:N);
 %% Setting up field calculations
 SingularityProtection = 0.0001;
 xsteps = 100;
@@ -61,9 +56,9 @@ for i=1:N
 %             
 %             rhop = coord(i+1,2)^2-coord(i,2)^2;
 %             rhoq = coord(j+1,2)^2-coord(j,2)^2;
-%             
-          R = @(phimark) sqrt((coord(i,1)-coord(j,1)).^2 ...
-          +(coord(i,2)-coord(j,2)).^2+2.*coord(i,2).*coord(j,2).*(1-cos(phimark)));
+             
+            R = @(phimark) sqrt((coord(i,1)-coord(j,1)).^2 ...
+            +(coord(i,2)-coord(j,2)).^2+2.*coord(i,2).*coord(j,2).*(1-cos(phimark)));
         
 %             R = @(phimark) sqrt((zp-zq).^2 ...
 %             +(rhop-rhoq).^2+2.*rhop.*rhoq.*(1-cos(phimark)));
@@ -71,22 +66,14 @@ for i=1:N
         
         Func1 = @(phimark) cos(alpha.*phimark).*exp(-1i.*k.*R(phimark))./R(phimark);
         Func2 = @(phimark) cos(phimark).*cos(alpha.*phimark).*exp(-1i.*k.*R(phimark))./R(phimark);
-        Func3 = @(phimark) sin(phimark).*sin(alpha.*phimark).*exp(-1i.*k.*R(phimark))./R(phimark);
         
         %Should possibly integrate to 2*pi
         G1 = coord(i,3).*coord(j,3).*integral(Func1, 0, pi);
         G2 = coord(i,3).*coord(j,3).*integral(Func2, 0, pi);
-        G3 = coord(i,3).*coord(j,3).*integral(Func3, 0, pi);
         
         Ztt = (T1(i)+T2(i)).*(T1(j)+T2(j)).*(sin(gamma(i)).*sin(gamma(j)).*G2+cos(gamma(i)).*cos(gamma(j)).*G1)-1./k.^2.*(T1D(i)+T2D(i)).*(T1D(j)+T2D(j)).*G1;
-        Ztphi = 1i*(sin(gamma(i))*((T1(i)+T2(i))*(T1(j)+T2(j)))*G3+(1/k^2)*(alpha/coord(j,2))*((T1D(i)+T2D(i))*(T1(j)*T2(j)))*G1);
-        Zphit = 1i*(((T1(i)+T2(i)).*(T1(j)+T2(j)))*sin(gamma(j))*G3+(1/k^2)*(alpha/coord(i,2))*(((T1(i)+T2(i))*(T1D(j)+T2D(j))).*G1));
-        Zphiphi = -(T1(i)+T2(i)).*(T1(j)+T2(j)).*(G2-1/k.^2.*alpha.^2/(coord(i,2).*coord(j,2)).*G1);
         
         Z(i,j) = Ztt;
-        Z(i+N,j) = Ztphi;
-        Z(i,j+N) = Zphit;
-        Z(i+N,j+N) = Zphiphi;
     end
     %Indfaldsvinklen af plan bølgen pi/2
     thetai = pi/2;
@@ -98,60 +85,28 @@ for i=1:N
     btthe0(i) = pi*1i^(alpha)*(T1(i)+T2(i))*coord(i,3)...
     *exp(1i*k*coord(i,1)*cos(thetai))*(cos(thetai)...
     *sin(gamma(i))*1i*(J2-J0)-2*sin(thetai)*cos(gamma(i))*J1);
-    
-    bphithe0(i) = -pi*1i^(alpha)*(T1(i)+T2(i))*coord(i,3)...
-    *exp(1i*k*coord(i,1)*cos(thetai))*(cos(thetai)...
-    *(J2+J0));
-    
-    btphi0(i) = pi*1i^(alpha)*(T1(i)+T2(i))*coord(i,3)...
-    *exp(1i*k*coord(i,1)*sin(thetai))*(sin(gamma(i))...
-    *(J2-J0));
-    
-    bphiphi0(i) = pi*1i^(alpha+1)*(T1(i)+T2(i))*coord(i,3)...
-    *exp(1i*k*coord(i,1)*sin(thetai))*(J2-J0);
-end
+    end
 
 invZ = Z^(-1);
-bthe = [btthe0, bphithe0];
-xthe = invZ*bthe.';
-xtthe = xthe(1:N);
-xphithe = xthe(N+1:2*N);
-
-bphi = [btphi0,bphiphi0];
-xphi = invZ*bphi.';
-xtphi = xphi(1:N);
-xphiphi = xphi(N+1:2*N);
+xthe = invZ*btthe0.';
 
 ftn = (T1+T2).*exp(1i.*alpha.*0);%T, alpha, n. Expansions function
-fpn = (T1+T2).*exp(1i.*alpha.*0);%Phi, alpha, n. Expansions function
-xNulAlphaThe = xtthe.*ftn;% I tHat retning
-xNulAlphaPhi = xtphi.*fpn;% I phiHat retning
 
-Jthe=xtthe.*ftn;
-Jphi=xtphi.*fpn;
+xNulAlphaThe = xthe.*ftn;% I tHat retning
 
-%Trying a subset with only tt
-invZtt = Z(1:N,1:N)^(-1);
-xtt = invZtt*btthe0.';
-xNulteThe = xtthe.*ftn;% I tHat retning
-
+Jthe=xthe.*ftn;
 
 for i=1:N
         r = sqrt((rz(i,:).').^2+(rx(i,:)).^2);
         B = -(1i*w*mu0)/(2*pi)*(exp(-1i*k*r)./r);
 
         Ethethe = B/2 * xNulAlphaThe(i) * btthe0(i);
-        Ephithe = 0;
-        Ethephi = 0;
-        Ephiphi = B/2 * xNulAlphaPhi(i) * btphi0(i);
         
         rx = (x+coord(:,2)+SingularityProtection);
         r = sqrt((rz(i,:).').^2+(rx(i,:)).^2);
         B = -(1i*w*mu0)/(2*pi)*(exp(-1i*k*r)./r);
         
         Ethethe = B/2 * xNulAlphaThe(i) * btthe0(i)+Ethethe;
-        Ephiphi = B/2 * xNulAlphaPhi(i) * btphi0(i)+Ephiphi;
-        
 end
 
 %% Actual script
@@ -162,7 +117,7 @@ for alpha=1:2
     ftan = @(z, phi) T1.*exp(1i.*alpha.*phi)*tHat;%T, alpha, n. Expansions function
     fpan = @(z, phi) T2.*exp(1i.*alpha.*phi)*zHat;%Phi, alpha, n. Expansions function
     ftbn = @(z, phi) T1.*exp(-1i.*beta.*phi)*tHat;%T, beta, n. Test function
-    Tpbn = @(z, phi) T2.*exp(-1i.*beta.*phi)*zHat;%Phi, beta, n. Test function
+    fpbn = @(z, phi) T2.*exp(-1i.*beta.*phi)*zHat;%Phi, beta, n. Test function
 
     for i=1:N
         for j=1:N
@@ -176,7 +131,6 @@ for alpha=1:2
 %             rhop = coord(i+1,2)^2-coord(i,2)^2;
 %             rhoq = coord(j+1,2)^2-coord(j,2)^2;
                         
-            
             R = @(phimark) sqrt((coord(i,1)-coord(j,1)).^2 ...
             +(coord(i,2)-coord(j,2)).^2+2.*coord(i,2).*coord(j,2).*(1-cos(phimark)));
         
@@ -186,21 +140,13 @@ for alpha=1:2
         
         Func1 = @(phimark) cos(alpha.*phimark).*exp(-1i.*k.*R(phimark))./R(phimark);
         Func2 = @(phimark) cos(phimark).*cos(alpha.*phimark).*exp(-1i.*k.*R(phimark))./R(phimark);
-        Func3 = @(phimark) sin(phimark).*sin(alpha.*phimark).*exp(-1i.*k.*R(phimark))./R(phimark);
         %Should possibly integrate to 2*pi
         G1 = coord(i,3).*coord(j,3).*integral(Func1, 0, pi);
         G2 = coord(i,3).*coord(j,3).*integral(Func2, 0, pi);
-        G3 = coord(i,3).*coord(j,3).*integral(Func3, 0, pi);
        
         Ztt = (T1(i)+T2(i)).*(T1(j)+T2(j)).*(sin(gamma(i)).*sin(gamma(j)).*G2+cos(gamma(i)).*cos(gamma(j)).*G1)-1./k.^2.*(T1D(i)+T2D(i)).*(T1D(j)+T2D(j)).*G1;
-        Ztphi = 1i*(sin(gamma(i))*((T1(i)+T2(i))*(T1(j)+T2(j)))*G3+(1/k^2)*(alpha/coord(j,2))*((T1D(i)+T2D(i))*(T1(j)*T2(j)))*G1);
-        Zphit = 1i*(((T1(i)+T2(i)).*(T1(j)+T2(j)))*sin(gamma(j))*G3+(1/k^2)*(alpha/coord(i,2))*(((T1(i)+T2(i))*(T1D(j)+T2D(j))).*G1));
-        Zphiphi = -(T1(i)+T2(i)).*(T1(j)+T2(j)).*(G2-1/k.^2.*alpha.^2/(coord(i,2).*coord(j,2)).*G1);
-   
+       
         Z(i,j) = Ztt;
-        Z(i+N,j) = Ztphi;
-        Z(i,j+N) = Zphit;
-        Z(i+N,j+N) = Zphiphi;
         end
         
         J0 = besselj(alpha-1, k*coord(i,2)*sin(thetai));
@@ -210,73 +156,34 @@ for alpha=1:2
         btthe(i) = pi*1i^(alpha)*(T1(i)+T2(i))*coord(i,3)...
         *exp(1i*k*coord(i,1)*cos(thetai))*(cos(thetai)...
         *sin(gamma(i))*1i*(J2-J0)-2*sin(thetai)*cos(gamma(i))*J1);
-    
-        bphithe(i) = -pi*1i^(alpha)*(T1(i)+T2(i))*coord(i,3)...
-        *exp(1i*k*coord(i,1)*cos(thetai))*(cos(thetai)...
-        *(J2+J0));
-    
-        btphi(i) = pi*1i^(alpha)*(T1(i)+T2(i))*coord(i,3)...
-        *exp(1i*k*coord(i,1)*sin(thetai))*(sin(gamma(i))...
-        *(J2-J0));
-    
-        bphiphi(i) = pi*1i^(alpha+1)*(T1(i)+T2(i))*coord(i,3)...
-        *exp(1i*k*coord(i,1)*sin(thetai))*(J2-J0);
     end
     
     invZ = Z^(-1);
     
-    invZtt = Z(1:N,1:N)^(-1);
-    
-    bthe = [btthe, bphithe];
-    xthe = invZ*bthe.';
-    xtthe = xthe(1:N);
-    xphithe = xthe(N+1:2*N);
-    bphi = [btphi,bphiphi];
-    xphi = invZ*bphi.';
-    xtphi = xphi(1:N);
-    xphiphi = xphi(N+1:2*N);
+    xthe = invZ*btthe.';
     ftn = (T1+T2).*exp(1i.*alpha.*0);%T, alpha, n. Expansions function
-    fpn = (T1+T2).*exp(1i.*alpha.*0);%Phi, alpha, n. Expansions function
     phi=0;
 
-    Jthe = Jthe+2*(xtthe.*ftn.*cos(alpha.*phi)+xphithe.*ftn.*sin(alpha.*phi));
-    Jphi = Jphi+2*(xtphi.*fpn.*sin(alpha.*phi)+xphiphi.*fpn.*cos(alpha.*phi));
+    Jthe = Jthe+2*(xthe.*ftn.*cos(alpha.*phi));
     phiS = 0;
     Jthe(1,1) = 0;
     Jthe(end,1) = 0;
-    Jphi(1,1) = 0;
-    Jphi(end,1) = 0;
     
     for i=1:N
         rx = (x+coord(:,2)+SingularityProtection);
         r = sqrt((rz(i,:).').^2+(rx(i,:)).^2);
         B = -(1i*w*mu0)/(2*pi)*(exp(-1i*k*r)./r);
 
-        Ethethe = B*(xtthe(i)*btthe(i)+xphithe(i)*bphithe(i))*cos(alpha*phiS)+Ethethe;
-        Ephithe = 1i*B*(xtthe(i)*btphi(i)+xphithe(i)*bphiphi(i))*sin(alpha*phiS)+Ephithe;
-        Ethephi = 1i*B*(xtphi(i)*btthe(i)+xphiphi(i)*bphithe(i))*sin(alpha*phiS)+Ethephi;
-        Ephiphi = B*(xtphi(i)*btphi(i)+xphiphi(i)*bphiphi(i))*cos(alpha*phiS)+Ephiphi;
+        Ethethe = B*(xthe(i)*btthe(i))+Ethethe;
         
         rx = (x-coord(:,2)-SingularityProtection);
 
         r = sqrt((rz(i,:).').^2+(rx(i,:)).^2);
         B = -(1i*w*mu0)/(2*pi)*(exp(-1i*k*r)./r);
 
-        Ethethe = B*(xtthe(i)*btthe(i)+xphithe(i)*bphithe(i))*cos(alpha*phiS)+Ethethe;    
-        Ephithe = 1i*B*(xtthe(i)*btphi(i)+xphithe(i)*bphiphi(i))*sin(alpha*phiS)+Ephithe;
-        Ethephi = 1i*B*(xtphi(i)*btthe(i)+xphiphi(i)*bphithe(i))*sin(alpha*phiS)+Ethephi;
-        Ephiphi = B*(xtphi(i)*btphi(i)+xphiphi(i)*bphiphi(i))*cos(alpha*phiS)+Ephiphi;
+        Ethethe = B*(xthe(i)*btthe(i))+Ethethe;
     end
 end
 figure(1)
 pcolor(abs(Ethethe))
-shading interp
-% figure(2)
-% pcolor(real(Ethephi))
-% shading interp
-% figure(3)
-% pcolor(real(Ephithe))
-% shading interp    
-figure(4)
-pcolor(abs(Ephiphi))
 shading interp
