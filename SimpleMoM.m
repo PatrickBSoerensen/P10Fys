@@ -151,7 +151,7 @@ for i=1:N
         B = -(1i*w*mu0)/(2*pi)*(exp(-1i*k*r)./r);
         
         Ethethe = B/2 * xNulAlphaThe(i) * btthe0(i)+Ethethe;
-        Etest = B/2 *xtestThe(i) * btthe0(i) + Etest;
+        Etest = B/2 * xtestThe(i) * btthe0(i) + Etest;
         Ephiphi = B/2 * xNulAlphaPhi(i) * btphi0(i)+Ephiphi;
         
 end
@@ -248,7 +248,7 @@ for alpha=1:2
     
     %Trying a subset with only tt
     invZtt = Z(1:N,1:N)^(-1);
-    xtt = invZtt*btthe0.';
+    xtt = invZtt*btthe.';
     xtestThe = xtt.*ftn;% I tHat retning
     Jtest = Jtest+2*(xtt.*ftn.*cos(alpha.*phi));
 
