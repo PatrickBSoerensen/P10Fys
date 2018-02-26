@@ -10,7 +10,7 @@ w=2*pi*f;
 k=w/c;
 % Creation of antenna, length defined for use in area setup
 length = 0.995;
-new = Antenna(length, 20, 20, 0.01, [0,0]);
+new = Antenna(length, 40, 40, 0.01, [0,0]);
 
 coord = new.Coord;
 tHat = new.tHat;
@@ -39,8 +39,8 @@ Ethethe = 0;
 SingularityProtection = 0.0001;
 xsteps = 100;
 zsteps = 100;
-x = linspace(-length*2, length*2, xsteps);
-z = linspace(-length*2, length*2, zsteps);
+x = linspace(-20, 20, xsteps);
+z = linspace(-20, 20, zsteps);
 rz = (z-coord(:,1));
 rx = (x-coord(:,2)-SingularityProtection);
 %% calculating for alpha 0
