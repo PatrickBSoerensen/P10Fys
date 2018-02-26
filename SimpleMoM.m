@@ -10,7 +10,7 @@ w=2*pi*f;
 k=w/c;
 % Creation of antenna, length defined for use in area setup
 length = 0.995;
-new = Antenna(length, 30, 22, 0.01, [0,0]);
+new = Antenna(length, 20, 20, 0.01, [0,0]);
 
 coord = new.Coord;
 tHat = new.tHat;
@@ -41,7 +41,7 @@ btphi0 = (1:N);
 bphithe0 = (1:N);
 bphiphi0 = (1:N);
 %% Setting up field calculations
-SingularityProtection = 0.000001;
+SingularityProtection = 0.0001;
 xsteps = 100;
 zsteps = 100;
 x = linspace(-length*2, length*2, xsteps);
@@ -56,8 +56,17 @@ for i=1:N
             R = @(phimark) sqrt((coord(i,3)/4)^.2 ... 
             +2*coord(i,2).^2.*(1-cos(phimark)));
         else
-            R = @(phimark) sqrt((coord(i,1)-coord(j,1)).^2 ...
-            +(coord(i,2)-coord(j,2)).^2-2.*coord(i,2).*coord(j,2).*(1-cos(phimark)));    
+%             zp = coord(i+1,1)^2-coord(i,1)^2;
+%             zq = coord(j+1,1)^2-coord(j,1)^2;
+%             
+%             rhop = coord(i+1,2)^2-coord(i,2)^2;
+%             rhoq = coord(j+1,2)^2-coord(j,2)^2;
+%             
+          R = @(phimark) sqrt((coord(i,1)-coord(j,1)).^2 ...
+          +(coord(i,2)-coord(j,2)).^2+2.*coord(i,2).*coord(j,2).*(1-cos(phimark)));
+        
+%             R = @(phimark) sqrt((zp-zq).^2 ...
+%             +(rhop-rhoq).^2+2.*rhop.*rhoq.*(1-cos(phimark)));
         end
         
         Func1 = @(phimark) cos(alpha.*phimark).*exp(-1i.*k.*R(phimark))./R(phimark);
@@ -121,11 +130,18 @@ xNulAlphaPhi = xtphi.*fpn;% I phiHat retning
 Jthe=xtthe.*ftn;
 Jphi=xtphi.*fpn;
 
+%Trying a subset with only tt
+invZtt = Z(1:N,1:N)^(-1);
+xtt = invZtt*btthe0.';
+xtestThe = xtt.*ftn;% I tHat retning
+Jtest = xtestThe;
+
 for i=1:N
         r = sqrt((rz(i,:).').^2+(rx(i,:)).^2);
         B = -(1i*w*mu0)/(2*pi)*(exp(-1i*k*r)./r);
 
         Ethethe = B/2 * xNulAlphaThe(i) * btthe0(i);
+        Etest = B/2 * xtestThe(i) * btthe0(i);
         Ephithe = 0;
         Ethephi = 0;
         Ephiphi = B/2 * xNulAlphaPhi(i) * btphi0(i);
@@ -135,6 +151,7 @@ for i=1:N
         B = -(1i*w*mu0)/(2*pi)*(exp(-1i*k*r)./r);
         
         Ethethe = B/2 * xNulAlphaThe(i) * btthe0(i)+Ethethe;
+        Etest = B/2 *xtestThe(i) * btthe0(i) + Etest;
         Ephiphi = B/2 * xNulAlphaPhi(i) * btphi0(i)+Ephiphi;
         
 end
@@ -155,8 +172,18 @@ for alpha=1:2
             R = @(phimark) sqrt((coord(i,3)/4)^.2 ... 
             +2*coord(i,2).^2.*(1-cos(phimark)));
         else
+%             zp = coord(i+1,1)^2-coord(i,1)^2;
+%             zq = coord(j+1,1)^2-coord(j,1)^2;
+%             
+%             rhop = coord(i+1,2)^2-coord(i,2)^2;
+%             rhoq = coord(j+1,2)^2-coord(j,2)^2;
+                        
+            
             R = @(phimark) sqrt((coord(i,1)-coord(j,1)).^2 ...
-            +(coord(i,2)-coord(j,2)).^2-2.*coord(i,2).*coord(j,2).*(1-cos(phimark)));
+            +(coord(i,2)-coord(j,2)).^2+2.*coord(i,2).*coord(j,2).*(1-cos(phimark)));
+        
+%             R = @(phimark) sqrt((zp-zq).^2 ...
+%             +(rhop-rhoq).^2+2.*rhop.*rhoq.*(1-cos(phimark)));
         end
         
         Func1 = @(phimark) cos(alpha.*phimark).*exp(-1i.*k.*R(phimark))./R(phimark);
@@ -219,12 +246,19 @@ for alpha=1:2
     Jphi(1,1) = 0;
     Jphi(end,1) = 0;
     
+    %Trying a subset with only tt
+    invZtt = Z(1:N,1:N)^(-1);
+    xtt = invZtt*btthe0.';
+    xtestThe = xtt.*ftn;% I tHat retning
+    Jtest = Jtest+2*(xtt.*ftn.*cos(alpha.*phi));
+
     for i=1:N
         rx = (x+coord(:,2)+SingularityProtection);
         r = sqrt((rz(i,:).').^2+(rx(i,:)).^2);
         B = -(1i*w*mu0)/(2*pi)*(exp(-1i*k*r)./r);
 
         Ethethe = B*(xtthe(i)*btthe(i)+xphithe(i)*bphithe(i))*cos(alpha*phiS)+Ethethe;
+        Etest = B * xtestThe(i) * btthe(i) + Etest;
         Ephithe = 1i*B*(xtthe(i)*btphi(i)+xphithe(i)*bphiphi(i))*sin(alpha*phiS)+Ephithe;
         Ethephi = 1i*B*(xtphi(i)*btthe(i)+xphiphi(i)*bphithe(i))*sin(alpha*phiS)+Ethephi;
         Ephiphi = B*(xtphi(i)*btphi(i)+xphiphi(i)*bphiphi(i))*cos(alpha*phiS)+Ephiphi;
@@ -234,7 +268,8 @@ for alpha=1:2
         r = sqrt((rz(i,:).').^2+(rx(i,:)).^2);
         B = -(1i*w*mu0)/(2*pi)*(exp(-1i*k*r)./r);
 
-        Ethethe = B*(xtthe(i)*btthe(i)+xphithe(i)*bphithe(i))*cos(alpha*phiS)+Ethethe;    
+        Ethethe = B*(xtthe(i)*btthe(i)+xphithe(i)*bphithe(i))*cos(alpha*phiS)+Ethethe;
+        Etest = B * xtestThe(i) * btthe(i) + Etest;
         Ephithe = 1i*B*(xtthe(i)*btphi(i)+xphithe(i)*bphiphi(i))*sin(alpha*phiS)+Ephithe;
         Ethephi = 1i*B*(xtphi(i)*btthe(i)+xphiphi(i)*bphithe(i))*sin(alpha*phiS)+Ethephi;
         Ephiphi = B*(xtphi(i)*btphi(i)+xphiphi(i)*bphiphi(i))*cos(alpha*phiS)+Ephiphi;
@@ -242,6 +277,9 @@ for alpha=1:2
 end
 figure(1)
 pcolor(abs(Ethethe))
+shading interp
+figure(2)
+pcolor(abs(Etest))
 shading interp
 % figure(2)
 % pcolor(real(Ethephi))
