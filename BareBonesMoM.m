@@ -10,7 +10,7 @@ w=2*pi*f;
 k=w/c;
 % Creation of antenna, length defined for use in area setup
 length = 0.995;
-new = Antenna(length, 40, 40, 0.01, [0,0]);
+new = Antenna(length, 80, 80, 0.0031, [0,0]);
 
 coord = new.Coord;
 tHat = new.tHat;
@@ -37,8 +37,8 @@ btthe0 = (1:N);
 Ethethe = 0;
 %% Setting up field calculations
 SingularityProtection = 0.0001;
-xsteps = 100;
-zsteps = 100;
+xsteps = 1000;
+zsteps = 1000;
 x = linspace(-20, 20, xsteps);
 z = linspace(-20, 20, zsteps);
 rz = (z-coord(:,1));
@@ -80,6 +80,9 @@ invZ = Z^(-1);
 xthe = invZ*btthe0.';
 ftn = (T1+T2).*exp(1i.*alpha.*0)./coord(:,2);%T, alpha, n. Expansions functio
 Jthe=xthe.*ftn;
+
+Jthe(1,1) = 0;
+Jthe(end,1) = 0;
 
 for i=1:N
         rx = (x-coord(:,2)-SingularityProtection);
@@ -137,7 +140,6 @@ for alpha=1:2
     phi=0;
     ftn = (T1+T2).*exp(1i.*alpha.*phi)./coord(:,2);%T, alpha, n. Expansions function
     
-    
     Jthe = Jthe+2*(xthe.*ftn.*cos(alpha.*phi));
     phiS = 0;
     Jthe(1,1) = 0;
@@ -151,7 +153,6 @@ for alpha=1:2
         Ethethe = B*(xthe(i)*btthe(i))+Ethethe;
         
         rx = (x-coord(:,2)-SingularityProtection);
-
         r = sqrt((rz(i,:).').^2+(rx(i,:)).^2);
         B = -(1i*w*mu0)/(2*pi)*(exp(-1i*k*r)./r);
 
@@ -159,5 +160,13 @@ for alpha=1:2
     end
 end
 figure(1)
-pcolor(abs(Ethethe))
+pcolor(z,x,abs(Ethethe))
 shading interp
+colorbar
+caxis([0 0.2])
+
+figure(2)
+pcolor(z,x,abs(real(Ethethe)))
+shading interp
+colorbar
+caxis([0 0.2])

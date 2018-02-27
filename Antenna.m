@@ -17,6 +17,22 @@ classdef Antenna
         zHat;
         tHat;
         gamma;
+        Jthe;
+        Jphi;
+        Z;
+        invZ;
+        btTheta;
+        btPhi;
+        bPhiTheta;
+        bPhiPhi;
+        xtTheta;
+        xPhiTheta;
+        xtPhi;
+        xPhiPhi;
+        T1;
+        T2;
+        T1D;
+        T2D;
     end
     
     methods
@@ -44,6 +60,28 @@ classdef Antenna
             ant.Coord = CreateCoord(ant, 0);
             ant.CoordTest = CreateCoord(ant, 1);
             [ant.tHat, ant.zHat, ant.gamma] = UnitVecs(ant);
+            %Current density
+            ant.Jthe = 0;
+            ant.Jphi = 0;
+            ant.Z = zeros(2*ant.Segments,2*ant.Segments);
+            ant.invZ = ant.Z;
+            ant.btTheta = (1:ant.Segments);
+            ant.btPhi = (1:ant.Segments);
+            ant.bPhiTheta = (1:ant.Segments);
+            ant.bPhiPhi = (1:ant.Segments);
+            ant.xtTheta = (1:ant.Segments);
+            ant.xPhiTheta = (ant.Segments+1:2*ant.Segments);    
+            ant.xtPhi = (1:ant.Segments);
+            ant.xPhiPhi = (ant.Segments+1:2*ant.Segments);
+            %Testing functions triangle
+            T1 = (ant.CoordTest(:,1)-ant.Coord(1:ant.Segments-1,1))./ant.Coord(1:ant.Segments-1,3);
+            ant.T1 = [0;T1];
+            T2 = (ant.Coord(2:ant.Segments,1)-ant.CoordTest(:,1))./ant.Coord(1:ant.Segments-1,3);
+            ant.T2 = [T2;0];
+            T1D = 1./ant.Coord(1:ant.Segments-1,3);
+            ant.T1D = [T1D;0];
+            T2D = -1./ant.Coord(1:ant.Segments-1,3);
+            ant.T2D = [T2D;0];
         end
         
         function [tHat, zHat, gamma] = UnitVecs(ant)
@@ -124,34 +162,5 @@ classdef Antenna
            coord(segcirc+ant.PointsLine-1+test:2*segcirc+ant.PointsLine-2+test,3) = pi/(2*ant.PointsCircle)*ant.Radii;%Should be expanded with centre
         end
         
-        function green = Green(ant, k)
-           coord = CreateCoord(ant);
-           
-           f0=@(z) (0.5-z).*(1.0-z)/(0.5-0)/(1.0-0);
-           f1=@(z) (0-z).*(1.0-z)/(0-0.5)/(1.0-0.5);
-           f2=@(z) (0-z).*(0.5-z)/(0-1)/(0.5-1);
-           %For lin
-           for i = 1:2*ant.SegmentsCircle+ant.SegmentsLine
-%                     dist = sqrt((coord(i,1) - coord(:,1)).^2 + (coord(i,2) - coord(:,2)).^2 ...
-%                     +2*coord(i,1)*coord(:,2)*(1-cos(phi-phimark)));
-           
-               if i < length(ant.CircBot)
-               
-%                   r = @(z) sqrt((z-ant.Lin(i)).^2+().^2);
-               end
-               if length(ant.CircBot) < i < length(ant.CircBot)+length(ant.Lin) 
-                green = @(z) (exp(1i.*k.*r(z))./4.*pi.*r(z)).*(1+(1i./r(z).*k)-1./(r(z).*k).^2 ...
-                -(ant.Lin(i)-z).^2./r(z).^2.*(1+3.*1i./(k.*r(z))-3./(k.*r(z)).^2));
-               end
-               if length(ant.CircBot)+length(ant.Lin) < i < length(ant.CircBot)+length(ant.Lin)+length(ant.CircTop)
-               end
-           end
-           %For lin mirror
-           %For circ
-           
-           %For circ mirror
-           %Add integrals
-           
-        end
     end
 end
