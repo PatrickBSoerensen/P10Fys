@@ -10,27 +10,24 @@ w=2*pi*f;
 k=w/c;
 %% Creation of objects
 length = 0.995;
-ant = Antenna(length, 40, 40, 0.0031, [0,0]);
-ant1 = Antenna(length, 40, 40, 0.0031, [5,0]);
-ant2 = Antenna(length, 40, 40, 0.0031, [-5,0]);
+ant = Antenna(length, 80, 40, 0.0031, [0,0]);
+ant1 = Antenna(length, 40, 40, 0.0031, [0,0]);
+ant2 = Antenna(length, 40, 40, 0.0031, [0,0]);
 % MoM solver object 
 MoMobj = MoM();
 % Area creation, where the antenna is placed
 FirstTestZone = Area(0.0001, 800, 800, -20, 20, -20, 20, mu0);
+SecondTestZone = Area(0.0001, 800, 800, -20, 20, -20, 20, mu0);
 %% looping through alpha
 for alpha=0:2
     alpha
     [ant, FirstTestZone] = momself(MoMobj, ant, FirstTestZone, alpha, k, w, pi/2, 0, 0, mu0);
+    
+    [ant1, SecondTestZone] = mom2on1(MoMobj, ant1, ant1, SecondTestZone, alpha, k, w, pi/2, 0, 0, mu0);
 end
 %% Plots
 figure(1)
 pcolor(FirstTestZone.z, FirstTestZone.x, abs(real(FirstTestZone.Ethethe)))
 shading interp
 colorbar
-caxis([0 0.2])
-
-figure(4)
-pcolor(FirstTestZone.z, FirstTestZone.x, abs(real(FirstTestZone.Ephiphi)))
-shading interp
-colorbar
-caxis([0 0.2])
+caxis([0 0.35])
