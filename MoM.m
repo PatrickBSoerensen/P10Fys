@@ -5,17 +5,15 @@ classdef MoM
     %   Detailed explanation goes here
     
     properties
-        Property1
     end
     
     methods
-        function obj = MoM(inputArg1,inputArg2)
+        function obj = MoM()
             %MOM Construct an instance of this class
             %   Detailed explanation goes here
-            obj.Property1 = inputArg1 + inputArg2;
         end
         
-        function [ant, area] = momself(obj, ant, area, alpha, k, w, thetaI, phi, phiS)
+        function [ant, area] = momself(obj, ant, area, alpha, k, w, thetaI, phi, phiS, mu)
             %METHOD1 Summary of this method goes here
             %   Detailed explanation goes here
             for i=1:ant.Segments
@@ -57,19 +55,19 @@ classdef MoM
                 J1 = besselj(alpha, k*ant.Coord(i,2)*sin(thetaI));
                 J2 = besselj(alpha+1, k*ant.Coord(i,2)*sin(thetaI));
     
-                ant.btTheta(i) = pi*1i^(alpha)*(ant.T1(i)+ant.T2(i))*ant.Coord(i,3)...
+                ant.btTheta(i) = -1i/(w*mu)*pi*1i^(alpha)*(ant.T1(i)+ant.T2(i))*ant.Coord(i,3)...
                 *exp(1i*k*ant.Coord(i,1)*cos(thetaI))*(cos(thetaI)...
                 *sin(ant.gamma(i))*1i*(J2-J0)-2*sin(thetaI)*cos(ant.gamma(i))*J1);
     
-                ant.bPhiTheta(i) = -pi*1i^(alpha)*(ant.T1(i)+ant.T2(i))*ant.Coord(i,3)...
+                ant.bPhiTheta(i) = 1i/(w*mu)*pi*1i^(alpha)*(ant.T1(i)+ant.T2(i))*ant.Coord(i,3)...
                 *exp(1i*k*ant.Coord(i,1)*cos(thetaI))*(cos(thetaI)...
                 *(J2+J0));
     
-                ant.btPhi(i) = pi*1i^(alpha)*(ant.T1(i)+ant.T2(i))*ant.Coord(i,3)...
+                ant.btPhi(i) = -1i/(w*mu)*pi*1i^(alpha)*(ant.T1(i)+ant.T2(i))*ant.Coord(i,3)...
                 *exp(1i*k*ant.Coord(i,1)*sin(thetaI))*(sin(ant.gamma(i))...
                 *(J2-J0));
     
-                ant.bPhiPhi(i) = pi*1i^(alpha+1)*(ant.T1(i)+ant.T2(i))*ant.Coord(i,3)...
+                ant.bPhiPhi(i) = -1i/(w*mu)*pi*1i^(alpha+1)*(ant.T1(i)+ant.T2(i))*ant.Coord(i,3)...
                 *exp(1i*k*ant.Coord(i,1)*sin(thetaI))*(J2-J0);
             end
             
@@ -102,7 +100,7 @@ classdef MoM
             area = emission(obj, ant, area, alpha, k, w, phiS);
         end
         
-        function [ant1, area] = mom2on1(obj, ant1, ant2, area, alpha, k, w, thetaI, phi, phiS)
+        function [ant1, area] = mom2on1(obj, ant1, ant2, area, alpha, k, w, thetaI, phi, phiS, mu)
             %METHOD1 Summary of this method goes here
             %   Detailed explanation goes here
             for i=1:ant1.Segments
@@ -144,19 +142,19 @@ classdef MoM
                 J1 = besselj(alpha, k*ant1.Coord(i,2)*sin(thetaI));
                 J2 = besselj(alpha+1, k*ant1.Coord(i,2)*sin(thetaI));
     
-                ant1.btTheta(i) = pi*1i^(alpha)*(ant1.T1(i)+ant1.T2(i))*ant1.Coord(i,3)...
+                ant1.btTheta(i) = -1i/(w*mu)*pi*1i^(alpha)*(ant1.T1(i)+ant1.T2(i))*ant1.Coord(i,3)...
                 *exp(1i*k*ant1.Coord(i,1)*cos(thetaI))*(cos(thetaI)...
                 *sin(ant1.gamma(i))*1i*(J2-J0)-2*sin(thetaI)*cos(ant1.gamma(i))*J1);
     
-                ant1.bPhiTheta(i) = -pi*1i^(alpha)*(ant1.T1(i)+ant1.T2(i))*ant1.Coord(i,3)...
+                ant1.bPhiTheta(i) = 1i/(w*mu)*pi*1i^(alpha)*(ant1.T1(i)+ant1.T2(i))*ant1.Coord(i,3)...
                 *exp(1i*k*ant1.Coord(i,1)*cos(thetaI))*(cos(thetaI)...
                 *(J2+J0));
     
-                ant1.btPhi(i) = pi*1i^(alpha)*(ant1.T1(i)+ant1.T2(i))*ant1.Coord(i,3)...
+                ant1.btPhi(i) = -1i/(w*mu)*pi*1i^(alpha)*(ant1.T1(i)+ant1.T2(i))*ant1.Coord(i,3)...
                 *exp(1i*k*ant1.Coord(i,1)*sin(thetaI))*(sin(ant1.gamma(i))...
                 *(J2-J0));
     
-                ant1.bPhiPhi(i) = pi*1i^(alpha+1)*(ant1.T1(i)+ant1.T2(i))*ant1.Coord(i,3)...
+                ant1.bPhiPhi(i) = -1i/(w*mu)*pi*1i^(alpha+1)*(ant1.T1(i)+ant1.T2(i))*ant1.Coord(i,3)...
                 *exp(1i*k*ant1.Coord(i,1)*sin(thetaI))*(J2-J0);
             end
             

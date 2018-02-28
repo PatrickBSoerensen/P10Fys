@@ -149,17 +149,17 @@ classdef Antenna
                circtop = ant.CircTop;
                lin = ant.Lin;
            end
-           coord(1:segcirc,1) = circbot(:,2);
-           coord(1:segcirc,2) = circbot(:,1);%Should be expanded with centre
+           coord(1:segcirc,1) = circbot(:,2)+ant.Centre(1);
+           coord(1:segcirc,2) = circbot(:,1)+ant.Centre(2);
            coord(1:segcirc,3) = pi/(2*ant.PointsCircle)*ant.Radii;
            
-           coord(segcirc+1:segcirc+ant.PointsLine-2+test,1) = lin;
-           coord(segcirc+1:segcirc+ant.PointsLine-2+test,2) = ant.Radii;%Should be expanded with centre
+           coord(segcirc+1:segcirc+ant.PointsLine-2+test,1) = lin+ant.Centre(1);
+           coord(segcirc+1:segcirc+ant.PointsLine-2+test,2) = ant.Radii+ant.Centre(2);
            coord(segcirc+test:segcirc+ant.PointsLine-2+test,3) = (ant.Length-2.*ant.Radii)/ant.PointsLine;
           
-           coord(segcirc+ant.PointsLine-1+test:2*segcirc+ant.PointsLine-2+test,1) = circtop(:,2);
-           coord(segcirc+ant.PointsLine-1+test:2*segcirc+ant.PointsLine-2+test,2) = circtop(:,1);%Should be expanded with centre
-           coord(segcirc+ant.PointsLine-1+test:2*segcirc+ant.PointsLine-2+test,3) = pi/(2*ant.PointsCircle)*ant.Radii;%Should be expanded with centre
+           coord(segcirc+ant.PointsLine-1+test:2*segcirc+ant.PointsLine-2+test,1) = circtop(:,2)+ant.Centre(1);
+           coord(segcirc+ant.PointsLine-1+test:2*segcirc+ant.PointsLine-2+test,2) = circtop(:,1)+ant.Centre(2);
+           coord(segcirc+ant.PointsLine-1+test:2*segcirc+ant.PointsLine-2+test,3) = pi/(2*ant.PointsCircle)*ant.Radii;
         end
         
     end
