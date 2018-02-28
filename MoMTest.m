@@ -12,11 +12,11 @@ k=w/c;
 length = 0.995;
 ant = Antenna(length, 40, 40, 0.0031, [0,0]);
 MoMobj = MoM(0,0);
-FirstTestZone = area(0.0001, 800, 800, -20, 20, -20, 20, mu0);
+FirstTestZone = Area(0.0001, 800, 800, -20, 20, -20, 20, mu0);
 
 for alpha=0:2
     alpha
-    [ant, FirstTestZone] = momself(MoMobj, ant, FirstTestZone, alpha, k, w, pi/2, 0);
+    [ant, FirstTestZone] = momself(MoMobj, ant, FirstTestZone, alpha, k, w, pi/2, 0, 0);
 end
 
 figure(1)
