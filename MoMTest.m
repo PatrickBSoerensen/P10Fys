@@ -16,8 +16,7 @@ FirstTestZone = area(0.0001, 800, 800, -20, 20, -20, 20, mu0);
 
 for alpha=0:2
     alpha
-    ant = momself(MoMobj, ant, alpha, k, pi/2, 0);
-    FirstTestZone = emission(MoMobj, ant, FirstTestZone, alpha, k, w, 0);
+    [ant, FirstTestZone] = momself(MoMobj, ant, FirstTestZone, alpha, k, w, pi/2, 0);
 end
 
 figure(1)

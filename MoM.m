@@ -15,10 +15,9 @@ classdef MoM
             obj.Property1 = inputArg1 + inputArg2;
         end
         
-        function ant = momself(obj, ant, alpha, k, thetaI, phi)
+        function [ant, area] = momself(obj, ant, area, alpha, k, w, thetaI, phi)
             %METHOD1 Summary of this method goes here
             %   Detailed explanation goes here
-            breakpoint = 0;
             for i=1:ant.Segments
                 for j=1:ant.Segments
                     if i==j
@@ -99,9 +98,11 @@ classdef MoM
             ant.Jthe(end,1) = 0;
             ant.Jphi(1,1) = 0;
             ant.Jphi(end,1) = 0;
+            
+            area = emission(obj, ant, area, k, w, phiS);
         end
         
-        function ant1 = mom2on1(obj, ant1, ant2, alpha, k, thetaI, phi)
+        function [ant1, area] = mom2on1(obj, ant1, ant2, area, alpha, k, w, thetaI, phi)
             %METHOD1 Summary of this method goes here
             %   Detailed explanation goes here
             for i=1:ant1.Segments
@@ -184,6 +185,8 @@ classdef MoM
             ant1.Jthe(end,1) = 0;
             ant1.Jphi(1,1) = 0;
             ant1.Jphi(end,1) = 0;
+            
+            area = emission(obj, ant, area, alpha, k, w, phiS);
         end
      
         function area = emission(obj, ant, area, alpha, k, w, phiS)
