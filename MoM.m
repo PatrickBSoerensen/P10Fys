@@ -184,7 +184,7 @@ classdef MoM
             ant1.Jphi(1,1) = 0;
             ant1.Jphi(end,1) = 0;
             
-            area = emission(obj, ant, area, alpha, k, w, phiS);
+            area = emission(obj, ant1, area, alpha, k, w, phiS);
         end
      
         function area = emission(obj, ant, area, alpha, k, w, phiS)
