@@ -33,6 +33,7 @@ classdef Antenna
         T2;
         T1D;
         T2D;
+        E0;
     end
     
     methods
@@ -82,6 +83,8 @@ classdef Antenna
             ant.T1D = [T1D;0];
             T2D = -1./ant.Coord(1:ant.Segments-1,3);
             ant.T2D = [T2D;0];
+            %Field limiter
+            ant.E0 = FieldSetup(ant, ant.Length/20);
         end
         
         function [tHat, zHat, gamma] = UnitVecs(ant)
@@ -162,5 +165,15 @@ classdef Antenna
            coord(segcirc+ant.PointsLine-1+test:2*segcirc+ant.PointsLine-2+test,3) = pi/(2*ant.PointsCircle)*ant.Radii;
         end
         
+        function E0 = FieldSetup(ant, lim)
+            E0 = (1:ant.Segments);
+            E0(:) = 0;
+            
+            upper = ant.Coord(:, 1) <= lim;
+            lower = ant.Coord(:, 1) >= -lim;
+            
+            E0(upper & lower) = 1;
+            
+        end
     end
 end

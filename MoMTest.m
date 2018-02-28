@@ -17,23 +17,14 @@ ant2 = Antenna(length, 40, 40, 0.0031, [0,0]);
 MoMobj = MoM();
 % Area creation, where the antenna is placed
 FirstTestZone = Area(0.0001, 800, 800, -20, 20, -20, 20, mu0);
-SecondTestZone = Area(0.0001, 800, 800, -20, 20, -20, 20, mu0);
 %% looping through alpha
 for alpha=0:2
     alpha
-    [ant, FirstTestZone] = momself(MoMobj, ant, FirstTestZone, alpha, k, w, pi/2, 0, 0, mu0);
-    
-    [ant1, SecondTestZone] = mom2on1(MoMobj, ant1, ant1, SecondTestZone, alpha, k, w, pi/2, 0, 0, mu0);
+    [ant1, FirstTestZone] = mom2on1(MoMobj, ant1, ant1, FirstTestZone, alpha, k, w, pi/2, 0, 0, mu0);
 end
 %% Plots
 figure(1)
 pcolor(FirstTestZone.z, FirstTestZone.x, abs(real(FirstTestZone.Ethethe)))
 shading interp
 colorbar
-caxis([0 0.35])
-
-figure(2)
-pcolor(SecondTestZone.z, SecondTestZone.x, abs(real(SecondTestZone.Ethethe)))
-shading interp
-colorbar
-caxis([0 0.35])
+caxis([0 0.2])
