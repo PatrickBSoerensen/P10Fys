@@ -141,7 +141,8 @@ classdef MoM
                 J0 = besselj(alpha-1, k*ant1.Coord(i,2)*sin(thetaI));
                 J1 = besselj(alpha, k*ant1.Coord(i,2)*sin(thetaI));
                 J2 = besselj(alpha+1, k*ant1.Coord(i,2)*sin(thetaI));
-    
+                %% planewave b equations
+                if ant1.E0(i) ~= 0
                 ant1.btTheta(i) = -ant1.E0(i)*1i/(w*mu)*pi*1i^(alpha)*(ant1.T1(i)+ant1.T2(i))*ant1.Coord(i,3)...
                 *exp(1i*k*ant1.Coord(i,1)*cos(thetaI))*(cos(thetaI)...
                 *sin(ant1.gamma(i))*1i*(J2-J0)-2*sin(thetaI)*cos(ant1.gamma(i))*J1);
@@ -156,6 +157,13 @@ classdef MoM
     
                 ant1.bPhiPhi(i) = -ant1.E0(i)*1i/(w*mu)*pi*1i^(alpha+1)*(ant1.T1(i)+ant1.T2(i))*ant1.Coord(i,3)...
                 *exp(1i*k*ant1.Coord(i,1)*sin(thetaI))*(J2-J0);
+                else
+                %% general b equations, missing hat vectors in integral
+                ant1.btTheta(i) = -2*pi*1i/(w*mu)*(ant1.T1(i)+ant1.T2(i))*ant1.Coord(i,3);
+                ant1.bPhiTheta(i) = -2*pi*1i/(w*mu)*(ant1.T1(i)+ant1.T2(i))*ant1.Coord(i,3);
+                ant1.btPhi(i) = -2*pi*1i/(w*mu)*(ant1.T1(i)+ant1.T2(i))*ant1.Coord(i,3);
+                ant1.bPhiPhi(i) = -2*pi*1i/(w*mu)*(ant1.T1(i)+ant1.T2(i))*ant1.Coord(i,3);
+                end
             end
             
             ant1.invZ = ant1.Z^(-1);
@@ -169,15 +177,19 @@ classdef MoM
             ant1.xtPhi = xPhi(1:ant1.Segments);
             ant1.xPhiPhi = xPhi(ant1.Segments+1:2*ant1.Segments);
             
-            ftn = (ant1.T1+ant1.T2).*exp(1i.*alpha.*phi)./ant1.Coord(:,2);%T, alpha, n. Expansions function
-            fpn = (ant1.T1+ant1.T2).*exp(1i.*alpha.*phi)./ant1.Coord(:,2);%Phi, alpha, n. Expansions function
-               
+            ftn = ant1.tHat(i,:).*(ant1.T1+ant1.T2).*exp(1i.*alpha.*phi)./ant1.Coord(:,2);%T, alpha, n. Expansions function
+            fpn = [0 1 0].*(ant1.T1+ant1.T2).*exp(1i.*alpha.*phi)./ant1.Coord(:,2);%Phi, alpha, n. Expansions function
+%             
+%             ftn = 1.*(ant1.T1+ant1.T2).*exp(1i.*alpha.*phi)./ant1.Coord(:,2);%T, alpha, n. Expansions function
+%             fpn = 0.*(ant1.T1+ant1.T2).*exp(1i.*alpha.*phi)./ant1.Coord(:,2);%Phi, alpha, n. Expansions function
+            
+            
             if alpha == 0
                 ant1.Jthe=ant1.xtTheta.*ftn;
                 ant1.Jphi=ant1.xtPhi.*fpn;
             else
-                ant1.Jthe = ant1.Jthe+2*(ant1.xtTheta.*ftn.*cos(alpha.*phi)+1i*ant1.xPhiTheta.*ftn.*sin(alpha.*phi));
-                ant1.Jphi = ant1.Jphi+2*(1i*ant1.xtPhi.*fpn.*sin(alpha.*phi)+ant1.xPhiPhi.*fpn.*cos(alpha.*phi));
+                ant1.Jthe = ant1.Jthe+2*(ant1.xtTheta.*ftn.*cos(alpha.*phi)+1i*ant1.xPhiTheta.*fpn.*sin(alpha.*phi));
+                ant1.Jphi = ant1.Jphi+2*(1i*ant1.xtPhi.*ftn.*sin(alpha.*phi)+ant1.xPhiPhi.*fpn.*cos(alpha.*phi));
             end
             ant1.Jthe(1,1) = 0;
             ant1.Jthe(end,1) = 0;
@@ -194,8 +206,8 @@ classdef MoM
                 r = sqrt((rz(i,:).').^2+(rx(i,:)).^2);
                 B = -(1i*w*area.mu0)/(2*pi)*(exp(-1i*k*r)./r);
                 if alpha == 0
-                    area.Ethethe = B/2 * ant.Jthe(i) * ant.btTheta(i) + area.Ethethe;
-                    area.Ephiphi = B/2 * ant.Jphi(i) * ant.btPhi(i) + area.Ephiphi;
+                    area.Ethethe = B/2 .* ant.xtTheta(i) .* ant.btTheta(i) + area.Ethethe;
+                    area.Ephiphi = B/2 .* ant.xtPhi(i) .* ant.btPhi(i) + area.Ephiphi;
                 else    
                     area.Ethethe = B*(ant.xtTheta(i)*ant.btTheta(i)...
                         +ant.xPhiTheta(i)*ant.bPhiTheta(i))*cos(alpha*phiS)...
@@ -218,8 +230,8 @@ classdef MoM
                 r = sqrt((rz(i,:).').^2+(rx(i,:)).^2);
                 B = -(1i*w*area.mu0)/(2*pi)*(exp(-1i*k*r)./r);
                 if alpha == 0
-                    area.Ethethe = B/2 * ant.Jthe(i) * ant.btTheta(i) + area.Ethethe;
-                    area.Ephiphi = B/2 * ant.Jphi(i) * ant.btPhi(i) + area.Ephiphi;
+                    area.Ethethe = B/2 .* ant.xtTheta(i) .* ant.btTheta(i) + area.Ethethe;
+                    area.Ephiphi = B/2 .* ant.xtPhi(i) .* ant.btPhi(i) + area.Ephiphi;
                 else
                     area.Ethethe = B*(ant.xtTheta(i)*ant.btTheta(i)...
                         +ant.xPhiTheta(i)*ant.bPhiTheta(i))*cos(alpha*phiS)...

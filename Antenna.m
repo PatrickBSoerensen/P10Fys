@@ -112,6 +112,7 @@ classdef Antenna
         zHat(:,2) = 0; %y coord
         zHat(:,3) = 1; %z coord
         
+        
         gamma = acos(dot(tHat,zHat,2));
         end
         
@@ -169,10 +170,25 @@ classdef Antenna
             E0 = (1:ant.Segments);
             E0(:) = 0;
             
-            upper = ant.Coord(:, 1) <= lim;
-            lower = ant.Coord(:, 1) >= -lim;
+            upper1 = 0 < ant.Coord(:, 1);
+            upper2 = ant.Coord(:, 1) <= lim;
+            upper = logical(upper1.*upper2);
+            mid = ant.Coord(:,1) == 0;
+            lower1 = 0 > ant.Coord(:, 1);
+            lower2 = ant.Coord(:, 1) >= -lim;
+            lower = logical(lower1.*lower2);
+            amount = round(ant.Segments/10);
             
-            E0(upper & lower) = 1;
+            if mid
+                E0(mid) = 1;
+            end
+           
+            E0(upper) = (ant.Coord(ant.Segments/2+amount,1)-ant.Coord(upper, 1))...
+            ./(ant.Coord(ant.Segments/2+amount,1));
+            E0(lower) = (ant.Coord(ant.Segments/2-amount,1)-ant.Coord(lower, 1))...
+            ./(ant.Coord(ant.Segments/2-amount,1));
+            
+%              E0(:) = 1;
             
         end
     end
