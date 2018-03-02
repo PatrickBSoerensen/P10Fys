@@ -10,9 +10,8 @@ w=2*pi*f;
 k=w/c;
 %% Creation of objects
 length = 0.995;
-ant = Antenna(length, 80, 40, 0.0031, [0,0]);
-ant1 = Antenna(length, 60, 40, 0.0031, [0,0]);
-ant2 = Antenna(length, 40, 40, 0.0031, [0,0]);
+ant1 = Antenna(length, 20, 20, 0.0031, [0,0]);
+ant2 = Antenna(length, 40, 80, 0.0031, [0,0]);
 % MoM solver object 
 MoMobj = MoM();
 % Area creation, where the antenna is placed

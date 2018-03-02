@@ -49,7 +49,7 @@ classdef Antenna
             cylinderlen = length-2.*radii;
             Lin = linspace(-cylinderlen./2, cylinderlen./2, pointsline);
             ant.Lin = Lin(2:pointsline-1);
-            seglen = cylinderlen/pointsline;
+            seglen = cylinderlen/(pointsline-1);
             ant.LinTest = linspace(-cylinderlen./2+seglen./2, cylinderlen./2-seglen./2, pointsline-1);
             %Splitting lower circ part
             ant.CircBot = CreateCirc(ant, 1, 0);
@@ -159,7 +159,7 @@ classdef Antenna
            
            coord(segcirc+1:segcirc+ant.PointsLine-2+test,1) = lin+ant.Centre(1);
            coord(segcirc+1:segcirc+ant.PointsLine-2+test,2) = ant.Radii+ant.Centre(2);
-           coord(segcirc+test:segcirc+ant.PointsLine-2+test,3) = (ant.Length-2.*ant.Radii)/ant.PointsLine;
+           coord(segcirc+test:segcirc+ant.PointsLine-2+test,3) = (ant.Length-2.*ant.Radii)/(ant.PointsLine-1);
           
            coord(segcirc+ant.PointsLine-1+test:2*segcirc+ant.PointsLine-2+test,1) = circtop(:,2)+ant.Centre(1);
            coord(segcirc+ant.PointsLine-1+test:2*segcirc+ant.PointsLine-2+test,2) = circtop(:,1)+ant.Centre(2);
