@@ -13,93 +13,6 @@ classdef MoM
             %   Detailed explanation goes here
         end
         
-        function [ant, area] = momself(obj, ant, area, alpha, k, w, thetaI, phi, phiS, mu)
-            %METHOD1 Summary of this method goes here
-            %   Detailed explanation goes here
-            for i=1:ant.Segments
-                for j=1:ant.Segments
-                    if i==j
-                        R = @(phimark) sqrt((ant.Coord(i,3)/4)^.2 ... 
-                        +2*ant.Coord(i,2).^2.*(1-cos(phimark)));
-                    else
-                        R = @(phimark) sqrt((ant.Coord(i,1)-ant.Coord(j,1)).^2 ...
-                        +(ant.Coord(i,2)-ant.Coord(j,2)).^2 ...
-                        +2.*ant.Coord(i,2).*ant.Coord(j,2).*(1-cos(phimark)));
-                    end
-        
-                    Func1 = @(phimark) cos(alpha.*phimark).*exp(-1i.*k.*R(phimark))./R(phimark);
-                    Func2 = @(phimark) cos(phimark).*cos(alpha.*phimark).*exp(-1i.*k.*R(phimark))./R(phimark);
-                    Func3 = @(phimark) sin(phimark).*sin(alpha.*phimark).*exp(-1i.*k.*R(phimark))./R(phimark);
-                    
-                    %Should possibly integrate to 2*pi
-                    G1 = ant.Coord(i,3).*ant.Coord(j,3).*integral(Func1, 0, pi);
-                    G2 = ant.Coord(i,3).*ant.Coord(j,3).*integral(Func2, 0, pi);
-                    G3 = ant.Coord(i,3).*ant.Coord(j,3).*integral(Func3, 0, pi);
-                    
-                    %Ztt
-                    ant.Z(i,j) = (ant.T1(i)+ant.T2(i)).*(ant.T1(j)+ant.T2(j)).*(sin(ant.gamma(i)).*sin(ant.gamma(j)).*G2 ... 
-                        +cos(ant.gamma(i)).*cos(ant.gamma(j)).*G1) ...
-                        -1./k.^2.*(ant.T1D(i)+ant.T2D(i)).*(ant.T1D(j)+ant.T2D(j)).*G1;
-                    %Ztphi
-                    ant.Z(i+ant.Segments,j) = 1i*(sin(ant.gamma(i))*((ant.T1(i)+ant.T2(i))*(ant.T1(j)+ant.T2(j)))*G3 ...
-                        +(1/k^2)*(alpha/ant.Coord(j,2))*((ant.T1D(i)+ant.T2D(i))*(ant.T1(j)*ant.T2(j)))*G1);
-                    %Zphit
-                    ant.Z(i,j+ant.Segments) = 1i*(((ant.T1(i)+ant.T2(i)).*(ant.T1(j)+ant.T2(j)))*sin(ant.gamma(j))*G3 ... 
-                        +(1/k^2)*(alpha/ant.Coord(i,2))*(((ant.T1(i)+ant.T2(i))*(ant.T1D(j)+ant.T2D(j))).*G1));
-                    %Zphiphi
-                    ant.Z(i+ant.Segments,j+ant.Segments) = -(ant.T1(i)+ant.T2(i)).*(ant.T1(j)+ant.T2(j)).*... 
-                        (G2-1/k.^2.*alpha.^2/(ant.Coord(i,2).*ant.Coord(j,2)).*G1);
-                end
-        
-                J0 = besselj(alpha-1, k*ant.Coord(i,2)*sin(thetaI));
-                J1 = besselj(alpha, k*ant.Coord(i,2)*sin(thetaI));
-                J2 = besselj(alpha+1, k*ant.Coord(i,2)*sin(thetaI));
-    
-                ant.btTheta(i) = -1i/(w*mu)*pi*1i^(alpha)*(ant.T1(i)+ant.T2(i))*ant.Coord(i,3)...
-                *exp(1i*k*ant.Coord(i,1)*cos(thetaI))*(cos(thetaI)...
-                *sin(ant.gamma(i))*1i*(J2-J0)-2*sin(thetaI)*cos(ant.gamma(i))*J1)*ant.E0(i);
-    
-                ant.bPhiTheta(i) = 1i/(w*mu)*pi*1i^(alpha)*(ant.T1(i)+ant.T2(i))*ant.Coord(i,3)...
-                *exp(1i*k*ant.Coord(i,1)*cos(thetaI))*(cos(thetaI)...
-                *(J2+J0))*ant.E0(i);
-    
-                ant.btPhi(i) = -1i/(w*mu)*pi*1i^(alpha)*(ant.T1(i)+ant.T2(i))*ant.Coord(i,3)...
-                *exp(1i*k*ant.Coord(i,1)*sin(thetaI))*(sin(ant.gamma(i))...
-                *(J2-J0))*ant.E0(i);
-    
-                ant.bPhiPhi(i) = -1i/(w*mu)*pi*1i^(alpha+1)*(ant.T1(i)+ant.T2(i))*ant.Coord(i,3)...
-                *exp(1i*k*ant.Coord(i,1)*sin(thetaI))*(J2-J0)*ant.E0(i);
-            end
-            
-            ant.invZ = ant.Z^(-1);
-            bThe = [ant.btTheta, ant.bPhiTheta];
-            xTheta = ant.invZ*bThe.';
-            bPhi = [ant.btPhi, ant.bPhiPhi];
-            xPhi = ant.invZ*bPhi.';
-            
-            ant.xtTheta = xTheta(1:ant.Segments);
-            ant.xPhiTheta = xTheta(ant.Segments+1:2*ant.Segments);    
-            ant.xtPhi = xPhi(1:ant.Segments);
-            ant.xPhiPhi = xPhi(ant.Segments+1:2*ant.Segments);
-            
-            ftn = (ant.T1+ant.T2).*exp(1i.*alpha.*phi)./ant.Coord(:,2);%T, alpha, n. Expansions function
-            fpn = (ant.T1+ant.T2).*exp(1i.*alpha.*phi)./ant.Coord(:,2);%Phi, alpha, n. Expansions function
-            
-            if alpha == 0
-                ant.Jthe=ant.xtTheta.*ftn;
-                ant.Jphi=ant.xtPhi.*fpn;
-            else
-                ant.Jthe = ant.Jthe+2*(ant.xtTheta.*ftn.*cos(alpha.*phi)+1i*ant.xPhiTheta.*ftn.*sin(alpha.*phi));
-                ant.Jphi = ant.Jphi+2*(1i*ant.xtPhi.*fpn.*sin(alpha.*phi)+ant.xPhiPhi.*fpn.*cos(alpha.*phi));
-            end
-            ant.Jthe(1,1) = 0;
-            ant.Jthe(end,1) = 0;
-            ant.Jphi(1,1) = 0;
-            ant.Jphi(end,1) = 0;
-            
-            area = emission(obj, ant, area, alpha, k, w, phiS);
-        end
-        
         function [ant1, area] = mom2on1(obj, ant1, ant2, area, alpha, k, w, thetaI, phi, phiS, mu)
             %METHOD1 Summary of this method goes here
             %   Detailed explanation goes here
@@ -179,10 +92,6 @@ classdef MoM
             
             ftn = ant1.tHat(i,:).*(ant1.T1+ant1.T2).*exp(1i.*alpha.*phi)./ant1.Coord(:,2);%T, alpha, n. Expansions function
             fpn = [0 1 0].*(ant1.T1+ant1.T2).*exp(1i.*alpha.*phi)./ant1.Coord(:,2);%Phi, alpha, n. Expansions function
-%             
-%             ftn = 1.*(ant1.T1+ant1.T2).*exp(1i.*alpha.*phi)./ant1.Coord(:,2);%T, alpha, n. Expansions function
-%             fpn = 0.*(ant1.T1+ant1.T2).*exp(1i.*alpha.*phi)./ant1.Coord(:,2);%Phi, alpha, n. Expansions function
-            
             
             if alpha == 0
                 ant1.Jthe=ant1.xtTheta.*ftn;

@@ -17,6 +17,9 @@ classdef Antenna
         zHat;
         tHat;
         gamma;
+        tHatTest;
+        zHatTest;
+        gammaTest;
         Jthe;
         Jphi;
         Z;
@@ -61,6 +64,7 @@ classdef Antenna
             ant.Coord = CreateCoord(ant, 0);
             ant.CoordTest = CreateCoord(ant, 1);
             [ant.tHat, ant.zHat, ant.gamma] = UnitVecs(ant);
+            [ant.tHatTest, ant.zHatTest, ant.gammaTest] = UnitVecsTest(ant);
             %Current density
             ant.Jthe = 0;
             ant.Jphi = 0;
@@ -75,45 +79,84 @@ classdef Antenna
             ant.xtPhi = (1:ant.Segments);
             ant.xPhiPhi = (ant.Segments+1:2*ant.Segments);
             %Testing functions triangle
-            T1 = (ant.CoordTest(:,1)-ant.Coord(1:ant.Segments-1,1))./ant.Coord(1:ant.Segments-1,3);
-            ant.T1 = [0;T1];
-            T2 = (ant.Coord(2:ant.Segments,1)-ant.CoordTest(:,1))./ant.Coord(1:ant.Segments-1,3);
-            ant.T2 = [T2;0];
-            T1D = 1./ant.Coord(1:ant.Segments-1,3);
+            T1 = sqrt((ant.CoordTest(:,1)-ant.Coord(1:ant.Segments-1,1)).^2 ... 
+                +(ant.CoordTest(:,2)-ant.Coord(1:ant.Segments-1,2)).^2)...
+                ./sqrt((ant.Coord(1:ant.Segments-1,1)-ant.Coord(2:ant.Segments,1)).^2 ...
+                +(ant.Coord(1:ant.Segments-1,2)-ant.Coord(2:ant.Segments,2)).^2);
+            ant.T1 = [T1;0];
+            T2 = sqrt((ant.Coord(2:ant.Segments,1)-ant.CoordTest(:,1)).^2 ... 
+                +(ant.Coord(2:ant.Segments,2)-ant.CoordTest(:,2)).^2) ...
+                ./sqrt((ant.Coord(1:ant.Segments-1,1)-ant.Coord(2:ant.Segments,1)).^2 ...
+                +(ant.Coord(1:ant.Segments-1,2)-ant.Coord(2:ant.Segments,2)).^2);
+            ant.T2 = [0;T2];
+            T1D = 1./sqrt((ant.Coord(1:ant.Segments-1,1)-ant.Coord(2:ant.Segments,1)).^2 ...
+                +(ant.Coord(1:ant.Segments-1,2)-ant.Coord(2:ant.Segments,2)).^2);
             ant.T1D = [T1D;0];
-            T2D = -1./ant.Coord(1:ant.Segments-1,3);
-            ant.T2D = [T2D;0];
+            T2D = -1./sqrt((ant.Coord(1:ant.Segments-1,1)-ant.Coord(2:ant.Segments,1)).^2 ...
+                +(ant.Coord(1:ant.Segments-1,2)-ant.Coord(2:ant.Segments,2)).^2);
+            ant.T2D = [0;T2D];
             %Field limiter
             ant.E0 = FieldSetup(ant, ant.Length/20);
         end
         
         function [tHat, zHat, gamma] = UnitVecs(ant)
-        %Unit vectors should be part of Antenna class
-        tHat(1:ant.PointsCircle,1) ... 
-        = -ant.Radii.*sin(linspace(-pi/2, 0, ant.PointsCircle));
-        tHat(ant.PointsCircle+1:ant.PointsCircle+ant.PointsLine-2,1) ... 
-        = 0;
-        tHat(ant.PointsCircle+ant.PointsLine-1: ... 
-        2*ant.PointsCircle+ant.PointsLine-2,1)...
-        = -ant.Radii.*sin(linspace(0, pi/2, ant.PointsCircle));%x coord
+            %tHat proper       
+            tHat(1:ant.PointsCircle,1) ... 
+            = -ant.Radii.*sin(linspace(-pi/2, 0, ant.PointsCircle));
+            tHat(ant.PointsCircle+1:ant.PointsCircle+ant.PointsLine-2,1) ... 
+            = 0;
+            tHat(ant.PointsCircle+ant.PointsLine-1: ... 
+            2*ant.PointsCircle+ant.PointsLine-2,1)...
+            = -ant.Radii.*sin(linspace(0, pi/2, ant.PointsCircle));%x coord
         
-        tHat(:,2) = 0;%y coord
-        tHat(:,3) = 1;%z coord
-        tHat(1:ant.PointsCircle,3) = ... 
-        ant.Radii.*cos(linspace(-pi/2, 0, ant.PointsCircle));%z coord
-        tHat(ant.PointsCircle+ant.PointsLine-1: ... 
-        2*ant.PointsCircle+ant.PointsLine-2,3)...
-        = ant.Radii.*cos(linspace(0, pi/2, ant.PointsCircle));%z coord
+            tHat(:,2) = 0;%y coord
+            tHat(:,3) = 1;%z coord
+            tHat(1:ant.PointsCircle,3) = ... 
+            ant.Radii.*cos(linspace(-pi/2, 0, ant.PointsCircle));%z coord
+            tHat(ant.PointsCircle+ant.PointsLine-1: ... 
+            2*ant.PointsCircle+ant.PointsLine-2,3)...
+            = ant.Radii.*cos(linspace(0, pi/2, ant.PointsCircle));%z coord
     
-        tHat = tHat./sqrt(tHat(:,1).^2+tHat(:,2).^2+tHat(:,3).^2);%normalizing to unit
-
-        zHat = tHat; %For dimensions
-        zHat(:,1) = 0; %x coord
-        zHat(:,2) = 0; %y coord
-        zHat(:,3) = 1; %z coord
+            tHat = tHat./sqrt(tHat(:,1).^2+tHat(:,2).^2+tHat(:,3).^2);%normalizing to unit
+            %zHat proper
+            zHat = tHat; %For dimensions
+            zHat(:,1) = 0; %x coord
+            zHat(:,2) = 0; %y coord
+            zHat(:,3) = 1; %z coord
+            %gamma proper
+            gamma = acos(dot(tHat,zHat,2));    
+        end
         
+        function [tHat, zHat, gamma] = UnitVecsTest(ant)
+            arclength = pi/(2*ant.PointsCircle);
+            distbot = linspace(-pi/2+arclength/2, 0-arclength/2, ant.PointsCircle-1);
+            disttop = linspace(0+arclength/2, pi/2-arclength/2, ant.PointsCircle-1);
+            
+            %tHat test       
+            tHat(1:ant.PointsCircle-1,1) ... 
+            = -ant.Radii.*sin(distbot);
+            tHat(ant.PointsCircle:ant.PointsCircle+ant.PointsLine-2,1) ... 
+            = 0;
+            tHat(ant.PointsCircle+ant.PointsLine-1: ... 
+            2*ant.PointsCircle+ant.PointsLine-3,1)...
+            = -ant.Radii.*sin(disttop);%x coord
         
-        gamma = acos(dot(tHat,zHat,2));
+            tHat(:,2) = 0;%y coord
+            tHat(:,3) = 1;%z coord
+            tHat(1:ant.PointsCircle-1,3) = ... 
+            ant.Radii.*cos(distbot);%z coord
+            tHat(ant.PointsCircle+ant.PointsLine-1: ... 
+            2*ant.PointsCircle+ant.PointsLine-3,3)...
+            = ant.Radii.*cos(disttop);%z coord
+    
+            tHat = tHat./sqrt(tHat(:,1).^2+tHat(:,2).^2+tHat(:,3).^2);%normalizing to unit
+            %zHat test
+            zHat = tHat; %For dimensions
+            zHat(:,1) = 0; %x coord
+            zHat(:,2) = 0; %y coord
+            zHat(:,3) = 1; %z coord
+            %gamma test
+            gamma = acos(dot(tHat,zHat,2));    
         end
         
         function circ = CreateCirc(ant, bot, test)
@@ -155,7 +198,7 @@ classdef Antenna
            end
            coord(1:segcirc,1) = circbot(:,2)+ant.Centre(1);
            coord(1:segcirc,2) = circbot(:,1)+ant.Centre(2);
-           coord(1:segcirc,3) = pi/(2*ant.PointsCircle)*ant.Radii;
+           coord(1:segcirc,3) = ant.Radii*pi/(2*ant.PointsCircle);
            
            coord(segcirc+1:segcirc+ant.PointsLine-2+test,1) = lin+ant.Centre(1);
            coord(segcirc+1:segcirc+ant.PointsLine-2+test,2) = ant.Radii+ant.Centre(2);
@@ -163,7 +206,7 @@ classdef Antenna
           
            coord(segcirc+ant.PointsLine-1+test:2*segcirc+ant.PointsLine-2+test,1) = circtop(:,2)+ant.Centre(1);
            coord(segcirc+ant.PointsLine-1+test:2*segcirc+ant.PointsLine-2+test,2) = circtop(:,1)+ant.Centre(2);
-           coord(segcirc+ant.PointsLine-1+test:2*segcirc+ant.PointsLine-2+test,3) = pi/(2*ant.PointsCircle)*ant.Radii;
+           coord(segcirc+ant.PointsLine-1+test:2*segcirc+ant.PointsLine-2+test,3) = ant.Radii*pi/(2*ant.PointsCircle);
         end
         
         function E0 = FieldSetup(ant, lim)
