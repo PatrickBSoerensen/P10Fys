@@ -107,7 +107,106 @@ classdef MoM
             
             area = emission(obj, ant1, area, alpha, k, w, phiS);
         end
-     
+        
+        function [ant, area] = mombasis(obj, ant, area, alpha, k, w, thetaI, phi, phiS, mu)
+            DM = eye(ant.Segments);
+            DMO = circshift(DM,1,2);
+            for i=1:length(ant.T)-1
+                iSegments = [i, i+1];
+                for j=1:length(ant.T)-1
+                    jSegments = [j, j+1];
+                    if i==j
+                    R = @(phimark) sqrt((ant.Coord(iSegments,3)/4).^2 ... 
+                        +2*ant.Coord(iSegments,2).^2.*(1-cos(phimark)));
+                    else
+                    R = @(phimark) sqrt((ant.Coord(iSegments,1)-ant.Coord(jSegments,1)).^2 ...
+                        +(ant.Coord(iSegments,2)-ant.Coord(jSegments,2)).^2 ...
+                        +2.*ant.Coord(iSegments,2).*ant.Coord(jSegments,2).*(1-cos(phimark)));
+                    end
+                    
+                    Func1 = @(phimark) cos(alpha.*phimark).*exp(-1i.*k.*R(phimark))./R(phimark);
+                    Func2 = @(phimark) cos(phimark).*cos(alpha.*phimark).*exp(-1i.*k.*R(phimark))./R(phimark);
+                    Func3 = @(phimark) sin(phimark).*sin(alpha.*phimark).*exp(-1i.*k.*R(phimark))./R(phimark);
+                    
+                    %Should possibly integrate to 2*pi
+                    G1 = ant.Coord(i,3).*ant.Coord(i+1,3).*integral(Func1, 0, pi, 'ArrayValued', true);
+                    G2 = ant.Coord(i,3).*ant.Coord(i+1,3).*integral(Func2, 0, pi, 'ArrayValued', true);
+                    G3 = ant.Coord(i,3).*ant.Coord(i+1,3).*integral(Func3, 0, pi, 'ArrayValued', true);
+                
+                    %Ztt
+                    ant.Z(i,j) = sum(((ant.T(iSegments).*ant.T(jSegments)).*(sin(ant.gamma(iSegments)).*sin(ant.gamma(jSegments)).*G2 ...
+                        +cos(ant.gamma(iSegments)).*cos(ant.gamma(jSegments)).*G1) ...
+                        -1./k.^2.*ant.TD(iSegments).*ant.TD(jSegments).*G1));
+                    %Ztphi
+                    ant.Z(i+ant.Segments,j) = sum(1i.*(sin(ant.gamma(iSegments)).*ant.T(iSegments).*ant.T(jSegments).*G3 ...
+                        +(1./k^2).*(alpha./ant.Coord(jSegments,2)).*ant.TD(iSegments).*ant.T(jSegments).*G1));
+                    %Zphit
+                    ant.Z(i,j+ant.Segments) = sum(1i.*ant.T(iSegments).*ant.T(jSegments).*sin(ant.gamma(jSegments)).*G3 ... 
+                        +(1./k^2).*(alpha./ant.Coord(iSegments,2)).*ant.T(iSegments).*ant.TD(jSegments).*G1);
+                    %Zphiphi
+                    ant.Z(i+ant.Segments,j+ant.Segments) = sum(-(ant.T(iSegments).*ant.T(jSegments).*... 
+                        (G2-1/k.^2.*alpha.^2./(ant.Coord(iSegments,2).*ant.Coord(jSegments,2)).*G1)));
+                end
+                
+                J0 = besselj(alpha-1, k*ant.Coord(i,2)*sin(thetaI));
+                J1 = besselj(alpha, k*ant.Coord(i,2)*sin(thetaI));
+                J2 = besselj(alpha+1, k*ant.Coord(i,2)*sin(thetaI));
+                %% planewave b equations
+                if ant.E0(i) ~= 0
+                ant.btTheta(i) = -ant.E0(i)*1i/(w*mu)*pi*1i^(alpha)*(ant.T(i))*ant.Coord(i,3)...
+                *exp(1i*k*ant.Coord(i,1)*cos(thetaI))*(cos(thetaI)...
+                *sin(ant.gamma(i))*1i*(J2-J0)-2*sin(thetaI)*cos(ant.gamma(i))*J1);
+    
+                ant.bPhiTheta(i) = ant.E0(i)*1i/(w*mu)*pi*1i^(alpha)*(ant.T(i))*ant.Coord(i,3)...
+                *exp(1i*k*ant.Coord(i,1)*cos(thetaI))*(cos(thetaI)...
+                *(J2+J0));
+    
+                ant.btPhi(i) = -ant.E0(i)*1i/(w*mu)*pi*1i^(alpha)*(ant.T(i))*ant.Coord(i,3)...
+                *exp(1i*k*ant.Coord(i,1)*sin(thetaI))*(sin(ant.gamma(i))...
+                *(J2-J0));
+    
+                ant.bPhiPhi(i) = -ant.E0(i)*1i/(w*mu)*pi*1i^(alpha+1)*(ant.T(i))*ant.Coord(i,3)...
+                *exp(1i*k*ant.Coord(i,1)*sin(thetaI))*(J2-J0);
+            
+                else
+                %% general b equations, missing hat vectors in integral
+                ant.btTheta(i) = -2*pi*1i/(w*mu)*(ant.T(i))*ant.Coord(i,3);
+                ant.bPhiTheta(i) = -2*pi*1i/(w*mu)*(ant.T(i))*ant.Coord(i,3);
+                ant.btPhi(i) = -2*pi*1i/(w*mu)*(ant.T(i))*ant.Coord(i,3);
+                ant.bPhiPhi(i) = -2*pi*1i/(w*mu)*(ant.T(i))*ant.Coord(i,3);
+                end
+            end
+            
+            ant.invZ = ant.Z^(-1);
+            bThe = [ant.btTheta, ant.bPhiTheta];
+            xTheta = ant.invZ*bThe.';
+            bPhi = [ant.btPhi, ant.bPhiPhi];
+            xPhi = ant.invZ*bPhi.';
+            
+            ant.xtTheta = xTheta(1:ant.Segments);
+            ant.xPhiTheta = xTheta(ant.Segments+1:2*ant.Segments);    
+            ant.xtPhi = xPhi(1:ant.Segments);
+            ant.xPhiPhi = xPhi(ant.Segments+1:2*ant.Segments);
+            
+            ftn = ant.tHat(i,:).*(ant.T).*exp(1i.*alpha.*phi)./ant.Coord(:,2);%T, alpha, n. Expansions function
+            fpn = [0 1 0].*(ant.T1+ant.T2).*exp(1i.*alpha.*phi)./ant.Coord(:,2);%Phi, alpha, n. Expansions function
+            
+            if alpha == 0
+                ant.Jthe=ant.xtTheta.*ftn;
+                ant.Jphi=ant.xtPhi.*fpn;
+            else
+                ant.Jthe = ant.Jthe+2*(ant.xtTheta.*ftn.*cos(alpha.*phi)+1i*ant.xPhiTheta.*fpn.*sin(alpha.*phi));
+                ant.Jphi = ant.Jphi+2*(1i*ant.xtPhi.*ftn.*sin(alpha.*phi)+ant.xPhiPhi.*fpn.*cos(alpha.*phi));
+            end
+            ant.Jthe(1,1) = 0;
+            ant.Jthe(end,1) = 0;
+            ant.Jphi(1,1) = 0;
+            ant.Jphi(end,1) = 0;
+            
+            area = emission(obj, ant, area, alpha, k, w, phiS);
+        end
+       
+        
         function area = emission(obj, ant, area, alpha, k, w, phiS)
             rz = (area.z-ant.Coord(:,1));
             for i=1:ant.Segments

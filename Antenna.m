@@ -36,6 +36,8 @@ classdef Antenna
         T2;
         T1D;
         T2D;
+        T;
+        TD;
         E0;
     end
     
@@ -89,12 +91,15 @@ classdef Antenna
                 ./sqrt((ant.Coord(1:ant.Segments-1,1)-ant.Coord(2:ant.Segments,1)).^2 ...
                 +(ant.Coord(1:ant.Segments-1,2)-ant.Coord(2:ant.Segments,2)).^2);
             ant.T2 = [0;T2];
+            ant.T = ant.T1+ant.T2;
             T1D = 1./sqrt((ant.Coord(1:ant.Segments-1,1)-ant.Coord(2:ant.Segments,1)).^2 ...
                 +(ant.Coord(1:ant.Segments-1,2)-ant.Coord(2:ant.Segments,2)).^2);
             ant.T1D = [T1D;0];
             T2D = -1./sqrt((ant.Coord(1:ant.Segments-1,1)-ant.Coord(2:ant.Segments,1)).^2 ...
                 +(ant.Coord(1:ant.Segments-1,2)-ant.Coord(2:ant.Segments,2)).^2);
             ant.T2D = [0;T2D];
+            
+            ant.TD = ant.T1D+ant.T2D;
             %Field limiter
             ant.E0 = FieldSetup(ant, ant.Length/20);
         end
