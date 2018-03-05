@@ -112,40 +112,66 @@ classdef MoM
             DM = eye(ant.Segments);
             DMO = circshift(DM,1,2);
             for i=1:length(ant.T)-1
-                iSegments = [i, i+1];
+                iSegments = [i, i+1, i, i+1];
                 for j=1:length(ant.T)-1
-                    jSegments = [j, j+1];
+                    jSegments = [j, j+1, j+1, j];
+                    for h=1:4
                     if i==j
-                    R = @(phimark) sqrt((ant.Coord(iSegments,3)/4).^2 ... 
-                        +2*ant.Coord(iSegments,2).^2.*(1-cos(phimark)));
+                        if h<=2
+                            R{1,h} = @(phimark) sqrt((ant.Coord(iSegments(1,h),3)/4).^2 ...
+                            +2*ant.Coord(iSegments(1,h),2).^2.*(1-cos(phimark)));
+                        else
+                            R{1,h} = @(phimark) sqrt((ant.Coord(iSegments(1,h),1)-ant.Coord(jSegments(1,h),1)).^2 ...
+                            +(ant.Coord(iSegments(1,h),2)-ant.Coord(jSegments(1,h),2)).^2 ...
+                            +2.*ant.Coord(iSegments(1,h),2).*ant.Coord(jSegments(1,h),2).*(1-cos(phimark)));
+                        end
+                    elseif i==j+1
+                        if h==3
+                            R{1,h} = @(phimark) sqrt((ant.Coord(iSegments(1,h),3)/4).^2 ...
+                            +2*ant.Coord(iSegments(1,h),2).^2.*(1-cos(phimark)));
+                        else
+                            R{1,h} = @(phimark) sqrt((ant.Coord(iSegments(1,h),1)-ant.Coord(jSegments(1,h),1)).^2 ...
+                            +(ant.Coord(iSegments(1,h),2)-ant.Coord(jSegments(1,h),2)).^2 ...
+                            +2.*ant.Coord(iSegments(1,h),2).*ant.Coord(jSegments(1,h),2).*(1-cos(phimark)));
+                        end
+                    elseif i+1==j
+                        if h==4
+                            R{1,h} = @(phimark) sqrt((ant.Coord(iSegments(1,h),3)/4).^2 ...
+                            +2*ant.Coord(iSegments(1,h),2).^2.*(1-cos(phimark)));
+                        else
+                            R{1,h} = @(phimark) sqrt((ant.Coord(iSegments(1,h),1)-ant.Coord(jSegments(1,h),1)).^2 ...
+                            +(ant.Coord(iSegments(1,h),2)-ant.Coord(jSegments(1,h),2)).^2 ...
+                            +2.*ant.Coord(iSegments(1,h),2).*ant.Coord(jSegments(1,h),2).*(1-cos(phimark)));
+                        end
                     else
-                    R = @(phimark) sqrt((ant.Coord(iSegments,1)-ant.Coord(jSegments,1)).^2 ...
-                        +(ant.Coord(iSegments,2)-ant.Coord(jSegments,2)).^2 ...
-                        +2.*ant.Coord(iSegments,2).*ant.Coord(jSegments,2).*(1-cos(phimark)));
+                        R{1,h} = @(phimark) sqrt((ant.Coord(iSegments(1,h),1)-ant.Coord(jSegments(1,h),1)).^2 ...
+                        +(ant.Coord(iSegments(1,h),2)-ant.Coord(jSegments(1,h),2)).^2 ...
+                        +2.*ant.Coord(iSegments(1,h),2).*ant.Coord(jSegments(1,h),2).*(1-cos(phimark)));
                     end
                     
-                    Func1 = @(phimark) cos(alpha.*phimark).*exp(-1i.*k.*R(phimark))./R(phimark);
-                    Func2 = @(phimark) cos(phimark).*cos(alpha.*phimark).*exp(-1i.*k.*R(phimark))./R(phimark);
-                    Func3 = @(phimark) sin(phimark).*sin(alpha.*phimark).*exp(-1i.*k.*R(phimark))./R(phimark);
+                    Func1{1,h} = @(phimark) cos(alpha.*phimark).*exp(-1i.*k.*R{1,h}(phimark))./R{1,h}(phimark);
+                    Func2{1,h} = @(phimark) cos(phimark).*cos(alpha.*phimark).*exp(-1i.*k.*R{1,h}(phimark))./R{1,h}(phimark);
+                    Func3{1,h} = @(phimark) sin(phimark).*sin(alpha.*phimark).*exp(-1i.*k.*R{1,h}(phimark))./R{1,h}(phimark);
                     
                     %Should possibly integrate to 2*pi
-                    G1 = ant.Coord(i,3).*ant.Coord(i+1,3).*integral(Func1, 0, pi, 'ArrayValued', true);
-                    G2 = ant.Coord(i,3).*ant.Coord(i+1,3).*integral(Func2, 0, pi, 'ArrayValued', true);
-                    G3 = ant.Coord(i,3).*ant.Coord(i+1,3).*integral(Func3, 0, pi, 'ArrayValued', true);
-                
+                    G1{1,h} = ant.Coord(i,3).*ant.Coord(i+1,3).*integral(Func1{1,h}, 0, pi, 'ArrayValued', true);
+                    G2{1,h} = ant.Coord(i,3).*ant.Coord(i+1,3).*integral(Func2{1,h}, 0, pi, 'ArrayValued', true);
+                    G3{1,h} = ant.Coord(i,3).*ant.Coord(i+1,3).*integral(Func3{1,h}, 0, pi, 'ArrayValued', true);
+                    
                     %Ztt
-                    ant.Z(i,j) = sum(((ant.T(iSegments).*ant.T(jSegments)).*(sin(ant.gamma(iSegments)).*sin(ant.gamma(jSegments)).*G2 ...
-                        +cos(ant.gamma(iSegments)).*cos(ant.gamma(jSegments)).*G1) ...
-                        -1./k.^2.*ant.TD(iSegments).*ant.TD(jSegments).*G1));
+                    ant.Z(i,j) = ant.Z(i,j)+sum(((ant.T(iSegments(1:2)).*ant.T(jSegments(1:2))).*(sin(ant.gamma(iSegments(1:2))).*sin(ant.gamma(jSegments(1:2))).*G2{1,h} ...
+                        +cos(ant.gamma(iSegments(1:2))).*cos(ant.gamma(jSegments(1:2))).*G1{1,h}) ...
+                        -1./k.^2.*ant.TD(iSegments(1:2)).*ant.TD(jSegments(1:2)).*G1{1,h}));
                     %Ztphi
-                    ant.Z(i+ant.Segments,j) = sum(1i.*(sin(ant.gamma(iSegments)).*ant.T(iSegments).*ant.T(jSegments).*G3 ...
-                        +(1./k^2).*(alpha./ant.Coord(jSegments,2)).*ant.TD(iSegments).*ant.T(jSegments).*G1));
+                    ant.Z(i+ant.Segments,j) = ant.Z(i+ant.Segments,j)+sum(1i.*(sin(ant.gamma(iSegments(1:2))).*ant.T(iSegments(1:2)).*ant.T(jSegments(1:2)).*G3{1,h} ...
+                        +(1./k^2).*(alpha./ant.Coord(jSegments(1:2),2)).*ant.TD(iSegments(1:2)).*ant.T(jSegments(1:2)).*G1{1,h}));
                     %Zphit
-                    ant.Z(i,j+ant.Segments) = sum(1i.*ant.T(iSegments).*ant.T(jSegments).*sin(ant.gamma(jSegments)).*G3 ... 
-                        +(1./k^2).*(alpha./ant.Coord(iSegments,2)).*ant.T(iSegments).*ant.TD(jSegments).*G1);
+                    ant.Z(i,j+ant.Segments) =   ant.Z(i,j+ant.Segments)+sum(1i.*ant.T(iSegments(1:2)).*ant.T(jSegments(1:2)).*sin(ant.gamma(jSegments(1:2))).*G3{1,h} ... 
+                        +(1./k^2).*(alpha./ant.Coord(iSegments(1:2),2)).*ant.T(iSegments(1:2)).*ant.TD(jSegments(1:2)).*G1{1,h});
                     %Zphiphi
-                    ant.Z(i+ant.Segments,j+ant.Segments) = sum(-(ant.T(iSegments).*ant.T(jSegments).*... 
-                        (G2-1/k.^2.*alpha.^2./(ant.Coord(iSegments,2).*ant.Coord(jSegments,2)).*G1)));
+                    ant.Z(i+ant.Segments,j+ant.Segments) =  ant.Z(i+ant.Segments,j+ant.Segments)+sum(-(ant.T(iSegments(1:2)).*ant.T(jSegments(1:2)).*... 
+                        (G2{1,h}-1/k.^2.*alpha.^2./(ant.Coord(iSegments(1:2),2).*ant.Coord(jSegments(1:2),2)).*G1{1,h})));
+                    end
                 end
                 
                 J0 = besselj(alpha-1, k*ant.Coord(i,2)*sin(thetaI));
@@ -177,13 +203,17 @@ classdef MoM
                 end
             end
             
-            ant.invZ = ant.Z^(-1);
+            ant.invZ = (1+ant.Z)^(-1);
+            tempZ = ant.Z(1:ant.Segments,1:ant.Segments);
+            invZtt = tempZ^(-1);
             bThe = [ant.btTheta, ant.bPhiTheta];
             xTheta = ant.invZ*bThe.';
             bPhi = [ant.btPhi, ant.bPhiPhi];
             xPhi = ant.invZ*bPhi.';
             
-            ant.xtTheta = xTheta(1:ant.Segments);
+%           ant.xtTheta = xTheta(1:ant.Segments);
+            ant.xtTheta = (ant.btTheta*invZtt).';
+            
             ant.xPhiTheta = xTheta(ant.Segments+1:2*ant.Segments);    
             ant.xtPhi = xPhi(1:ant.Segments);
             ant.xPhiPhi = xPhi(ant.Segments+1:2*ant.Segments);
