@@ -68,9 +68,10 @@ classdef Antenna
             [ant.tHat, ant.zHat, ant.gamma] = UnitVecs(ant);
             [ant.tHatTest, ant.zHatTest, ant.gammaTest] = UnitVecsTest(ant);
             %Current density
-            ant.Jthe = 0;
-            ant.Jphi = 0;
-            ant.Z = zeros(2*ant.Segments,2*ant.Segments);
+            ant.Jthe = (1:ant.Segments).';
+            ant.Jphi = (1:ant.Segments).';
+%             ant.Z = zeros(2*ant.Segments,2*ant.Segments);
+            ant.Z = zeros(ant.Segments,ant.Segments);
             ant.invZ = ant.Z;
             ant.btTheta = (1:ant.Segments);
             ant.btPhi = (1:ant.Segments);
@@ -81,23 +82,23 @@ classdef Antenna
             ant.xtPhi = (1:ant.Segments);
             ant.xPhiPhi = (ant.Segments+1:2*ant.Segments);
             %Testing functions triangle
-            T1 = sqrt((ant.CoordTest(:,1)-ant.Coord(1:ant.Segments-1,1)).^2 ... 
+            ant.T1 = sqrt((ant.CoordTest(:,1)-ant.Coord(1:ant.Segments-1,1)).^2 ... 
                 +(ant.CoordTest(:,2)-ant.Coord(1:ant.Segments-1,2)).^2)...
                 ./sqrt((ant.Coord(1:ant.Segments-1,1)-ant.Coord(2:ant.Segments,1)).^2 ...
                 +(ant.Coord(1:ant.Segments-1,2)-ant.Coord(2:ant.Segments,2)).^2);
-            ant.T1 = [T1;0];
-            T2 = sqrt((ant.Coord(2:ant.Segments,1)-ant.CoordTest(:,1)).^2 ... 
+            ant.T1(end,1) = 0;
+            ant.T2 = sqrt((ant.Coord(2:ant.Segments,1)-ant.CoordTest(:,1)).^2 ... 
                 +(ant.Coord(2:ant.Segments,2)-ant.CoordTest(:,2)).^2) ...
                 ./sqrt((ant.Coord(1:ant.Segments-1,1)-ant.Coord(2:ant.Segments,1)).^2 ...
                 +(ant.Coord(1:ant.Segments-1,2)-ant.Coord(2:ant.Segments,2)).^2);
-            ant.T2 = [0;T2];
+            ant.T2(1,1) = 0;
             ant.T = ant.T1+ant.T2;
-            T1D = 1./sqrt((ant.Coord(1:ant.Segments-1,1)-ant.Coord(2:ant.Segments,1)).^2 ...
+            ant.T1D = 1./sqrt((ant.Coord(1:ant.Segments-1,1)-ant.Coord(2:ant.Segments,1)).^2 ...
                 +(ant.Coord(1:ant.Segments-1,2)-ant.Coord(2:ant.Segments,2)).^2);
-            ant.T1D = [T1D;0];
-            T2D = -1./sqrt((ant.Coord(1:ant.Segments-1,1)-ant.Coord(2:ant.Segments,1)).^2 ...
+            ant.T1D(end,1) = 0;
+            ant.T2D = -1./sqrt((ant.Coord(1:ant.Segments-1,1)-ant.Coord(2:ant.Segments,1)).^2 ...
                 +(ant.Coord(1:ant.Segments-1,2)-ant.Coord(2:ant.Segments,2)).^2);
-            ant.T2D = [0;T2D];
+            ant.T2D(1,1) = 0;
             
             ant.TD = ant.T1D+ant.T2D;
             %Field limiter
@@ -236,7 +237,7 @@ classdef Antenna
             E0(lower) = (ant.Coord(ant.Segments/2-amount,1)-ant.Coord(lower, 1))...
             ./(ant.Coord(ant.Segments/2-amount,1));
             
-%              E0(:) = 1;
+            E0(:) = 1;
             
         end
     end

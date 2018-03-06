@@ -20,12 +20,12 @@ SecondTestZone = Area(0.0001, 800, 800, -20, 20, -20, 20, mu0);
 %% looping through alpha
 for alpha=0:2
     alpha
-    [ant1, FirstTestZone] = mombasis(MoMobj, ant1, FirstTestZone, alpha, k, w, pi/2, 0, 0, mu0);
+    [ant1, SecondTestZone] = mombasis(MoMobj, ant1, SecondTestZone, alpha, k, w, pi/2, 0, 0, mu0);
 %     [ant2, SecondTestZone] = mom2on1(MoMobj, ant2, ant2, SecondTestZone, alpha, k, w, pi/2, 0, 0, mu0);
 end
 %% Plots
-figure(3)
-pcolor(FirstTestZone.z, FirstTestZone.x, abs(real(FirstTestZone.Ethethe)))
+figure(2)
+pcolor(SecondTestZone.z, SecondTestZone.x, abs(real(SecondTestZone.Ethethe)))
 shading interp
 colorbar
 % caxis([0 1*10^14])
