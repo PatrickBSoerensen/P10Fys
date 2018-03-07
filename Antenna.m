@@ -70,17 +70,11 @@ classdef Antenna
             %Testing functions triangle
             [ant.T1, ant.T2, ant.T1D, ant.T2D] = TriangleBasis(ant);
             %Current density
-            ant.Jthe = (1:ant.Segments).';
-            ant.Jphi = (1:ant.Segments).';
-%           ant.Z = zeros(2*ant.Segments,2*ant.Segments);
-            ant.Z = zeros(ant.Segments,ant.Segments);
             ant.Jthe = (1:ant.Segments-1).';
             ant.Jphi = (1:ant.Segments-1).';
+%           ant.Z = zeros(2*ant.Segments,2*ant.Segments);
             ant.Z = zeros(ant.Segments-1,ant.Segments-1);
             ant.invZ = ant.Z;
-            ant.btTheta = (1:ant.Segments);
-            ant.xPhiTheta = (ant.Segments+1:2*ant.Segments);    
-            ant.T1 = sqrt((ant.CoordTest(:,1)-ant.Coord(1:ant.Segments-1,1)).^2 ... 
             ant.btTheta = (1:ant.Segments-1);
             ant.btPhi = (1:ant.Segments-1);
             ant.bPhiTheta = (1:ant.Segments-1);
