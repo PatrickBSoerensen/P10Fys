@@ -10,7 +10,7 @@ w=2*pi*f;
 k=w/c;
 %% Creation of objects
 length = 0.995;
-ant1 = Antenna(length, 30, 10, 0.0031, [0,0], 1);
+ant1 = Antenna(length, 30, 20, 0.0031, [0,0], 1);
 % ant2 = Antenna(length, 15, 10, 0.0031, [0,5], 1);
 % MoM solver object 
 MoMobj = MoM();
@@ -30,3 +30,12 @@ pcolor(SecondTestZone.z, SecondTestZone.x, abs(real(SecondTestZone.Ethethe)))
 shading interp
 colorbar
 % caxis([0 1*10^14])
+figure(2)
+%Middle segment
+plot(abs(ant1.Jthe(ant1.PointsCircle-1:ant1.PointsLine+ant1.PointsCircle-2)), 'k-*')
+figure(3)
+hold on
+%Lower circ
+plot(abs(ant1.Jthe(1:ant1.PointsCircle-2)), 'b-*')
+%Upper circ
+plot(abs(ant1.Jthe(ant1.PointsLine+ant1.PointsCircle-1:end)), 'r-*')
