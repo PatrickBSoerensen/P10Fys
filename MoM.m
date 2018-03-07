@@ -110,15 +110,9 @@ classdef MoM
         
         function [ant, area] = mombasis(obj, ant, area, alpha, k, w, thetaI, phi, phiS, mu)
             
-<<<<<<< HEAD
-            for i=1:length(ant.T1)-1
-                iSegments = [i, i+1, i, i+1];
-                for j=1:length(ant.T1)-1
-=======
             for i=1:length(ant.T1)
                 iSegments = [i, i+1, i, i+1];
                 for j=1:length(ant.T1)
->>>>>>> 0b148ac2ac498df07bcc96c1bbcfd2402bad9032
                     jSegments = [j, j+1, j+1, j];
                     
                     for h=1:4
@@ -180,12 +174,7 @@ classdef MoM
                 end
             end
             
-<<<<<<< HEAD
-%             ant.invZ = (-ant.Z)^(-1);
-          ant.invZ = pinv(ant.Z);
-=======
         ant.invZ = ant.Z^(-1);
->>>>>>> 0b148ac2ac498df07bcc96c1bbcfd2402bad9032
             
             ant.xtTheta = ant.invZ*ant.btTheta.';
             for i=1:length(ant.T1)
@@ -206,11 +195,7 @@ classdef MoM
         
         function area = emission(obj, ant, area, alpha, k, w, phiS)
             rz = (area.z-ant.Coord(:,1));
-<<<<<<< HEAD
-            for i=1:ant.Segments-1
-=======
             for i=1:length(ant.T1)
->>>>>>> 0b148ac2ac498df07bcc96c1bbcfd2402bad9032
                 rx = (area.x+ant.Coord(:,2)+area.SingularityProtection);
                 r = sqrt((rz(i,:).').^2+(rx(i,:)).^2);
                 B = -(1i*w*area.mu0)/(2*pi)*(exp(-1i*k*r)./r);
