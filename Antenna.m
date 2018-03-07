@@ -3,6 +3,7 @@ classdef Antenna
         Length;
         PointsLine;
         PointsCircle;
+        Points;
         Segments;
         Radii;
         Centre;
@@ -43,6 +44,7 @@ classdef Antenna
     
     methods
         function ant = Antenna(length, pointsline, pointscircle, radii, centre)
+        function ant = Antenna(length, pointsline, pointscircle, radii, centre, generator)
             %Setting up parameters
             ant.Length = length;
             ant.PointsLine = pointsline;
@@ -50,6 +52,8 @@ classdef Antenna
             ant.Radii = radii;
             ant.Centre = centre;
             ant.Segments = 2*pointscircle + pointsline-2;
+            ant.Points = 2*pointscircle + pointsline-2;
+            ant.Segments = 2*pointscircle + pointsline-3;
             %Splitting cylinder part of antenna
             cylinderlen = length-2.*radii;
             Lin = linspace(-cylinderlen./2, cylinderlen./2, pointsline);
@@ -67,11 +71,16 @@ classdef Antenna
             ant.CoordTest = CreateCoord(ant, 1);
             [ant.tHat, ant.zHat, ant.gamma] = UnitVecs(ant);
             [ant.tHatTest, ant.zHatTest, ant.gammaTest] = UnitVecsTest(ant);
+            %Testing functions triangle
+            [ant.T1, ant.T2, ant.T1D, ant.T2D] = TriangleBasis(ant);
             %Current density
             ant.Jthe = (1:ant.Segments).';
             ant.Jphi = (1:ant.Segments).';
 %           ant.Z = zeros(2*ant.Segments,2*ant.Segments);
             ant.Z = zeros(ant.Segments,ant.Segments);
+            ant.Jthe = (1:ant.Segments-1).';
+            ant.Jphi = (1:ant.Segments-1).';
+            ant.Z = zeros(ant.Segments-1,ant.Segments-1);
             ant.invZ = ant.Z;
             ant.btTheta = (1:ant.Segments);
             ant.btPhi = (1:ant.Segments);
@@ -101,8 +110,46 @@ classdef Antenna
             ant.T2D(1,1) = 0;
             
             ant.TD = ant.T1D+ant.T2D;
+            ant.btTheta = (1:ant.Segments-1);
+            ant.btPhi = (1:ant.Segments-1);
+            ant.bPhiTheta = (1:ant.Segments-1);
+            ant.bPhiPhi = (1:ant.Segments-1);
+            ant.xtTheta = (1:ant.Segments-1);
+            ant.xPhiTheta = (ant.Segments:2*ant.Segments-1);    
+            ant.xtPhi = (1:ant.Segments-1);
+            ant.xPhiPhi = (ant.Segments:2*ant.Segments-1);
             %Field limiter
             ant.E0 = FieldSetup(ant, ant.Length/20);
+            if generator
+                ant.E0 = FieldSetup(ant, ant.Length/10);
+            else
+                ant.E0(1:ant.Segments) = 0;
+            end
+            
+        end
+        
+        function [T1, T2, T1D, T2D] = TriangleBasis(ant)
+%           Rising basis function
+            T1 = sqrt((ant.CoordTest(:,1)-ant.Coord(1:ant.Segments,1)).^2 ... 
+                +(ant.CoordTest(:,2)-ant.Coord(1:ant.Segments,2)).^2)...
+                ./sqrt((ant.Coord(1:ant.Segments,1)-ant.Coord(2:ant.Segments+1,1)).^2 ...
+                +(ant.Coord(1:ant.Segments,2)-ant.Coord(2:ant.Segments+1,2)).^2);
+            T1 = T1(1:end-1);
+%           Falling basis function
+            T2 = sqrt((ant.Coord(2:ant.Segments+1,1)-ant.CoordTest(:,1)).^2 ... 
+                +(ant.Coord(2:ant.Segments+1,2)-ant.CoordTest(:,2)).^2) ...
+                ./sqrt((ant.Coord(1:ant.Segments,1)-ant.Coord(2:ant.Segments+1,1)).^2 ...
+                +(ant.Coord(1:ant.Segments,2)-ant.Coord(2:ant.Segments+1,2)).^2);
+            T2 = T2(2:end);
+            %Rising basis derivative
+            T1D = 1./sqrt((ant.Coord(1:ant.Segments,1)-ant.Coord(2:ant.Segments+1,1)).^2 ...
+                +(ant.Coord(1:ant.Segments,2)-ant.Coord(2:ant.Segments+1,2)).^2);
+            T1D = T1D(1:end-1);
+            %Falling basis derivative
+            T2D = -1./sqrt((ant.Coord(1:ant.Segments,1)-ant.Coord(2:ant.Segments+1,1)).^2 ...
+                +(ant.Coord(1:ant.Segments,2)-ant.Coord(2:ant.Segments+1,2)).^2);
+            T2D = T2D(2:end);
+            
         end
         
         function [tHat, zHat, gamma] = UnitVecs(ant)
@@ -221,14 +268,24 @@ classdef Antenna
             
             upper1 = 0 < ant.Coord(:, 1);
             upper2 = ant.Coord(:, 1) <= lim;
+            upper1 = 0 < ant.CoordTest(:, 1);
+            upper2 = ant.CoordTest(:, 1) <= lim/2;
             upper = logical(upper1.*upper2);
             mid = ant.Coord(:,1) == 0;
             lower1 = 0 > ant.Coord(:, 1);
             lower2 = ant.Coord(:, 1) >= -lim;
+            
+            mid = ant.CoordTest(:,1) == 0;
+            
+            lower1 = 0 > ant.CoordTest(:, 1);
+            lower2 = ant.CoordTest(:, 1) >= -lim/2;
             lower = logical(lower1.*lower2);
             amount = round(ant.Segments/10);
             
             if mid
+            amount = round(ant.Segments/20);
+            
+            if sum(mid)
                 E0(mid) = 1;
             end
            
@@ -239,6 +296,11 @@ classdef Antenna
             
 %             E0(:) = 1;
             
+            E0(upper) = (ant.CoordTest(round(ant.Segments/2+amount),1)-ant.CoordTest(upper, 1))...
+            ./(ant.CoordTest(round(ant.Points/2+amount),1));
+            E0(lower) = (ant.CoordTest(round(ant.Points/2-amount),1)-ant.CoordTest(lower, 1))...
+            ./(ant.CoordTest(round(ant.Points/2-amount),1));
+        
         end
     end
 end
