@@ -10,8 +10,8 @@ w=2*pi*f;
 k=w/c;
 %% Creation of objects
 length = 0.995;
-ant1 = Antenna(length, 20, 20, 0.0031, [0,0]);
-ant2 = Antenna(length, 20, 20, 0.0031, [0,0]);
+ant1 = Antenna(length, 25, 25, 0.0031, [0,0], 1);
+ant2 = Antenna(length, 15, 10, 0.0031, [0,5], 1);
 % MoM solver object 
 MoMobj = MoM();
 % Area creation, where the antenna is placed
@@ -25,7 +25,7 @@ for alpha=0:2
 %   [ant2, SecondTestZone] = mom2on1(MoMobj, ant2, ant2, SecondTestZone, alpha, k, w, pi/2, 0, 0, mu0);
 end
 %% Plots
-figure(2)
+figure(1)
 pcolor(SecondTestZone.z, SecondTestZone.x, abs(real(SecondTestZone.Ethethe)))
 shading interp
 colorbar

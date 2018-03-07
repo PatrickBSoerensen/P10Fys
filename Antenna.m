@@ -41,7 +41,7 @@ classdef Antenna
     end
     
     methods
-        function ant = Antenna(length, pointsline, pointscircle, radii, centre)
+        function ant = Antenna(length, pointsline, pointscircle, radii, centre, generator)
             %Setting up parameters
             ant.Length = length;
             ant.PointsLine = pointsline;
@@ -83,7 +83,12 @@ classdef Antenna
             ant.xtPhi = (1:ant.Segments-1);
             ant.xPhiPhi = (ant.Segments:2*ant.Segments-1);
             %Field limiter
-            ant.E0 = FieldSetup(ant, ant.Length/20);
+            if generator
+                ant.E0 = FieldSetup(ant, ant.Length/20);
+            else
+                ant.E0(1:ant.Segments) = 0;
+            end
+            
         end
         
         function [T1, T2, T1D, T2D] = TriangleBasis(ant)
@@ -233,14 +238,14 @@ classdef Antenna
             lower = logical(lower1.*lower2);
             amount = round(ant.Points/10);
             
-            if mid
+            if sum(mid)
                 E0(mid) = 1;
             end
            
-            E0(upper) = (ant.Coord(ant.Points/2+amount,1)-ant.Coord(upper, 1))...
-            ./(ant.Coord(ant.Points/2+amount,1));
-            E0(lower) = (ant.Coord(ant.Points/2-amount,1)-ant.Coord(lower, 1))...
-            ./(ant.Coord(ant.Points/2-amount,1));
+            E0(upper) = (ant.Coord(round(ant.Points/2+amount),1)-ant.Coord(upper, 1))...
+            ./(ant.Coord(round(ant.Points/2+amount),1));
+            E0(lower) = (ant.Coord(round(ant.Points/2-amount),1)-ant.Coord(lower, 1))...
+            ./(ant.Coord(round(ant.Points/2-amount),1));
             
 %             E0(:) = 1;
             

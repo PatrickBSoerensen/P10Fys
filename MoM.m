@@ -154,31 +154,29 @@ classdef MoM
                         (sin(ant.gammaTest(i+1)).*sin(ant.gammaTest(j)).*G2{1,4} ...
                         +cos(ant.gammaTest(i+1)).*cos(ant.gammaTest(j)).*G1{1,4}) ...
                         -1./k.^2.*ant.T2D(i).*ant.T1D(j).*G1{1,4});
-                     
                 end
                 
-                J0 = besselj(alpha-1, k*ant.Coord(i,2)*sin(thetaI));
-                J1 = besselj(alpha, k*ant.Coord(i,2)*sin(thetaI));
-                J2 = besselj(alpha+1, k*ant.Coord(i,2)*sin(thetaI));
+                J0 = besselj(alpha-1, k*ant.Coord([i, i+1],2)*sin(thetaI));
+                J1 = besselj(alpha, k*ant.Coord([i, i+1],2)*sin(thetaI));
+                J2 = besselj(alpha+1, k*ant.Coord([i, i+1],2)*sin(thetaI));
                 %% planewave b equations
                 if ant.E0(i) ~= 0
                 ant.btTheta(i) = -ant.E0(i)*1i/(w*mu)*pi*1i^(alpha)*...
-                    (ant.T1(i)+ant.T2(i))...
-                    *ant.Coord(i,3)...
-                *exp(1i*k*ant.Coord(i,1)*cos(thetaI))*(cos(thetaI)...
-                *sin(ant.gammaTest(i))*1i*(J2-J0)-2*sin(thetaI)*cos(ant.gammaTest(i))*J1);
+                    sum((ant.T1(i)+ant.T2(i))...
+                    .*ant.Coord([i, i+1],3)...
+                .*exp(1i.*k.*ant.Coord([i, i+1],1).*cos(thetaI)).*(cos(thetaI)...
+                .*sin(ant.gammaTest([i, i+1])).*1i.*(J2-J0)-2.*sin(thetaI).*cos(ant.gammaTest([i, i+1])).*J1));
                 else
                 %% general b equations, missing hat vectors in integral
-                ant.btTheta(i) = -2*pi*1i/(w*mu)*(ant.T1(i)+ant.T2(i))*ant.Coord(i,3);
+                ant.btTheta(i) = -2*pi*1i/(w*mu).*sum((ant.T1(i)+ant.T2(i)).*ant.Coord([i, i+1],3));
                 end
             end
             
         ant.invZ = ant.Z^(-1);
-%       ant.invZ = pinv(ant.Z);
             
             ant.xtTheta = ant.invZ*ant.btTheta.';
             for i=1:length(ant.T1)
-                ftn = sqrt(ant.tHat(i,1).^2+ant.tHat(i,3).^2).*((ant.T1(i)+ant.T2(i))).*exp(1i.*alpha.*phi)./ant.Coord(i,2);%T, alpha, n. Expansions function
+                ftn = sum(sqrt(ant.tHat(i,1).^2+ant.tHat(i,3).^2).*((ant.T1(i)+ant.T2(i))).*exp(1i.*alpha.*phi)./ant.Coord([i, i+1],2));%T, alpha, n. Expansions function
             
                 if alpha == 0
                     ant.Jthe(i) = ant.xtTheta(i).*ftn;
