@@ -215,8 +215,8 @@ classdef MoM
                        jSegments=[j,j,j,j];
                     end
                     %Ztt
-                    ant.Z(iSegments(1,2):jSegments(1,2),iSegments(1,2):jSegments(1,2)) =...
-                        ant.Z(iSegments(1,2):jSegments(1,2),iSegments(1,2):jSegments(1,2))+ ... 
+                    ant.Z(i,j) =...
+                        ant.Z(i,j)+ ... 
                         sum(ant.T1(iSegments(1)).*ant.T1(jSegments(1)).*...
                         (sin(ant.gammaTest(iSegments(1))).*sin(ant.gammaTest(jSegments(1))).*G2{1,1} ...
                         +cos(ant.gammaTest(iSegments(1))).*cos(ant.gammaTest(jSegments(1))).*G1{1,1}) ...
@@ -236,7 +236,6 @@ classdef MoM
                         (sin(ant.gammaTest(iSegments(2))).*sin(ant.gammaTest(jSegments(1))).*G2{1,4} ...
                         +cos(ant.gammaTest(iSegments(2))).*cos(ant.gammaTest(jSegments(1))).*G1{1,4}) ...
                         -1./k.^2.*ant.T2D(iSegments(2)).*ant.T1D(jSegments(1)).*G1{1,4});
-                     
                 end
                 
                 J0 = besselj(alpha-1, k*ant.Coord(i,2)*sin(thetaI));
@@ -255,8 +254,8 @@ classdef MoM
                 end
             end
             
-        ant.invZ = ant.Z^(-1);
-%           ant.invZ = pinv(ant.Z);
+%         ant.invZ = ant.Z^(-1);
+          ant.invZ = pinv(ant.Z);
             
             ant.xtTheta = ant.invZ*ant.btTheta.';
             for i=1:length(ant.T1)-1
@@ -277,7 +276,7 @@ classdef MoM
         
         function area = emission(obj, ant, area, alpha, k, w, phiS)
             rz = (area.z-ant.Coord(:,1));
-            for i=1:ant.Segments
+            for i=1:ant.Segments-1
                 rx = (area.x+ant.Coord(:,2)+area.SingularityProtection);
                 r = sqrt((rz(i,:).').^2+(rx(i,:)).^2);
                 B = -(1i*w*area.mu0)/(2*pi)*(exp(-1i*k*r)./r);

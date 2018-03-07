@@ -11,7 +11,7 @@ k=w/c;
 %% Creation of objects
 length = 0.995;
 ant1 = Antenna(length, 20, 20, 0.0031, [0,0]);
-ant2 = Antenna(length, 20, 20, 0.0031, [0,0]);
+ant2 = Antenna(length, 20, 20, 0.0031, [0,5]);
 % MoM solver object 
 MoMobj = MoM();
 % Area creation, where the antenna is placed
@@ -21,7 +21,8 @@ SecondTestZone = Area(0.0001, 800, 800, -20, 20, -20, 20, mu0);
 for alpha=0:2
     alpha
     [ant1, SecondTestZone] = mombasis(MoMobj, ant1, SecondTestZone, alpha, k, w, pi/2, 0, 0, mu0);
-%     [ant2, SecondTestZone] = mom2on1(MoMobj, ant2, ant2, SecondTestZone, alpha, k, w, pi/2, 0, 0, mu0);
+    [ant2, SecondTestZone] = mombasis(MoMobj, ant2, SecondTestZone, alpha, k, w, pi/2, 0, 0, mu0);
+%   [ant2, SecondTestZone] = mom2on1(MoMobj, ant2, ant2, SecondTestZone, alpha, k, w, pi/2, 0, 0, mu0);
 end
 %% Plots
 figure(2)

@@ -49,7 +49,6 @@ classdef Antenna
             ant.PointsCircle = pointscircle;
             ant.Radii = radii;
             ant.Centre = centre;
-            ant.Segments = 2*pointscircle + pointsline-2;
             %Splitting cylinder part of antenna
             cylinderlen = length-2.*radii;
             Lin = linspace(-cylinderlen./2, cylinderlen./2, pointsline);
@@ -68,6 +67,7 @@ classdef Antenna
             [ant.tHat, ant.zHat, ant.gamma] = UnitVecs(ant);
             [ant.tHatTest, ant.zHatTest, ant.gammaTest] = UnitVecsTest(ant);
             %Current density
+            ant.Segments = 2*pointscircle + pointsline-3;
             ant.Jthe = (1:ant.Segments).';
             ant.Jphi = (1:ant.Segments).';
 %             ant.Z = zeros(2*ant.Segments,2*ant.Segments);
@@ -81,6 +81,7 @@ classdef Antenna
             ant.xPhiTheta = (ant.Segments+1:2*ant.Segments);    
             ant.xtPhi = (1:ant.Segments);
             ant.xPhiPhi = (ant.Segments+1:2*ant.Segments);
+            ant.Segments = 2*pointscircle + pointsline-2;
             %Testing functions triangle
             ant.T1 = sqrt((ant.CoordTest(:,1)-ant.Coord(1:ant.Segments-1,1)).^2 ... 
                 +(ant.CoordTest(:,2)-ant.Coord(1:ant.Segments-1,2)).^2)...
@@ -102,6 +103,7 @@ classdef Antenna
             
             ant.TD = ant.T1D+ant.T2D;
             %Field limiter
+            
             ant.E0 = FieldSetup(ant, ant.Length/20);
         end
         
