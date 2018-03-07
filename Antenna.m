@@ -3,6 +3,7 @@ classdef Antenna
         Length;
         PointsLine;
         PointsCircle;
+        Points;
         Segments;
         Radii;
         Centre;
@@ -36,8 +37,6 @@ classdef Antenna
         T2;
         T1D;
         T2D;
-        T;
-        TD;
         E0;
     end
     
@@ -49,6 +48,8 @@ classdef Antenna
             ant.PointsCircle = pointscircle;
             ant.Radii = radii;
             ant.Centre = centre;
+            ant.Points = 2*pointscircle + pointsline-2;
+            ant.Segments = 2*pointscircle + pointsline-3;
             %Splitting cylinder part of antenna
             cylinderlen = length-2.*radii;
             Lin = linspace(-cylinderlen./2, cylinderlen./2, pointsline);
@@ -67,10 +68,8 @@ classdef Antenna
             [ant.tHat, ant.zHat, ant.gamma] = UnitVecs(ant);
             [ant.tHatTest, ant.zHatTest, ant.gammaTest] = UnitVecsTest(ant);
             %Current density
-            ant.Segments = 2*pointscircle + pointsline-3;
             ant.Jthe = (1:ant.Segments).';
             ant.Jphi = (1:ant.Segments).';
-%             ant.Z = zeros(2*ant.Segments,2*ant.Segments);
             ant.Z = zeros(ant.Segments,ant.Segments);
             ant.invZ = ant.Z;
             ant.btTheta = (1:ant.Segments);
@@ -81,30 +80,34 @@ classdef Antenna
             ant.xPhiTheta = (ant.Segments+1:2*ant.Segments);    
             ant.xtPhi = (1:ant.Segments);
             ant.xPhiPhi = (ant.Segments+1:2*ant.Segments);
-            ant.Segments = 2*pointscircle + pointsline-2;
             %Testing functions triangle
-            ant.T1 = sqrt((ant.CoordTest(:,1)-ant.Coord(1:ant.Segments-1,1)).^2 ... 
-                +(ant.CoordTest(:,2)-ant.Coord(1:ant.Segments-1,2)).^2)...
-                ./sqrt((ant.Coord(1:ant.Segments-1,1)-ant.Coord(2:ant.Segments,1)).^2 ...
-                +(ant.Coord(1:ant.Segments-1,2)-ant.Coord(2:ant.Segments,2)).^2);
-            ant.T1(end,1) = 0;
-            ant.T2 = sqrt((ant.Coord(2:ant.Segments,1)-ant.CoordTest(:,1)).^2 ... 
-                +(ant.Coord(2:ant.Segments,2)-ant.CoordTest(:,2)).^2) ...
-                ./sqrt((ant.Coord(1:ant.Segments-1,1)-ant.Coord(2:ant.Segments,1)).^2 ...
-                +(ant.Coord(1:ant.Segments-1,2)-ant.Coord(2:ant.Segments,2)).^2);
-            ant.T2(1,1) = 0;
-            ant.T = ant.T1+ant.T2;
-            ant.T1D = 1./sqrt((ant.Coord(1:ant.Segments-1,1)-ant.Coord(2:ant.Segments,1)).^2 ...
-                +(ant.Coord(1:ant.Segments-1,2)-ant.Coord(2:ant.Segments,2)).^2);
-            ant.T1D(end,1) = 0;
-            ant.T2D = -1./sqrt((ant.Coord(1:ant.Segments-1,1)-ant.Coord(2:ant.Segments,1)).^2 ...
-                +(ant.Coord(1:ant.Segments-1,2)-ant.Coord(2:ant.Segments,2)).^2);
-            ant.T2D(1,1) = 0;
-            
-            ant.TD = ant.T1D+ant.T2D;
+            [ant.T1, ant.T2, ant.T1D, ant.T2D] = TriangleBasis(ant);
             %Field limiter
-            
             ant.E0 = FieldSetup(ant, ant.Length/20);
+        end
+        
+        function [T1, T2, T1D, T2D] = TriangleBasis(ant)
+%           Rising basis function
+            T1 = sqrt((ant.CoordTest(:,1)-ant.Coord(1:ant.Segments,1)).^2 ... 
+                +(ant.CoordTest(:,2)-ant.Coord(1:ant.Segments,2)).^2)...
+                ./sqrt((ant.Coord(1:ant.Segments,1)-ant.Coord(2:ant.Segments+1,1)).^2 ...
+                +(ant.Coord(1:ant.Segments,2)-ant.Coord(2:ant.Segments+1,2)).^2);
+            T1 = T1(1:end-1);
+%           Falling basis function
+            T2 = sqrt((ant.Coord(2:ant.Segments+1,1)-ant.CoordTest(:,1)).^2 ... 
+                +(ant.Coord(2:ant.Segments+1,2)-ant.CoordTest(:,2)).^2) ...
+                ./sqrt((ant.Coord(1:ant.Segments,1)-ant.Coord(2:ant.Segments+1,1)).^2 ...
+                +(ant.Coord(1:ant.Segments,2)-ant.Coord(2:ant.Segments+1,2)).^2);
+            T2 = T2(2:end);
+            %Rising basis derivative
+            T1D = 1./sqrt((ant.Coord(1:ant.Segments,1)-ant.Coord(2:ant.Segments+1,1)).^2 ...
+                +(ant.Coord(1:ant.Segments,2)-ant.Coord(2:ant.Segments+1,2)).^2);
+            T1D = T1D(1:end-1);
+            %Falling basis derivative
+            T2D = -1./sqrt((ant.Coord(1:ant.Segments,1)-ant.Coord(2:ant.Segments+1,1)).^2 ...
+                +(ant.Coord(1:ant.Segments,2)-ant.Coord(2:ant.Segments+1,2)).^2);
+            T2D = T2D(2:end);
+            
         end
         
         function [tHat, zHat, gamma] = UnitVecs(ant)
@@ -228,18 +231,18 @@ classdef Antenna
             lower1 = 0 > ant.Coord(:, 1);
             lower2 = ant.Coord(:, 1) >= -lim;
             lower = logical(lower1.*lower2);
-            amount = round(ant.Segments/10);
+            amount = round(ant.Points/10);
             
             if mid
                 E0(mid) = 1;
             end
            
-            E0(upper) = (ant.Coord(ant.Segments/2+amount,1)-ant.Coord(upper, 1))...
-            ./(ant.Coord(ant.Segments/2+amount,1));
-            E0(lower) = (ant.Coord(ant.Segments/2-amount,1)-ant.Coord(lower, 1))...
-            ./(ant.Coord(ant.Segments/2-amount,1));
+            E0(upper) = (ant.Coord(ant.Points/2+amount,1)-ant.Coord(upper, 1))...
+            ./(ant.Coord(ant.Points/2+amount,1));
+            E0(lower) = (ant.Coord(ant.Points/2-amount,1)-ant.Coord(lower, 1))...
+            ./(ant.Coord(ant.Points/2-amount,1));
             
-            E0(:) = 1;
+%             E0(:) = 1;
             
         end
     end
