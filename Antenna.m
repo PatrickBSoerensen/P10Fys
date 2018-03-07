@@ -67,21 +67,21 @@ classdef Antenna
             ant.CoordTest = CreateCoord(ant, 1);
             [ant.tHat, ant.zHat, ant.gamma] = UnitVecs(ant);
             [ant.tHatTest, ant.zHatTest, ant.gammaTest] = UnitVecsTest(ant);
-            %Current density
-            ant.Jthe = (1:ant.Segments).';
-            ant.Jphi = (1:ant.Segments).';
-            ant.Z = zeros(ant.Segments,ant.Segments);
-            ant.invZ = ant.Z;
-            ant.btTheta = (1:ant.Segments);
-            ant.btPhi = (1:ant.Segments);
-            ant.bPhiTheta = (1:ant.Segments);
-            ant.bPhiPhi = (1:ant.Segments);
-            ant.xtTheta = (1:ant.Segments);
-            ant.xPhiTheta = (ant.Segments+1:2*ant.Segments);    
-            ant.xtPhi = (1:ant.Segments);
-            ant.xPhiPhi = (ant.Segments+1:2*ant.Segments);
             %Testing functions triangle
             [ant.T1, ant.T2, ant.T1D, ant.T2D] = TriangleBasis(ant);
+            %Current density
+            ant.Jthe = (1:ant.Segments-1).';
+            ant.Jphi = (1:ant.Segments-1).';
+            ant.Z = zeros(ant.Segments-1,ant.Segments-1);
+            ant.invZ = ant.Z;
+            ant.btTheta = (1:ant.Segments-1);
+            ant.btPhi = (1:ant.Segments-1);
+            ant.bPhiTheta = (1:ant.Segments-1);
+            ant.bPhiPhi = (1:ant.Segments-1);
+            ant.xtTheta = (1:ant.Segments-1);
+            ant.xPhiTheta = (ant.Segments:2*ant.Segments-1);    
+            ant.xtPhi = (1:ant.Segments-1);
+            ant.xPhiPhi = (ant.Segments:2*ant.Segments-1);
             %Field limiter
             ant.E0 = FieldSetup(ant, ant.Length/20);
         end
