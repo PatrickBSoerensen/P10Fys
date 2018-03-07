@@ -84,7 +84,7 @@ classdef Antenna
             ant.xPhiPhi = (ant.Segments:2*ant.Segments-1);
             %Field limiter
             if generator
-                ant.E0 = FieldSetup(ant, ant.Length/20);
+                ant.E0 = FieldSetup(ant, ant.Length/10);
             else
                 ant.E0(1:ant.Segments) = 0;
             end
@@ -229,26 +229,27 @@ classdef Antenna
             E0 = (1:ant.Segments);
             E0(:) = 0;
             
-            upper1 = 0 < ant.Coord(:, 1);
-            upper2 = ant.Coord(:, 1) <= lim;
+            upper1 = 0 < ant.CoordTest(:, 1);
+            upper2 = ant.CoordTest(:, 1) <= lim/2;
             upper = logical(upper1.*upper2);
-            mid = ant.Coord(:,1) == 0;
-            lower1 = 0 > ant.Coord(:, 1);
-            lower2 = ant.Coord(:, 1) >= -lim;
+            
+            mid = ant.CoordTest(:,1) == 0;
+            
+            lower1 = 0 > ant.CoordTest(:, 1);
+            lower2 = ant.CoordTest(:, 1) >= -lim/2;
             lower = logical(lower1.*lower2);
-            amount = round(ant.Points/10);
+            
+            amount = round(ant.Segments/20);
             
             if sum(mid)
                 E0(mid) = 1;
             end
-           
-            E0(upper) = (ant.Coord(round(ant.Points/2+amount),1)-ant.Coord(upper, 1))...
-            ./(ant.Coord(round(ant.Points/2+amount),1));
-            E0(lower) = (ant.Coord(round(ant.Points/2-amount),1)-ant.Coord(lower, 1))...
-            ./(ant.Coord(round(ant.Points/2-amount),1));
             
-%             E0(:) = 1;
-            
+            E0(upper) = (ant.CoordTest(round(ant.Segments/2+amount),1)-ant.CoordTest(upper, 1))...
+            ./(ant.CoordTest(round(ant.Points/2+amount),1));
+            E0(lower) = (ant.CoordTest(round(ant.Points/2-amount),1)-ant.CoordTest(lower, 1))...
+            ./(ant.CoordTest(round(ant.Points/2-amount),1));
+        
         end
     end
 end
