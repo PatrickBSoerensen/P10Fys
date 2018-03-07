@@ -70,7 +70,7 @@ classdef Antenna
             %Current density
             ant.Jthe = (1:ant.Segments).';
             ant.Jphi = (1:ant.Segments).';
-%             ant.Z = zeros(2*ant.Segments,2*ant.Segments);
+%           ant.Z = zeros(2*ant.Segments,2*ant.Segments);
             ant.Z = zeros(ant.Segments,ant.Segments);
             ant.invZ = ant.Z;
             ant.btTheta = (1:ant.Segments);
@@ -237,7 +237,7 @@ classdef Antenna
             E0(lower) = (ant.Coord(ant.Segments/2-amount,1)-ant.Coord(lower, 1))...
             ./(ant.Coord(ant.Segments/2-amount,1));
             
-            E0(:) = 1;
+%             E0(:) = 1;
             
         end
     end
