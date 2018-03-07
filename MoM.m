@@ -110,9 +110,9 @@ classdef MoM
         
         function [ant, area] = mombasis(obj, ant, area, alpha, k, w, thetaI, phi, phiS, mu)
             
-            for i=2:length(ant.T1)-1
+            for i=1:length(ant.T1)
                 iSegments = [i, i+1, i, i+1];
-                for j=2:length(ant.T1)-1
+                for j=1:length(ant.T1)
                     jSegments = [j, j+1, j+1, j];
                     
                     for h=1:4
@@ -254,8 +254,7 @@ classdef MoM
                 end
             end
             
-%         ant.invZ = ant.Z^(-1);
-          ant.invZ = pinv(ant.Z);
+            ant.invZ = ant.Z^(-1);
             
             ant.xtTheta = ant.invZ*ant.btTheta.';
             for i=1:length(ant.T1)-1
