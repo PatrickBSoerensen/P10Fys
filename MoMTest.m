@@ -10,8 +10,11 @@ w=2*pi*f;
 k=w/c;
 %% Creation of objects
 length = 0.995;
+<<<<<<< HEAD
 ant1 = Antenna(length, 10, 20, 0.031, [0,0], 1);
+=======
 ant1 = Antenna(length, 4, 4, 0.0031, [0,0], 1);
+>>>>>>> ad9b30990e2860bf765e5fb4b4e5394a579d049c
 % ant2 = Antenna(length, 15, 10, 0.0031, [0,5], 1);
 % MoM solver object 
 MoMobj = MoM();
@@ -22,7 +25,6 @@ SecondTestZone = Area(0, 400, 400, -20, 20, -20, 20, mu0);
 for alpha=0:2
     alpha
     [ant1, SecondTestZone] = mombasis(MoMobj, ant1, SecondTestZone, alpha, k, w, pi/2, 0, 0, mu0);
-%   [ant2, SecondTestZone] = mombasis(MoMobj, ant2, SecondTestZone, alpha, k, w, pi/2, 0, 0, mu0);
     [FirstTestZone] = emissionNew(MoMobj, ant1, FirstTestZone, alpha, k, w, 0);
     %   [ant2, SecondTestZone] = mombasis(MoMobj, ant2, SecondTestZone, alpha, k, w, pi/2, 0, 0, mu0);
 %   [ant2, SecondTestZone] = mom2on1(MoMobj, ant2, ant2, SecondTestZone, alpha, k, w, pi/2, 0, 0, mu0);
@@ -32,7 +34,6 @@ figure(1)
 pcolor(SecondTestZone.z, SecondTestZone.x, abs(real(SecondTestZone.Ethethe)))
 shading interp
 colorbar
-% caxis([0 1*10^14])
 % caxis([0 2*10^6])
 figure(2)
 %Middle segment

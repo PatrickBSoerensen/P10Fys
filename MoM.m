@@ -270,7 +270,6 @@ classdef MoM
                 end
             end
             
-        ant.invZ = ant.Z^(-1);
             ant.invZ = ant.Z^(-1);
             
             ant.xtTheta = ant.invZ*ant.btTheta.';
@@ -278,11 +277,6 @@ classdef MoM
                 ftn = sqrt(ant.tHatTest(i,1).^2+ant.tHatTest(i,3).^2).*((ant.T1(i)./ant.CoordTest(i,2)...
                     +ant.T2(i)./ant.CoordTest(i+1,2)));%T, alpha, n. Expansions function
             
-                if alpha == 0
-                    ant.Jthe(i) = ant.xtTheta(i).*ftn;
-                else
-                    ant.Jthe(i) = ant.Jthe(i)+2*ant.xtTheta(i).*ftn.*cos(alpha.*phi);
-                end
             tHatLen = sqrt(ant.tHatTest(1:end,1).^2+ant.tHatTest(1:end,3).^2);
             ftn = tHatLen(1:end-1).*ant.T1(:)./ant.CoordTest(1:end-1,2)...
                 +tHatLen(2:end).*ant.T2(:)./ant.CoordTest(2:end,2);%T, alpha, n. Expansions function
@@ -347,7 +341,6 @@ classdef MoM
         
                 rx = (area.x-ant.CoordTest(:,2)-area.SingularityProtection);
                 r = sqrt((rz(i,:).').^2+(rx(i,:)).^2);
-                B = -(1i*w*area.mu0)/(2*pi)*(exp(-1i*k*r)./r);
                 B = -((1i.*w.*area.mu0)./(2.*pi.*r)).*(exp(-1i.*k.*r));
                 if alpha == 0
                     area.Ethethe = B/2 .* ant.xtTheta(i) .* ant.btTheta(i) + area.Ethethe;
