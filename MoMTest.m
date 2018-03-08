@@ -10,7 +10,7 @@ w=2*pi*f;
 k=w/c;
 %% Creation of objects
 length = 0.995;
-ant1 = Antenna(length, 10, 10, 0.0031, [0,0], 1);
+ant1 = Antenna(length, 20, 20, 0.0031, [0,0], 1);
 % ant2 = Antenna(length, 15, 10, 0.0031, [0,5], 1);
 % MoM solver object 
 MoMobj = MoM();
@@ -18,7 +18,7 @@ MoMobj = MoM();
 FirstTestZone = Area(0, 400, 400, -20, 20, -20, 20, mu0);
 SecondTestZone = Area(0, 400, 400, -20, 20, -20, 20, mu0);
 %% looping through alpha
-for alpha=0:2
+for alpha=0
     alpha
     [ant1, SecondTestZone] = mombasis(MoMobj, ant1, SecondTestZone, alpha, k, w, pi/2, 0, 0, mu0);
 %   [ant2, SecondTestZone] = mombasis(MoMobj, ant2, SecondTestZone, alpha, k, w, pi/2, 0, 0, mu0);
@@ -33,6 +33,7 @@ colorbar
 figure(2)
 %Middle segment
 plot(abs(ant1.Jthe(ant1.PointsCircle-1:ant1.PointsLine+ant1.PointsCircle-2)), 'k-*')
+close figure(3)
 figure(3)
 hold on
 %Lower circ

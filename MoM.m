@@ -108,8 +108,7 @@ classdef MoM
             area = emission(obj, ant1, area, alpha, k, w, phiS);
         end
         
-        function [ant, area] = mombasis(obj, ant, area, alpha, k, w, thetaI, phi, phiS, mu)
-            
+        function [ant, area] = mombasis(obj, ant, area, alpha, k, w, thetaI, phi, phiS, mu) 
             for i=1:length(ant.T1)
                 iSegments = [i, i+1, i, i+1];
                 for j=1:length(ant.T1)
@@ -155,9 +154,9 @@ classdef MoM
                         -1./k.^2.*ant.T2D(i).*ant.T1D(j).*G1{1,4});
                 end
                 
-                J0 = besselj(alpha-1, k*ant.Coord([i, i+1],2)*sin(thetaI));
-                J1 = besselj(alpha, k*ant.Coord([i, i+1],2)*sin(thetaI));
-                J2 = besselj(alpha+1, k*ant.Coord([i, i+1],2)*sin(thetaI));
+                J0 = besselj(alpha-1, k*ant.CoordTest([i, i+1],2)*sin(thetaI));
+                J1 = besselj(alpha, k*ant.CoordTest([i, i+1],2)*sin(thetaI));
+                J2 = besselj(alpha+1, k*ant.CoordTest([i, i+1],2)*sin(thetaI));
                 %% planewave b equations
                 if ant.E0(i) ~= 0
                     ant.btTheta(i) = -ant.E0(i)*1i/(w*mu)*pi*1i^(alpha)*...
@@ -173,21 +172,24 @@ classdef MoM
                 end
             end
             
-        ant.invZ = ant.Z^(-1);
+            ant.invZ = ant.Z^(-1);
             
             ant.xtTheta = ant.invZ*ant.btTheta.';
-            for i=1:length(ant.T1)
-                ftn = sqrt(ant.tHatTest(i,1).^2+ant.tHatTest(i,3).^2).*exp(1i.*alpha.*phi).*((ant.T1(i)./ant.CoordTest(i,2)...
-                    +ant.T2(i)./ant.CoordTest(i+1,2)));%T, alpha, n. Expansions function
             
-                if alpha == 0
-                    ant.Jthe(i) = ant.xtTheta(i).*ftn;
-                else
-                    ant.Jthe(i) = ant.Jthe(i)+2*ant.xtTheta(i).*ftn.*cos(alpha.*phi);
-                end
+            tHatLen = sqrt(ant.tHatTest(1:end,1).^2+ant.tHatTest(1:end,3).^2);
+            ftn = exp(1i.*alpha.*phi)...
+                .*(tHatLen(1:end-1).*ant.T1(:)./ant.CoordTest(1:end-1,2)...
+                +tHatLen(2:end).*ant.T2(:)./ant.CoordTest(2:end,2));%T, alpha, n. Expansions function
+            
+            if alpha == 0
+                ant.Jthe = ant.xtTheta.*ftn;
+            else
+                ant.Jthe = ant.Jthe+2*ant.xtTheta.*ftn.*cos(alpha.*phi);
             end
+                
             ant.Jthe(1,1) = 0;
             ant.Jthe(end,1) = 0;
+            
             area = emission(obj, ant, area, alpha, k, w, phiS);
         end
        
