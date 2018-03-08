@@ -177,9 +177,8 @@ classdef MoM
             ant.xtTheta = ant.invZ*ant.btTheta.';
             
             tHatLen = sqrt(ant.tHatTest(1:end,1).^2+ant.tHatTest(1:end,3).^2);
-            ftn = exp(1i.*alpha.*phi)...
-                .*(tHatLen(1:end-1).*ant.T1(:)./ant.CoordTest(1:end-1,2)...
-                +tHatLen(2:end).*ant.T2(:)./ant.CoordTest(2:end,2));%T, alpha, n. Expansions function
+            ftn = tHatLen(1:end-1).*ant.T1(:)./ant.CoordTest(1:end-1,2)...
+                +tHatLen(2:end).*ant.T2(:)./ant.CoordTest(2:end,2);%T, alpha, n. Expansions function
             
             if alpha == 0
                 ant.Jthe = ant.xtTheta.*ftn;
@@ -194,6 +193,36 @@ classdef MoM
         end
        
         
+        function area = emissionNew(obj, ant, area, alpha, k, w, phiS)
+                rz = (area.z-ant.CoordTest(:,1));
+
+                rx = (area.x+ant.CoordTest(:,2)+area.SingularityProtection);
+                r = sqrt((rz).^2+(rx).^2);
+                B = -(1i*w*area.mu0)/(2*pi)*(exp(-1i*k*r)./r);
+                if alpha == 0
+                    area.Ethethe = B(1:end-1,:)/2 .* ant.xtTheta .* ant.btTheta.'...
+                        +B(2:end,:)/2 .* ant.xtTheta .* ant.btTheta.'...
+                        + area.Ethethe;
+                else    
+                    area.Ethethe = B(1:end-1,:).*ant.xtTheta.*ant.btTheta.'...
+                                +B(2:end,:) .* ant.xtTheta .* ant.btTheta.'...
+                                .*cos(alpha*phiS)+area.Ethethe;
+                end
+        
+                rx = (area.x-ant.CoordTest(:,2)-area.SingularityProtection);
+                r = sqrt((rz(:,:)).^2+(rx(:,:)).^2);
+                B = -(1i*w*area.mu0)/(2*pi)*(exp(-1i*k*r)./r);
+                if alpha == 0
+                    area.Ethethe = B(1:end-1,:)/2 .* ant.xtTheta .* ant.btTheta.'...
+                        +B(2:end,:)/2 .* ant.xtTheta .* ant.btTheta.'...
+                        + area.Ethethe;
+                else    
+                    area.Ethethe = B(1:end-1,:).*ant.xtTheta.*ant.btTheta.'...
+                                +B(2:end,:) .* ant.xtTheta .* ant.btTheta.'...
+                                .*cos(alpha*phiS)+area.Ethethe;
+                end
+        end
+        
         function area = emission(obj, ant, area, alpha, k, w, phiS)
             rz = (area.z-ant.CoordTest(:,1));
             for i=1:length(ant.T1)
@@ -202,23 +231,10 @@ classdef MoM
                 B = -(1i*w*area.mu0)/(2*pi)*(exp(-1i*k*r)./r);
                 if alpha == 0
                     area.Ethethe = B/2 .* ant.xtTheta(i) .* ant.btTheta(i) + area.Ethethe;
-                    area.Ephiphi = B/2 .* ant.xtPhi(i) .* ant.btPhi(i) + area.Ephiphi;
                 else    
                     area.Ethethe = B*(ant.xtTheta(i)*ant.btTheta(i)...
                         +ant.xPhiTheta(i)*ant.bPhiTheta(i))*cos(alpha*phiS)...
                         +area.Ethethe;
-                
-                    area.Ephithe = 1i*B*(ant.xtTheta(i)*ant.btPhi(i)...
-                        +ant.xPhiTheta(i)*ant.bPhiPhi(i))*sin(alpha*phiS)...
-                        +area.Ephithe;
-                
-                    area.Ethephi = 1i*B*(ant.xtPhi(i)*ant.btTheta(i)...
-                        +ant.xPhiPhi(i)*ant.bPhiTheta(i))*sin(alpha*phiS)...
-                        +area.Ethephi;
-                
-                    area.Ephiphi = B*(ant.xtPhi(i)*ant.btPhi(i)...
-                        +ant.xPhiPhi(i)*ant.bPhiPhi(i))*cos(alpha*phiS)...
-                        +area.Ephiphi;
                 end
         
                 rx = (area.x-ant.CoordTest(:,2)-area.SingularityProtection);
@@ -226,23 +242,10 @@ classdef MoM
                 B = -(1i*w*area.mu0)/(2*pi)*(exp(-1i*k*r)./r);
                 if alpha == 0
                     area.Ethethe = B/2 .* ant.xtTheta(i) .* ant.btTheta(i) + area.Ethethe;
-                    area.Ephiphi = B/2 .* ant.xtPhi(i) .* ant.btPhi(i) + area.Ephiphi;
                 else
                     area.Ethethe = B*(ant.xtTheta(i)*ant.btTheta(i)...
                         +ant.xPhiTheta(i)*ant.bPhiTheta(i))*cos(alpha*phiS)...
                         +area.Ethethe;
-                
-                    area.Ephithe = 1i*B*(ant.xtTheta(i)*ant.btPhi(i)...
-                        +ant.xPhiTheta(i)*ant.bPhiPhi(i))*sin(alpha*phiS)...
-                        +area.Ephithe;
-                
-                    area.Ethephi = 1i*B*(ant.xtPhi(i)*ant.btTheta(i)...
-                        +ant.xPhiPhi(i)*ant.bPhiTheta(i))*sin(alpha*phiS)...
-                        +area.Ethephi;
-                
-                    area.Ephiphi = B*(ant.xtPhi(i)*ant.btPhi(i)...
-                        +ant.xPhiPhi(i)*ant.bPhiPhi(i))*cos(alpha*phiS)...
-                        +area.Ephiphi;
                 end
             end
         end
