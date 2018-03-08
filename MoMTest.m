@@ -10,7 +10,7 @@ w=2*pi*f;
 k=w/c;
 %% Creation of objects
 length = 0.995;
-ant1 = Antenna(length, 4, 2, 0.0031, [0,0], 1);
+ant1 = Antenna(length, 10, 10, 0.0031, [0,0], 1);
 % ant2 = Antenna(length, 15, 10, 0.0031, [0,5], 1);
 % MoM solver object 
 MoMobj = MoM();
@@ -40,3 +40,5 @@ hold on
 plot(abs(ant1.Jthe(1:ant1.PointsCircle-1)), 'b-*')
 %Upper circ
 plot(abs(ant1.Jthe(ant1.PointsLine+ant1.PointsCircle-1:end)), 'r-*')
+figure(4)
+plot(ant1.E0)

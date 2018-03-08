@@ -225,29 +225,37 @@ classdef MoM
             rz = (area.z-ant.CoordTest(:,1));
             for i=1:length(ant.T1)
                 rx = (area.x+ant.CoordTest(:,2)+area.SingularityProtection);
-                r = sqrt((rz(i,:).').^2+(rx(i,:)).^2);
-                B = -((1i.*w.*area.mu0)./(2.*pi.*r)).*(exp(-1i.*k.*r));
+                r1 = sqrt((rz(i,:).').^2+(rx(i,:)).^2);
+                r2 = sqrt((rz(i+1,:).').^2+(rx(i+1,:)).^2);
+                
+                B1 = -((1i.*w.*area.mu0)./(2.*pi.*r1)).*(exp(-1i.*k.*r1));
+                B2 = -((1i.*w.*area.mu0)./(2.*pi.*r2)).*(exp(-1i.*k.*r2));
                 if alpha == 0
-                    area.Ethethe = B/2 .* ant.xtTheta(i) .* ant.btTheta(i) + area.Ethethe;
+                    area.Ethethe = B1/2 .* ant.xtTheta(i) .* ant.btTheta(i) ...
+                                   +B2/2 .* ant.xtTheta(i) .* ant.btTheta(i) + area.Ethethe;
                 else    
-                    area.Ethethe = B*(ant.xtTheta(i)*ant.btTheta(i)...
-                        +ant.xPhiTheta(i)*ant.bPhiTheta(i))*cos(alpha*phiS)...
+                    area.Ethethe = B1.*ant.xtTheta(i).*ant.btTheta(i)...
+                        +B2.*ant.xtTheta(i).*ant.btTheta(i)...
                         +area.Ethethe;
                 end
         
                 rx = (area.x-ant.CoordTest(:,2)-area.SingularityProtection);
-                r = sqrt((rz(i,:).').^2+(rx(i,:)).^2);
-                B = -((1i.*w.*area.mu0)./(2.*pi.*r)).*(exp(-1i.*k.*r));
+                
+                r1 = sqrt((rz(i,:).').^2+(rx(i,:)).^2);
+                r2 = sqrt((rz(i+1,:).').^2+(rx(i+1,:)).^2);
+                
+                B1 = -((1i.*w.*area.mu0)./(2.*pi.*r1)).*(exp(-1i.*k.*r1));
+                B2 = -((1i.*w.*area.mu0)./(2.*pi.*r2)).*(exp(-1i.*k.*r2));
                 if alpha == 0
-                    area.Ethethe = B/2 .* ant.xtTheta(i) .* ant.btTheta(i) + area.Ethethe;
+                    area.Ethethe = B1/2 .* ant.xtTheta(i) .* ant.btTheta(i) ...
+                                   +B2/2 .* ant.xtTheta(i) .* ant.btTheta(i) + area.Ethethe;
                 else
-                    area.Ethethe = B*(ant.xtTheta(i)*ant.btTheta(i)...
-                        +ant.xPhiTheta(i)*ant.bPhiTheta(i))*cos(alpha*phiS)...
+                    area.Ethethe = B1.*ant.xtTheta(i).*ant.btTheta(i)...
+                        +B2.*ant.xtTheta(i).*ant.btTheta(i)...
                         +area.Ethethe;
                 end
             end
         end
-        
     end
 end
 
