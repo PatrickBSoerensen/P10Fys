@@ -10,19 +10,19 @@ w=2*pi*f;
 k=w/c;
 %% Creation of objects
 length = 0.995;
-ant1 = Antenna(length, 10, 10, 0.0031, [0,0], 1);
-ant2 = Antenna(length, 15, 10, 0.0031, [0,5], 0);
+ant1 = Antenna(length, 20, 20, 0.0031, [0,0], 1);
+ant2 = Antenna(length, 10, 10, 0.0031, [0,5], 0);
 % MoM solver object 
 MoMobj = MoM();
 % Area creation, where the antenna is placed
-FirstTestZone = Area(0, 400, 400, -10, 10, -10, 10, mu0);
-SecondTestZone = Area(0, 400, 400, -10, 10, -10, 10, mu0);
+FirstTestZone = Area(0, 400, 400, -20, 20, -20, 20, mu0);
+SecondTestZone = Area(0, 400, 400, -20, 20, -20, 20, mu0);
 %% looping through alpha
-for alpha=0:3
+for alpha=0:2
     alpha
     [ant1, SecondTestZone] = mombasis(MoMobj, ant1, SecondTestZone, alpha, k, w, pi/2, 0, 0, mu0);
 %     [FirstTestZone] = emissionNew(MoMobj, ant1, FirstTestZone, alpha, k, w, 0);
-      [ant2, SecondTestZone] = mombasis(MoMobj, ant2, SecondTestZone, alpha, k, w, pi/2, 0, 0, mu0);
+%       [ant2, SecondTestZone] = mombasis(MoMobj, ant2, SecondTestZone, alpha, k, w, pi/2, 0, 0, mu0);
 %   [ant2, SecondTestZone] = mom2on1(MoMobj, ant2, ant2, SecondTestZone, alpha, k, w, pi/2, 0, 0, mu0);
 end
 %% Plots
@@ -33,12 +33,12 @@ colorbar
 % caxis([0 2*10^6])
 figure(2)
 %Middle segment
-plot(abs(ant1.Jthe(ant1.PointsCircle-1:ant1.PointsLine+ant1.PointsCircle-2)), 'k-*')
+plot(abs(ant1.Jthe(ant1.PointsCircle:ant1.PointsLine+ant1.PointsCircle-2)), 'k-*')
 figure(3)
 hold on
 %Lower circ
 plot(abs(ant1.Jthe(1:ant1.PointsCircle-1)), 'b-*')
 %Upper circ
-plot(abs(ant1.Jthe(ant1.PointsLine+ant1.PointsCircle-1:end)), 'r-*')
+plot(abs(ant1.Jthe(ant1.PointsLine+ant1.PointsCircle-2:end)), 'r-*')
 figure(4)
 plot(ant1.E0)

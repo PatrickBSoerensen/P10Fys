@@ -85,7 +85,7 @@ classdef Antenna
             ant.xPhiPhi = (ant.Segments:2*ant.Segments-1);
             %Field limiter
             if generator
-                ant.E0 = FieldSetup(ant, ant.Length/10);
+                ant.E0 = FieldSetup(ant);
             else
                 ant.E0(1:ant.Segments) = 0;
             end
@@ -226,12 +226,12 @@ classdef Antenna
            coord(segcirc+ant.PointsLine-1+test:2*segcirc+ant.PointsLine-2+test,3) = ant.Radii*pi/(2*ant.PointsCircle);
         end
         
-        function E0 = FieldSetup(ant, lim)
-            if lim>ant.Radii*2
-                lim=ant.Radii*2;
-            end
+        function E0 = FieldSetup(ant)
             E0 = (1:ant.Segments);
             E0(:) = 0;
+            
+            SE=ant.Segments/10;
+            lim=SE*ant.CoordTest(:,3);
             
             upper1 = 0 < ant.CoordTest(:, 1);
             upper2 = ant.CoordTest(:, 1) <= lim/2;
@@ -243,17 +243,16 @@ classdef Antenna
             lower2 = ant.CoordTest(:, 1) >= -lim/2;
             lower = logical(lower1.*lower2);
             
-            amount = round(ant.Segments/20);
-            
             if sum(mid)
                 E0(mid) = 1;
             end
-            
-            E0(upper) = (ant.CoordTest(round(ant.Segments/2+amount),1)-ant.CoordTest(upper, 1))...
-            ./(ant.CoordTest(round(ant.Points/2+amount),1));
-            E0(lower) = (ant.CoordTest(round(ant.Points/2-amount),1)-ant.CoordTest(lower, 1))...
-            ./(ant.CoordTest(round(ant.Points/2-amount),1));
-            E0(:)=1
+            E0(lower)=(ant.CoordTest(lower,1)+(lim(lower)/2))./(lim(lower)/2);
+            E0(upper)=((lim(upper)/2)-ant.CoordTest(upper,1))./(lim(upper)/2);
+%             E0(upper) = (ant.CoordTest(round(ant.Segments/2+amount),1)-ant.CoordTest(upper, 1))...
+%             ./(ant.CoordTest(round(ant.Points/2+amount),1));
+%             E0(lower) = (ant.CoordTest(round(ant.Points/2-amount),1)-ant.CoordTest(lower, 1))...
+%             ./(ant.CoordTest(round(ant.Points/2-amount),1));
+%             E0(:)=1
         end
     end
 end
