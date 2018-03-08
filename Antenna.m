@@ -248,10 +248,6 @@ classdef Antenna
             end
             E0(lower)=(ant.CoordTest(lower,1)+(lim(lower)/2))./(lim(lower)/2);
             E0(upper)=((lim(upper)/2)-ant.CoordTest(upper,1))./(lim(upper)/2);
-%             E0(upper) = (ant.CoordTest(round(ant.Segments/2+amount),1)-ant.CoordTest(upper, 1))...
-%             ./(ant.CoordTest(round(ant.Points/2+amount),1));
-%             E0(lower) = (ant.CoordTest(round(ant.Points/2-amount),1)-ant.CoordTest(lower, 1))...
-%             ./(ant.CoordTest(round(ant.Points/2-amount),1));
 %             E0(:)=1
         end
     end
