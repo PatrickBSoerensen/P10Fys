@@ -11,7 +11,7 @@ classdef MoM
         function obj = MoM()
             %MOM Construct an instance of this class
             %   Detailed explanation goes here
-        en
+        end
         
 %         function [ant1, area] = mom2on1(obj, ant1, ant2, area, alpha, k, w, thetaI, phi, phiS, mu)
 %             %mom2on1 Calculates the influence of antenna 2 on antenna 1
