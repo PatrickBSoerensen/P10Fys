@@ -127,8 +127,8 @@ classdef MoM
                     Func2{1,h} = @(phimark) cos(phimark).*cos(alpha.*phimark).*exp(-1i.*k.*R{1,h}(phimark))./R{1,h}(phimark);
                     
                     %Should possibly integrate to 2*pi
-                    G1{1,h} = ant.Coord(iSegments(1,h),3).*ant.Coord(jSegments(1,h),3).*integral(Func1{1,h}, 0, pi, 'ArrayValued', true);
-                    G2{1,h} = ant.Coord(iSegments(1,h),3).*ant.Coord(jSegments(1,h),3).*integral(Func2{1,h}, 0, pi, 'ArrayValued', true);
+                    G1{1,h} = ant.CoordTest(iSegments(1,h),3).*ant.CoordTest(jSegments(1,h),3).*integral(Func1{1,h}, 0, pi, 'ArrayValued', true);
+                    G2{1,h} = ant.CoordTest(iSegments(1,h),3).*ant.CoordTest(jSegments(1,h),3).*integral(Func2{1,h}, 0, pi, 'ArrayValued', true);
                     end
                     
                     %Ztt
@@ -195,7 +195,6 @@ classdef MoM
         
         function area = emissionNew(obj, ant, area, alpha, k, w, phiS)
                 rz = (area.z-ant.CoordTest(:,1));
-
                 rx = (area.x+ant.CoordTest(:,2)+area.SingularityProtection);
                 r = sqrt((rz).^2+(rx).^2);
                 B = -(1i*w*area.mu0)/(2*pi)*(exp(-1i*k*r)./r);
@@ -221,6 +220,9 @@ classdef MoM
                                 +B(2:end,:) .* ant.xtTheta .* ant.btTheta.'...
                                 .*cos(alpha*phiS)+area.Ethethe;
                 end
+                area.r = r;
+                area.rz = rz;
+                area.rx = rx;
         end
         
         function area = emission(obj, ant, area, alpha, k, w, phiS)
@@ -228,7 +230,7 @@ classdef MoM
             for i=1:length(ant.T1)
                 rx = (area.x+ant.CoordTest(:,2)+area.SingularityProtection);
                 r = sqrt((rz(i,:).').^2+(rx(i,:)).^2);
-                B = -(1i*w*area.mu0)/(2*pi)*(exp(-1i*k*r)./r);
+                B = -((1i.*w.*area.mu0)./(2.*pi.*r)).*(exp(-1i.*k.*r));
                 if alpha == 0
                     area.Ethethe = B/2 .* ant.xtTheta(i) .* ant.btTheta(i) + area.Ethethe;
                 else    
@@ -239,7 +241,7 @@ classdef MoM
         
                 rx = (area.x-ant.CoordTest(:,2)-area.SingularityProtection);
                 r = sqrt((rz(i,:).').^2+(rx(i,:)).^2);
-                B = -(1i*w*area.mu0)/(2*pi)*(exp(-1i*k*r)./r);
+                B = -((1i.*w.*area.mu0)./(2.*pi.*r)).*(exp(-1i.*k.*r));
                 if alpha == 0
                     area.Ethethe = B/2 .* ant.xtTheta(i) .* ant.btTheta(i) + area.Ethethe;
                 else
@@ -248,6 +250,9 @@ classdef MoM
                         +area.Ethethe;
                 end
             end
+                area.r = r;
+                area.rz = rz;
+                area.rx = rx;
         end
         
     end
