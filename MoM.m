@@ -114,7 +114,6 @@ classdef MoM
                 iSegments = [i, i+1, i, i+1];
                 for j=1:length(ant.T1)
                     jSegments = [j, j+1, j+1, j];
-                    
                     for h=1:4
                         if iSegments(1,h) == jSegments(1,h)
                             R{1,h} = @(phimark) sqrt((ant.CoordTest(iSegments(1,h),3)/4).^2 ...
@@ -161,16 +160,16 @@ classdef MoM
                 J2 = besselj(alpha+1, k*ant.Coord([i, i+1],2)*sin(thetaI));
                 %% planewave b equations
                 if ant.E0(i) ~= 0
-                ant.btTheta(i) = -ant.E0(i)*1i/(w*mu)*pi*1i^(alpha)*...
-                    (ant.T1(i).*ant.Coord(i,3)...
-                .*exp(1i.*k.*ant.Coord(i,1).*cos(thetaI)).*(cos(thetaI)...
-                .*sin(ant.gammaTest(i)).*1i.*(J2(1)-J0(1))-2.*sin(thetaI).*cos(ant.gammaTest(i)).*J1(1))...
-                +ant.T2(i).*ant.Coord(i+1,3)...
-                .*exp(1i.*k.*ant.Coord(i+1,1).*cos(thetaI)).*(cos(thetaI)...
-                .*sin(ant.gammaTest(i+1)).*1i.*(J2(2)-J0(2))-2.*sin(thetaI).*cos(ant.gammaTest(i+1)).*J1(2)));
+                    ant.btTheta(i) = -ant.E0(i)*1i/(w*mu)*pi*1i^(alpha)*...
+                    (ant.T1(i).*ant.CoordTest(i,3)...
+                    .*exp(1i.*k.*ant.CoordTest(i,1).*cos(thetaI)).*(cos(thetaI)...
+                    .*sin(ant.gammaTest(i)).*1i.*(J2(1)-J0(1))-2.*sin(thetaI).*cos(ant.gammaTest(i)).*J1(1))...
+                    +ant.T2(i).*ant.CoordTest(i+1,3)...
+                    .*exp(1i.*k.*ant.CoordTest(i+1,1).*cos(thetaI)).*(cos(thetaI)...
+                    .*sin(ant.gammaTest(i+1)).*1i.*(J2(2)-J0(2))-2.*sin(thetaI).*cos(ant.gammaTest(i+1)).*J1(2)));
                 else
                 %% general b equations, missing hat vectors in integral
-                ant.btTheta(i) = -2*pi*1i/(w*mu).*(ant.T1(i).*ant.Coord(i,3)+ant.T2(i).*ant.Coord(i+1,3));
+                    ant.btTheta(i) = -2*pi*1i/(w*mu).*(ant.T1(i).*ant.CoordTest(i,3)+ant.T2(i).*ant.CoordTest(i+1,3));
                 end
             end
             
@@ -178,8 +177,8 @@ classdef MoM
             
             ant.xtTheta = ant.invZ*ant.btTheta.';
             for i=1:length(ant.T1)
-                ftn = sqrt(ant.tHatTest(i,1).^2+ant.tHatTest(i,3).^2).*exp(1i.*alpha.*phi).*((ant.T1(i)./ant.Coord(i,2)...
-                    +ant.T2(i)./ant.Coord(i+1,2)));%T, alpha, n. Expansions function
+                ftn = sqrt(ant.tHatTest(i,1).^2+ant.tHatTest(i,3).^2).*exp(1i.*alpha.*phi).*((ant.T1(i)./ant.CoordTest(i,2)...
+                    +ant.T2(i)./ant.CoordTest(i+1,2)));%T, alpha, n. Expansions function
             
                 if alpha == 0
                     ant.Jthe(i) = ant.xtTheta(i).*ftn;
@@ -194,9 +193,9 @@ classdef MoM
        
         
         function area = emission(obj, ant, area, alpha, k, w, phiS)
-            rz = (area.z-ant.Coord(:,1));
+            rz = (area.z-ant.CoordTest(:,1));
             for i=1:length(ant.T1)
-                rx = (area.x+ant.Coord(:,2)+area.SingularityProtection);
+                rx = (area.x+ant.CoordTest(:,2)+area.SingularityProtection);
                 r = sqrt((rz(i,:).').^2+(rx(i,:)).^2);
                 B = -(1i*w*area.mu0)/(2*pi)*(exp(-1i*k*r)./r);
                 if alpha == 0
@@ -220,7 +219,7 @@ classdef MoM
                         +area.Ephiphi;
                 end
         
-                rx = (area.x-ant.Coord(:,2)-area.SingularityProtection);
+                rx = (area.x-ant.CoordTest(:,2)-area.SingularityProtection);
                 r = sqrt((rz(i,:).').^2+(rx(i,:)).^2);
                 B = -(1i*w*area.mu0)/(2*pi)*(exp(-1i*k*r)./r);
                 if alpha == 0

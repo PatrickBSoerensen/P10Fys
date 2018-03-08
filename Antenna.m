@@ -226,6 +226,9 @@ classdef Antenna
         end
         
         function E0 = FieldSetup(ant, lim)
+            if lim>ant.Radii*2
+                lim=ant.Radii*2;
+            end
             E0 = (1:ant.Segments);
             E0(:) = 0;
             
