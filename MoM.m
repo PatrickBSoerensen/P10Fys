@@ -108,7 +108,6 @@ classdef MoM
             area = emission(obj, ant1, area, alpha, k, w, phiS);
         end
 
-        
         function [ant, area] = mombasis(obj, ant, area, alpha, k, w, thetaI, phi, phiS, mu) 
             for i=1:length(ant.T1)
                 iSegments = [i, i+1, i, i+1];
@@ -159,7 +158,6 @@ classdef MoM
                 J1 = besselj(alpha, k*ant.CoordTest([i, i+1],2)*sin(thetaI));
                 J2 = besselj(alpha+1, k*ant.CoordTest([i, i+1],2)*sin(thetaI));
                 %% planewave b equations
-%                 -
                 if ant.E0(i) ~= 0
                     ant.btTheta(i) = -ant.E0(i)*1i/(w*mu)*pi*1i^(alpha)*...
                     (ant.T1(i).*ant.CoordTest(i,3)...
@@ -170,7 +168,7 @@ classdef MoM
                     .*sin(ant.gammaTest(i+1)).*1i.*(J2(2)-J0(2))-2.*sin(thetaI).*cos(ant.gammaTest(i+1)).*J1(2)));
                 else
                 %% general b equations, missing hat vectors in integral
-                    ant.btTheta(i) = -2*pi*1i/(w*mu).*(ant.T1(i).*ant.CoordTest(i,3)+ant.T2(i).*ant.CoordTest(i+1,3));
+                    ant.btTheta(i) = -2*pi*pi*1i^(alpha)*1i/(w*mu).*(ant.T1(i).*ant.CoordTest(i,3)+ant.T2(i).*ant.CoordTest(i+1,3));
                 end
             end
             
