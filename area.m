@@ -11,6 +11,9 @@ classdef Area
         Ethephi; 
         Ephiphi;
         mu0;
+        rx;
+        rz;
+        r;
     end
     
     methods
