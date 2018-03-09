@@ -168,9 +168,16 @@ classdef MoM
                     .*sin(ant.gammaTest(i+1)).*1i.*(J2(2)-J0(2))-2.*sin(thetaI).*cos(ant.gammaTest(i+1)).*J1(2)));
                 else
                 %% general b equations, missing hat vectors in integral
+<<<<<<< HEAD
                     ant.btTheta(i) = -2*pi^2*1i^(alpha)*1i/(w*mu).*(ant.T1(i).*ant.CoordTest(i,3)+ant.T2(i).*ant.CoordTest(i+1,3));
+=======
+                    ant.btTheta(i) = -2*pi*1i^(alpha)*1i/(w*mu).*(ant.T1(i).*ant.CoordTest(i,3)+ant.T2(i).*ant.CoordTest(i+1,3));
+>>>>>>> 76846a1a920a50fef520f22a434fdd3002227e7e
                 end
             end
+            
+            ant.btTheta(1,1)=0;
+            ant.btTheta(end,1)=0;
             
             ant.invZ = ant.Z^(-1);
             
@@ -185,6 +192,7 @@ classdef MoM
             else
                 ant.Jthe = ant.Jthe+2*ant.xtTheta.*ftn.*cos(alpha.*phi);
             end
+            
             ant.Jthe(1,1) = 0;
             ant.Jthe(end,1) = 0;
             area = emission(obj, ant, area, alpha, k, w, phiS);
