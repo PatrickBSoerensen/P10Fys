@@ -232,6 +232,7 @@ classdef Antenna
             
             SE=ant.Segments/10;
             lim=SE*ant.CoordTest(:,3);
+            lim=ant.Length;
             
             upper1 = 0 < ant.CoordTest(:, 1);
             upper2 = ant.CoordTest(:, 1) <= lim/2;
@@ -246,8 +247,11 @@ classdef Antenna
             if sum(mid)
                 E0(mid) = 1;
             end
-            E0(lower)=(ant.CoordTest(lower,1)+(lim(lower)/2))./(lim(lower)/2);
-            E0(upper)=((lim(upper)/2)-ant.CoordTest(upper,1))./(lim(upper)/2);
+            
+            E0(lower)=(ant.CoordTest(lower,1)+(lim/2))./(lim/2);
+            E0(upper)=((lim/2)-ant.CoordTest(upper,1))./(lim/2);
+%             E0(lower)=(ant.CoordTest(lower,1)+(lim(lower)/2))./(lim(lower)/2);
+%             E0(upper)=((lim(upper)/2)-ant.CoordTest(upper,1))./(lim(upper)/2);
 %             E0(:)=1
         end
     end
