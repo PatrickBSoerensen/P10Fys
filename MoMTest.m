@@ -29,9 +29,8 @@ end
 figure(1)
 pcolor(FirstTestZone.z, FirstTestZone.x, abs(real(FirstTestZone.Ethethe)))
 shading interp
-colorbar
-% caxis([0 2*10^6])
-rectangle('Position',[0-ant1.Radii 0-ant1.Length/2 2*ant1.Radii ant1.Length],'Curvature',1);%Antenna
+% caxis([0 2*10^(-3)])
+rectangle('Position',[-ant1.Radii -ant1.Length/2 2*ant1.Radii ant1.Length],'Curvature',1);%Antenna
 
 figure(2)
 %Middle segment

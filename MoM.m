@@ -172,12 +172,15 @@ classdef MoM
                 end
             end
             
-            ant.btTheta(1,1)=0;
-            ant.btTheta(end,1)=0;
+            ant.btTheta(1)=0;
+            ant.btTheta(end)=0;
             
             ant.invZ = ant.Z^(-1);
             
             ant.xtTheta = ant.invZ*ant.btTheta.';
+            
+            ant.xtTheta(1)=0;
+            ant.xtTheta(end)=0;
             
             tHatLen = sqrt(ant.tHatTest(1:end,1).^2+ant.tHatTest(1:end,3).^2);
             ftn = tHatLen(1:end-1).*ant.T1(:)./ant.CoordTest(1:end-1,2)...
