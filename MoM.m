@@ -168,7 +168,7 @@ classdef MoM
                     .*sin(ant.gammaTest(i+1)).*1i.*(J2(2)-J0(2))-2.*sin(thetaI).*cos(ant.gammaTest(i+1)).*J1(2)));
                 else
                 %% general b equations, missing hat vectors in integral
-                    ant.btTheta(i) = -2*pi*pi*1i^(alpha)*1i/(w*mu).*(ant.T1(i).*ant.CoordTest(i,3)+ant.T2(i).*ant.CoordTest(i+1,3));
+                    ant.btTheta(i) = -2*pi^2*1i^(alpha)*1i/(w*mu).*(ant.T1(i).*ant.CoordTest(i,3)+ant.T2(i).*ant.CoordTest(i+1,3));
                 end
             end
             
