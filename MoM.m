@@ -169,6 +169,7 @@ classdef MoM
                 else
                 %% general b equations, missing hat vectors in integral
                     ant.btTheta(i) = -2*pi*1i^(alpha)*1i/(w*mu).*(ant.T1(i).*ant.CoordTest(i,3)+ant.T2(i).*ant.CoordTest(i+1,3));
+
                 end
             end
             
