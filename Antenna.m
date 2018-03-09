@@ -248,8 +248,15 @@ classdef Antenna
                 E0(mid) = 1;
             end
             
-            E0(lower)=(ant.CoordTest(lower,1)+(lim/2))./(lim/2);
-            E0(upper)=((lim/2)-ant.CoordTest(upper,1))./(lim/2);
+        mu0=4*pi*10^-7; %N/A^2
+        f=146.5*10^6;
+        w=2*pi*f;
+            
+%             E0(lower)= 1i/(w*mu0)*(ant.CoordTest(lower,1)+(lim/2))./(lim/2);
+%             E0(upper)= 1i/(w*mu0)*((lim/2)-ant.CoordTest(upper,1))./(lim/2);
+            E0(lower)= (ant.CoordTest(lower,1)+(lim/2))./(lim/2);
+            E0(upper)= ((lim/2)-ant.CoordTest(upper,1))./(lim/2);
+
 %             E0(lower)=(ant.CoordTest(lower,1)+(lim(lower)/2))./(lim(lower)/2);
 %             E0(upper)=((lim(upper)/2)-ant.CoordTest(upper,1))./(lim(upper)/2);
 %             E0(:)=1
