@@ -10,17 +10,17 @@ w=2*pi*f;
 k=w/c;
 %% Creation of objects
 length = 0.995;
-ant1 = Antenna(length, 30, 30, 0.0031, [0,0], 1);
+ant1 = Antenna(length, 10, 10, 0.0031, [0,0], 1);
 ant2 = Antenna(length, 10, 10, 0.0031, [0,0], 1);
 % MoM solver object 
-MoMobj = MoM();
+MoMobj = MoM(ant1);
 % Area creation, where the antenna is placed
 FirstTestZone = Area(1, 1000, 1000, -3, 3, -3, 3, mu0);
 SecondTestZone = Area(0, 400, 400, -20, 20, -20, 20, mu0);
 %% looping through alpha
 for alpha=0:2
     alpha
-    [ant1, FirstTestZone] = mombasis(MoMobj, ant1, FirstTestZone, alpha, k, w, pi/2, 0, 0, mu0);
+    [MoMobj, ant1, FirstTestZone] = mombasis(MoMobj, ant1, FirstTestZone, alpha, k, w, pi/2, 0, 0, mu0);
 %     [FirstTestZone] = emissionNew(MoMobj, ant1, FirstTestZone, alpha, k, w, 0);
 %       [ant2, SecondTestZone] = mombasis(MoMobj, ant2, SecondTestZone, alpha, k, w, pi/2, 0, 0, mu0);
 %   [ant2, SecondTestZone] = mom2on1(MoMobj, ant2, ant2, SecondTestZone, alpha, k, w, pi/2, 0, 0, mu0);

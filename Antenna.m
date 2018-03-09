@@ -89,7 +89,7 @@ classdef Antenna
             else
                 ant.E0(1:ant.Segments) = 0;
             end
-            
+            ant.E0 = ant.E0.';
         end
         
         function [T1, T2, T1D, T2D] = TriangleBasis(ant)
