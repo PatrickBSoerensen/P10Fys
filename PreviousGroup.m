@@ -31,7 +31,15 @@ b(9)=(3168-312)*10^(-3);
 
 a=3.1*10^(-3); %Radius of the antenna
 
-N=20; %Number of
+N=50; %Number of segments
+opl=1000;
+delta=L./N; %Length of segments
+
+mu0=1.257*10^(-6);
+c=3*10^8;
+SE=N/10; %Number of segments with incident E-field
+Eiz=1;
+
 f=146.5*10^6; %Frequency
 lambda=c/f;
 w=2*pi*f;
@@ -195,6 +203,7 @@ end
 end
 figure(antalstang+1)
 pcolor(zp,pp,abs(real(E))), shading interp, colorbar, caxis([0 2*10^(-5)]), axis image
+rectangle('Position',[-0.995/2 -3*10^-3 0.995 2*3*10^-3]);%Antenna
 
 title('Far field from a half-wave dipole for $\theta$');
 xlabel('$z$-axis [m]');

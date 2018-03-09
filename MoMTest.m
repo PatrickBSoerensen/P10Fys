@@ -10,12 +10,12 @@ w=2*pi*f;
 k=w/c;
 %% Creation of objects
 length = 0.995;
-ant1 = Antenna(length, 30, 30, 0.0031, [0,0], 1);
+ant1 = Antenna(length, 200, 100, 0.0031, [0,0], 1);
 ant2 = Antenna(length, 10, 10, 0.0031, [0,0], 1);
 % MoM solver object 
 MoMobj = MoM();
 % Area creation, where the antenna is placed
-FirstTestZone = Area(1, 1000, 1000, -3, 3, -3, 3, mu0);
+FirstTestZone = Area(1, 1000, 1000, -10, 10, -10, 10, mu0);
 SecondTestZone = Area(0, 400, 400, -20, 20, -20, 20, mu0);
 %% looping through alpha
 for alpha=0:2
