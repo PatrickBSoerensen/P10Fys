@@ -50,31 +50,38 @@ classdef Antenna
             ant.Centre = centre;
             ant.Points = 2*pointscircle + pointsline-2;
             ant.Segments = 2*pointscircle + pointsline-3;
+            
             %Splitting cylinder part of antenna
             cylinderlen = length-2.*radii;
             Lin = linspace(-cylinderlen./2, cylinderlen./2, pointsline);
             ant.Lin = Lin(2:pointsline-1);
             seglen = cylinderlen/(pointsline-1);
             ant.LinTest = linspace(-cylinderlen./2+seglen./2, cylinderlen./2-seglen./2, pointsline-1);
+            
             %Splitting lower circ part
             ant.CircBot = CreateCirc(ant, 1, 0);
             ant.CircBotTest = CreateCirc(ant, 1, 1);
+            
             %Splitting upper circ part
             ant.CircTop = CreateCirc(ant, 0, 0);            
             ant.CircTopTest = CreateCirc(ant, 0, 1);
+            
             %Creating full coordinate matrix
             ant.Coord = CreateCoord(ant, 0);
             ant.CoordTest = CreateCoord(ant, 1);
+            
+            %Creating direction vectors and gamma
             [ant.tHat, ant.zHat, ant.gamma] = UnitVecs(ant);
             [ant.tHatTest, ant.zHatTest, ant.gammaTest] = UnitVecsTest(ant);
+            
             %Testing functions triangle
             [ant.T1, ant.T2, ant.T1D, ant.T2D] = TriangleBasis(ant);
+            
             %Current density
             ant.Jthe = (1:ant.Segments-1).';
             ant.Jphi = (1:ant.Segments-1).';
-%           ant.Z = zeros(2*ant.Segments,2*ant.Segments);
+            
             ant.Z = zeros(ant.Segments-1,ant.Segments-1);
-%             ant.invZ = ant.Z;
             ant.btTheta = (1:ant.Segments-1);
             ant.btPhi = (1:ant.Segments-1);
             ant.bPhiTheta = (1:ant.Segments-1);

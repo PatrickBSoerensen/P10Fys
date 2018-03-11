@@ -14,7 +14,7 @@ ant1 = Antenna(length, 50, 20, 0.0031, [0,0], 1);
 % MoM solver object 
 MoMobj = MoM(ant1);
 % Area creation, where the antenna is placed
-FirstTestZone = Area(1, 1000, 1000, -5, 5, -5, 5, mu0);
+FirstTestZone = Area(1, 1000, 1000, -10, 10, -10, 10, mu0);
 %% looping through alpha
 for alpha=0:2
     alpha
