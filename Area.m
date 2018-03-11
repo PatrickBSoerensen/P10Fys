@@ -11,21 +11,13 @@ classdef Area
         Ethephi; 
         Ephiphi;
         mu0;
-        rx;
-        rz;
-        r;
     end
     
     methods
         function obj = Area(SingularityProtection, xsteps, zsteps, xmin, xmax, zmin, zmax, mu0)
             %AREA Construct an instance of this class
             %   Detailed explanation goes here
-            if SingularityProtection
-                obj.SingularityProtection = (2*xmax).^2/xsteps.^2;
-            else
-                obj.SingularityProtection = 0;
-            end
-            
+            obj.SingularityProtection = SingularityProtection;
             obj.x = linspace(xmin, xmax, xsteps);
             obj.z = linspace(zmin, zmax, zsteps);
             
