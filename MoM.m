@@ -22,31 +22,29 @@ classdef MoM
             
                 G1 = cell([length(ant.T1) length(ant.T1)]);
                 G2 = cell([length(ant.T1) length(ant.T1)]);
-                R = cell([length(ant.T1) length(ant.T1)]);
-                Func1 = cell([length(ant.T1) length(ant.T1)]);
-                Func2 = cell([length(ant.T1) length(ant.T1)]);
                 
                 for i = 1:length(ant.T1)
                     for h = 1:length(ant.T2)
                         if iSegments(i) == jSegments(h)
-                            R{i,h} = @(phimark) sqrt((ant.CoordTest(iSegments(i),3)/4).^2 ...
+                            R = @(phimark) sqrt((ant.CoordTest(iSegments(i),3)/4).^2 ...
                             +2*ant.CoordTest(iSegments(i),2).^2.*(1-cos(phimark)));
                         else
-                            R{i,h} = @(phimark) sqrt((ant.CoordTest(iSegments(i),1)-ant.CoordTest(jSegments(h),1)).^2 ...
+                            R = @(phimark) sqrt((ant.CoordTest(iSegments(i),1)-ant.CoordTest(jSegments(h),1)).^2 ...
                             +(ant.CoordTest(iSegments(i),2)-ant.CoordTest(jSegments(h),2)).^2 ...
                             +2.*ant.CoordTest(iSegments(i),2).*ant.CoordTest(jSegments(h),2).*(1-cos(phimark)));
                         end
               
-                    Func1{i,h} = @(phimark) cos(alpha.*phimark).*exp(-1i.*k.*R{i,h}(phimark))./R{i,h}(phimark);
-                    Func2{i,h} = @(phimark) cos(phimark).*cos(alpha.*phimark).*exp(-1i.*k.*R{i,h}(phimark))./R{i,h}(phimark);
+                    Func1 = @(phimark) cos(alpha.*phimark).*exp(-1i.*k.*R(phimark))./R(phimark);
+                    Func2 = @(phimark) cos(phimark).*cos(alpha.*phimark).*exp(-1i.*k.*R(phimark))./R(phimark);
                     
-             %Should possibly integrate to 2*pi
-                    G1{i,h} = ant.CoordTest(iSegments(i),3).*ant.CoordTest(jSegments(h),3).*integral(Func1{i,h}, 0, pi, 'ArrayValued', true);
-                    G2{i,h} = ant.CoordTest(iSegments(i),3).*ant.CoordTest(jSegments(h),3).*integral(Func2{i,h}, 0, pi, 'ArrayValued', true);
+                    %Should possibly integrate to 2*pi
+                    G1{i,h} = ant.CoordTest(iSegments(i),3).*ant.CoordTest(jSegments(h),3).*integral(Func1, 0, pi);%, 'ArrayValued', true);
+                    G2{i,h} = ant.CoordTest(iSegments(i),3).*ant.CoordTest(jSegments(h),3).*integral(Func2, 0, pi);%, 'ArrayValued', true);
                     end
-                end    
-            G1 = cell2mat(G1);
-            G2 = cell2mat(G2);
+                end
+                
+            obj.G1 = triu(cell2mat(G1));
+            obj.G2 = triu(cell2mat(G2));
         end
         
         function [obj, ant, area] = mombasis(obj, ant, area, alpha, k, w, thetaI, phi, phiS, mu) 
