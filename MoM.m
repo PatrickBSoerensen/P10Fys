@@ -13,7 +13,7 @@ classdef MoM
         function obj = MoM(ant)
             %MOM Construct an instance of this class
             %   Detailed explanation goes here
-             [obj.G1, obj.G2] = DistanceSetup(obj, ant);
+%              [obj.G1, obj.G2] = DistanceSetup(obj, ant);
         end
         
         function [G1, G2] = DistanceSetup(obj, ant)
@@ -56,37 +56,35 @@ classdef MoM
             
                 G1 = cell([length(ant.T1) length(ant.T1)]);
                 G2 = cell([length(ant.T1) length(ant.T1)]);
-                R = cell([length(ant.T1) length(ant.T1)]);
-                Func1 = cell([length(ant.T1) length(ant.T1)]);
-                Func2 = cell([length(ant.T1) length(ant.T1)]);
                 
                 for i = 1:length(ant.T1)
                     for h = 1:length(ant.T2)
                         if iSegments(i) == jSegments(h)
-                            R{i,h} = @(phimark) sqrt((ant.CoordTest(iSegments(i),3)/4).^2 ...
+                            R = @(phimark) sqrt((ant.CoordTest(iSegments(i),3)/4).^2 ...
                             +2*ant.CoordTest(iSegments(i),2).^2.*(1-cos(phimark)));
                         else
-                            R{i,h} = @(phimark) sqrt((ant.CoordTest(iSegments(i),1)-ant.CoordTest(jSegments(h),1)).^2 ...
+                            R = @(phimark) sqrt((ant.CoordTest(iSegments(i),1)-ant.CoordTest(jSegments(h),1)).^2 ...
                             +(ant.CoordTest(iSegments(i),2)-ant.CoordTest(jSegments(h),2)).^2 ...
                             +2.*ant.CoordTest(iSegments(i),2).*ant.CoordTest(jSegments(h),2).*(1-cos(phimark)));
                         end
               
-                    Func1{i,h} = @(phimark) cos(alpha.*phimark).*exp(-1i.*k.*R{i,h}(phimark))./R{i,h}(phimark);
-                    Func2{i,h} = @(phimark) cos(phimark).*cos(alpha.*phimark).*exp(-1i.*k.*R{i,h}(phimark))./R{i,h}(phimark);
+                    Func1 = @(phimark) cos(alpha.*phimark).*exp(-1i.*k.*R(phimark))./R(phimark);
+                    Func2 = @(phimark) cos(phimark).*cos(alpha.*phimark).*exp(-1i.*k.*R(phimark))./R(phimark);
                     
                     %Should possibly integrate to 2*pi
-                    G1{i,h} = ant.CoordTest(iSegments(i),3).*ant.CoordTest(jSegments(h),3).*integral(Func1{i,h}, 0, pi);%, 'ArrayValued', true);
-                    G2{i,h} = ant.CoordTest(iSegments(i),3).*ant.CoordTest(jSegments(h),3).*integral(Func2{i,h}, 0, pi);%, 'ArrayValued', true);
+                    G1{i,h} = ant.CoordTest(iSegments(i),3).*ant.CoordTest(jSegments(h),3).*integral(Func1, 0, pi);%, 'ArrayValued', true);
+                    G2{i,h} = ant.CoordTest(iSegments(i),3).*ant.CoordTest(jSegments(h),3).*integral(Func2, 0, pi);%, 'ArrayValued', true);
                     end
                 end
                 
-            obj.G1 = cell2mat(G1);
-            obj.G2 = cell2mat(G2);
+            obj.G1 = triu(cell2mat(G1));
+            obj.G2 = triu(cell2mat(G2));
+            clear G1; clear G2; clear Func1; clear Func2;
             end
             
             %Ztt
-            ant.Z(:,:) = ...
-                (ant.T1(:)*ant.T1(:).'.*...
+            ant.Z = ...
+                ant.T1(:)*ant.T1(:).'.*...
                 (sin(ant.gammaTest(1:end-1))*sin(ant.gammaTest(1:end-1).').*obj.G2(:,:) ...%1
                 +cos(ant.gammaTest(1:end-1))*cos(ant.gammaTest(1:end-1).').*obj.G1(:,:)) ...
                 -1./k.^2.*ant.T1D(:)*ant.T1D(:).'.*obj.G1(:,:)...
@@ -104,7 +102,9 @@ classdef MoM
                 ant.T2(:)*ant.T1(:).'.*...
                 (sin(ant.gammaTest(2:end))*sin(ant.gammaTest(1:end-1).').*obj.G2(:,:) ...%4
                 +cos(ant.gammaTest(2:end))*cos(ant.gammaTest(1:end-1).').*obj.G1(:,:))...
-                -1./k.^2.*ant.T2D(:)*ant.T1D(:).'.*obj.G1(:,:));
+                -1./k.^2.*ant.T2D(:)*ant.T1D(:).'.*obj.G1(:,:);
+            
+            ant.Z = ant.Z+ant.Z.';
                 
             J0 = besselj(alpha-1, k*ant.CoordTest(:,2)*sin(thetaI));
             J1 = besselj(alpha, k*ant.CoordTest(:,2)*sin(thetaI));
@@ -125,9 +125,9 @@ classdef MoM
             ant.btTheta(1)=0;
             ant.btTheta(end)=0;
             
-            ant.invZ = ant.Z^(-1);
+            invZ = ant.Z^(-1);
             
-            ant.xtTheta = ant.invZ*ant.btTheta;
+            ant.xtTheta =invZ*ant.btTheta;
             
             ant.xtTheta(1)=0;
             ant.xtTheta(end)=0;
@@ -145,35 +145,6 @@ classdef MoM
             ant.Jthe(1) = 0;
             ant.Jthe(end) = 0;
             area = emission(obj, ant, area, alpha, k, w, phiS);
-        end
-       
-        function area = emissionNew(obj, ant, area, alpha, k, w, phiS)
-                rz = (area.z-ant.CoordTest(:,1));
-                rx = (area.x+ant.CoordTest(:,2)+area.SingularityProtection);
-                r = sqrt((rz).^2+(rx).^2);
-                B = -(1i*w*area.mu0)/(2*pi)*(exp(-1i*k*r)./r);
-                if alpha == 0
-                    area.Ethethe = B(1:end-1,:)/2 .* ant.xtTheta .* ant.btTheta.'...
-                        +B(2:end,:)/2 .* ant.xtTheta .* ant.btTheta.'...
-                        + area.Ethethe;
-                else    
-                    area.Ethethe = B(1:end-1,:).*ant.xtTheta.*ant.btTheta.'...
-                                +B(2:end,:) .* ant.xtTheta .* ant.btTheta.'...
-                                .*cos(alpha*phiS)+area.Ethethe;
-                end
-        
-                rx = (area.x-ant.CoordTest(:,2)-area.SingularityProtection);
-                r = sqrt((rz).^2+(rx).^2);
-                B = -(1i*w*area.mu0)/(2*pi)*(exp(-1i*k*r)./r);
-                if alpha == 0
-                    area.Ethethe = B(1:end-1,:)/2 .* ant.xtTheta .* ant.btTheta.'...
-                        +B(2:end,:)/2 .* ant.xtTheta .* ant.btTheta.'...
-                        + area.Ethethe;
-                else    
-                    area.Ethethe = B(1:end-1,:).*ant.xtTheta.*ant.btTheta.'...
-                                +B(2:end,:) .* ant.xtTheta .* ant.btTheta.'...
-                                .*cos(alpha*phiS)+area.Ethethe;
-                end
         end
         
         function area = emission(obj, ant, area, alpha, k, w, phiS)
