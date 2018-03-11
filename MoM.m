@@ -13,7 +13,7 @@ classdef MoM
         function obj = MoM(ant)
             %MOM Construct an instance of this class
             %   Detailed explanation goes here
-             [obj.G1, obj.G2] = DistanceSetup(obj, ant);
+%              [obj.G1, obj.G2] = DistanceSetup(obj, ant);
         end
         
         function [G1, G2] = DistanceSetup(obj, ant)
