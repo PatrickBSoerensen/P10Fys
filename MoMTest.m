@@ -10,11 +10,11 @@ w=2*pi*f;
 k=w/c;
 %% Creation of objects
 length = 0.995;
-ant1 = Antenna(length, 50, 20, 0.0031, [0,0], 1);
+ant1 = Antenna(length, 50, 25, 0.0031, [0,0], 1);
 % MoM solver object 
 MoMobj = MoM(ant1);
 % Area creation, where the antenna is placed
-FirstTestZone = Area(0.0001, 1000, 1000, -10, 10, -10, 10, mu0);
+FirstTestZone = Area(0.001, 1000, 1000, -10, 10, -10, 10, mu0);
 %% looping through alpha
 for alpha=0:2
     alpha
@@ -25,8 +25,10 @@ figure(1)
 pcolor(FirstTestZone.z, FirstTestZone.x, abs(real(FirstTestZone.Ethethe)))
 shading interp
 colorbar
-caxis([0 6*10^(-4)])
+%caxis([0 6*10^(-4)])
 rectangle('Position',[-ant1.Radii -ant1.Length/2 2*ant1.Radii ant1.Length],'Curvature',1);%Antenna
+ylim([-1 1])
+xlim([-1 1])
 figure(2)
 %Middle segment
 plot(abs(ant1.Jthe(ant1.PointsCircle:ant1.PointsLine+ant1.PointsCircle-2)), 'k-*')

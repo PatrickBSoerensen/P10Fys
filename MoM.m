@@ -102,7 +102,7 @@ classdef MoM
                 +cos(ant.gammaTest(2:end))*cos(ant.gammaTest(1:end-1).').*obj.G1(:,:))...
                 -1./k.^2.*ant.T2D(:)*ant.T1D(:).'.*obj.G1(:,:);
             
-            ant.Z = ant.Z+ant.Z.';
+            ant.Z = ant.Z+triu(ant.Z,1).';
                 
             J0 = besselj(alpha-1, k*ant.CoordTest(:,2)*sin(thetaI));
             J1 = besselj(alpha, k*ant.CoordTest(:,2)*sin(thetaI));
@@ -144,7 +144,11 @@ classdef MoM
             ant.Jthe(end) = 0;
             area = emission(obj, ant, area, alpha, k, w, phiS);
         end
-        
+        %                 
+% g=@(z) exp(1i*k*r(z))./(4*pi*r(z));
+% G=@(z) g(z).*((1+1i./(k*r(z))-1./((k*r(z)).^2)) - ...
+% ((zk-z).^2)./(r(z).^2).*(1+3i./(k*r(z))-3./((k*r(z)).^2)));
+
         function area = emission(obj, ant, area, alpha, k, w, phiS)
             rz = (area.z-ant.CoordTest(:,1));
             for i=1:length(ant.T1)

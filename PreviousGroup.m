@@ -29,7 +29,18 @@ b(7)=(1986-312)*10^(-3);
 b(8)=(2553-312)*10^(-3);
 b(9)=(3168-312)*10^(-3);
 
+opl=100;
+
+delta=L./N; %Length of segments
+
+Eiz=1;
+
+SE=N/10; 
 a=3.1*10^(-3); %Radius of the antenna
+
+eps0=8.854187817*10^-12; %F/m
+mu0=4*pi*10^-7; %N/A^2
+c=1/sqrt(eps0*mu0); %m/s
 
 N=20; %Number of
 f=146.5*10^6; %Frequency
