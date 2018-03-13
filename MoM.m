@@ -144,10 +144,6 @@ classdef MoM
             ant.Jthe(end) = 0;
             area = emission(obj, ant, area, alpha, k, w, phiS);
         end
-        %                 
-% g=@(z) exp(1i*k*r(z))./(4*pi*r(z));
-% G=@(z) g(z).*((1+1i./(k*r(z))-1./((k*r(z)).^2)) - ...
-% ((zk-z).^2)./(r(z).^2).*(1+3i./(k*r(z))-3./((k*r(z)).^2)));
 
         function area = emission(obj, ant, area, alpha, k, w, phiS)
             rz = (area.z-ant.CoordTest(:,1));

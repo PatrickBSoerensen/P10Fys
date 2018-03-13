@@ -132,7 +132,7 @@ classdef Antenna
             tHat(ant.PointsCircle+ant.PointsLine-1: ... 
             2*ant.PointsCircle+ant.PointsLine-2,1)...
             = -ant.Radii.*sin(linspace(0, pi/2, ant.PointsCircle));%x coord
-        
+            
             tHat(:,2) = 0;%y coord
             tHat(:,3) = 1;%z coord
             tHat(1:ant.PointsCircle,3) = ... 
@@ -236,8 +236,8 @@ classdef Antenna
         function E0 = FieldSetup(ant)
             E0 = (1:ant.Segments);
             E0(:) = 0;
-            
-            SE=ant.Segments/10;
+
+            SE=ant.Segments/2;
             lim=SE*ant.CoordTest(:,3);
 %             lim=ant.Length;
             
@@ -254,7 +254,6 @@ classdef Antenna
             if sum(mid)
                 E0(mid) = 1;
             end
-            
             
 %             E0(lower)= (ant.CoordTest(lower,1)+(lim/2))./(lim/2);
 %             E0(upper)= ((lim/2)-ant.CoordTest(upper,1))./(lim/2);
