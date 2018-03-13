@@ -132,7 +132,7 @@ classdef Antenna
             tHat(ant.PointsCircle+ant.PointsLine-1: ... 
             2*ant.PointsCircle+ant.PointsLine-2,1)...
             = -ant.Radii.*sin(linspace(0, pi/2, ant.PointsCircle));%x coord
-        
+            
             tHat(:,2) = 0;%y coord
             tHat(:,3) = 1;%z coord
             tHat(1:ant.PointsCircle,3) = ... 
@@ -236,10 +236,10 @@ classdef Antenna
         function E0 = FieldSetup(ant)
             E0 = (1:ant.Segments);
             E0(:) = 0;
-            
-            SE=ant.Segments/10;
+
+            SE=ant.Segments/2;
             lim=SE*ant.CoordTest(:,3);
-            lim=ant.Length;
+%             lim=ant.Length;
             
             upper1 = 0 < ant.CoordTest(:, 1);
             upper2 = ant.CoordTest(:, 1) <= lim/2;
@@ -255,17 +255,11 @@ classdef Antenna
                 E0(mid) = 1;
             end
             
-        mu0=4*pi*10^-7; %N/A^2
-        f=146.5*10^6;
-        w=2*pi*f;
-            
-%             E0(lower)= 1i/(w*mu0)*(ant.CoordTest(lower,1)+(lim/2))./(lim/2);
-%             E0(upper)= 1i/(w*mu0)*((lim/2)-ant.CoordTest(upper,1))./(lim/2);
-            E0(lower)= (ant.CoordTest(lower,1)+(lim/2))./(lim/2);
-            E0(upper)= ((lim/2)-ant.CoordTest(upper,1))./(lim/2);
+%             E0(lower)= (ant.CoordTest(lower,1)+(lim/2))./(lim/2);
+%             E0(upper)= ((lim/2)-ant.CoordTest(upper,1))./(lim/2);
 
-%             E0(lower)=(ant.CoordTest(lower,1)+(lim(lower)/2))./(lim(lower)/2);
-%             E0(upper)=((lim(upper)/2)-ant.CoordTest(upper,1))./(lim(upper)/2);
+            E0(lower)=(ant.CoordTest(lower,1)+(lim(lower)/2))./(lim(lower)/2);
+            E0(upper)=((lim(upper)/2)-ant.CoordTest(upper,1))./(lim(upper)/2);
 %             E0(:)=1
         end
     end
