@@ -78,8 +78,8 @@ classdef Antenna
             [ant.T1, ant.T2, ant.T1D, ant.T2D] = TriangleBasis(ant);
             
             %Current density
-            ant.Jthe = (1:ant.Segments-1).';
-            ant.Jphi = (1:ant.Segments-1).';
+            ant.Jthe = (1:ant.Segments).';
+            ant.Jphi = (1:ant.Segments).';
             
             ant.Z = zeros(ant.Segments-1,ant.Segments-1);
             ant.btTheta = (1:ant.Segments-1);
@@ -105,22 +105,25 @@ classdef Antenna
                 +(ant.CoordTest(:,2)-ant.Coord(1:ant.Segments,2)).^2)...
                 ./sqrt((ant.Coord(1:ant.Segments,1)-ant.Coord(2:ant.Segments+1,1)).^2 ...
                 +(ant.Coord(1:ant.Segments,2)-ant.Coord(2:ant.Segments+1,2)).^2);
-            T1 = T1(1:end-1);
+%             T1 = T1(1:end-1);
+            T1(end) = 0;
 %           Falling basis function
             T2 = sqrt((ant.Coord(2:ant.Segments+1,1)-ant.CoordTest(:,1)).^2 ... 
                 +(ant.Coord(2:ant.Segments+1,2)-ant.CoordTest(:,2)).^2) ...
                 ./sqrt((ant.Coord(1:ant.Segments,1)-ant.Coord(2:ant.Segments+1,1)).^2 ...
                 +(ant.Coord(1:ant.Segments,2)-ant.Coord(2:ant.Segments+1,2)).^2);
-            T2 = T2(2:end);
+%             T2 = T2(2:end);
+            T2(1) = 0;
             %Rising basis derivative
             T1D = 1./sqrt((ant.Coord(1:ant.Segments,1)-ant.Coord(2:ant.Segments+1,1)).^2 ...
                 +(ant.Coord(1:ant.Segments,2)-ant.Coord(2:ant.Segments+1,2)).^2);
-            T1D = T1D(1:end-1);
+%             T1D = T1D(1:end-1);
+            T1D(end) = 0;
             %Falling basis derivative
             T2D = -1./sqrt((ant.Coord(1:ant.Segments,1)-ant.Coord(2:ant.Segments+1,1)).^2 ...
                 +(ant.Coord(1:ant.Segments,2)-ant.Coord(2:ant.Segments+1,2)).^2);
-            T2D = T2D(2:end);
-            
+%             T2D = T2D(2:end);
+            T2D(1) = 0;
         end
         
         function [tHat, zHat, gamma] = UnitVecs(ant)
@@ -234,10 +237,12 @@ classdef Antenna
         end
         
         function E0 = FieldSetup(ant)
+%             E0 = (1:ant.Points);
             E0 = (1:ant.Segments);
             E0(:) = 0;
+            E0i = 1;
 
-            SE=ant.Segments/2;
+            SE=ant.Segments/10;
             lim=SE*ant.CoordTest(:,3);
 %             lim=ant.Length;
             
@@ -258,9 +263,8 @@ classdef Antenna
 %             E0(lower)= (ant.CoordTest(lower,1)+(lim/2))./(lim/2);
 %             E0(upper)= ((lim/2)-ant.CoordTest(upper,1))./(lim/2);
 
-            E0(lower)=(ant.CoordTest(lower,1)+(lim(lower)/2))./(lim(lower)/2);
-            E0(upper)=((lim(upper)/2)-ant.CoordTest(upper,1))./(lim(upper)/2);
-%             E0(:)=1
+            E0(lower)=E0i*(ant.CoordTest(lower,1)+(lim(lower)/2))./(lim(lower)/2);
+            E0(upper)=E0i*((lim(upper)/2)-ant.CoordTest(upper,1))./(lim(upper)/2);
         end
     end
 end

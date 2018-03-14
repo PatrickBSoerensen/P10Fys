@@ -9,14 +9,19 @@ lambda=c/f;
 w=2*pi*f;
 k=w/c;
 %% Creation of objects
-length = lambda/2;
+length = 0.995;
+%5/2, 3/2, 1*, 2*
+lambda=3*length/2;
+f=c/lambda;
+w=2*pi*f;
+k=w/c;
 %Antenna(length, pointsline, pointscircle, radii, centre, generator)
 ant1 = Antenna(length, 20, 5, 0.0031, [0,0], 1);
-% MoM solver object 
+%MoM solver object 
 MoMobj = MoM(ant1);
-% Area creation, where the antenna is placed
+%Area creation, where the antenna is placed
 %Area(SingularityProtection, xsteps, zsteps, xmin, xmax, zmin, zmax, mu0)
-FirstTestZone = Area(0.000001, 500, 500, -5, 5, -5, 5, mu0);
+FirstTestZone = Area(0.00001, 500, 500, -5, 5, -5, 5, mu0);
 %% looping through alpha
 for alpha=0:2
     alpha
@@ -27,16 +32,16 @@ figure(1)
 pcolor(FirstTestZone.x, FirstTestZone.z, abs(real(FirstTestZone.Ethethe)))
 shading interp
 colorbar
-%caxis([0 6*10^(-4)])
+% caxis([0 2*10^(-4)])
 rectangle('Position',[-ant1.Radii -ant1.Length/2 2*ant1.Radii ant1.Length],'Curvature',1);%Antenna
-figure(7)
+figure(2)
 %Middle segment
 plot(abs(ant1.Jthe(ant1.PointsCircle:ant1.PointsLine+ant1.PointsCircle-2)), 'k-*')
-figure(8)
+figure(3)
 hold on
 %Lower circ
 plot(abs(ant1.Jthe(1:ant1.PointsCircle-1)), 'b-*')
 %Upper circ
-plot(abs(ant1.Jthe(ant1.PointsLine+ant1.PointsCircle-2:end)), 'r-*')
-figure(9)
+plot(abs(ant1.Jthe(ant1.PointsLine+ant1.PointsCircle-1:end)), 'r-*')
+figure(4)
 plot(ant1.E0)
