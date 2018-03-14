@@ -78,8 +78,8 @@ classdef Antenna
             [ant.T1, ant.T2, ant.T1D, ant.T2D] = TriangleBasis(ant);
             
             %Current density
-            ant.Jthe = (1:ant.Segments-1).';
-            ant.Jphi = (1:ant.Segments-1).';
+            ant.Jthe = (1:ant.Segments).';
+            ant.Jphi = (1:ant.Segments).';
             
             ant.Z = zeros(ant.Segments-1,ant.Segments-1);
             ant.btTheta = (1:ant.Segments-1);
@@ -120,7 +120,6 @@ classdef Antenna
             T2D = -1./sqrt((ant.Coord(1:ant.Segments,1)-ant.Coord(2:ant.Segments+1,1)).^2 ...
                 +(ant.Coord(1:ant.Segments,2)-ant.Coord(2:ant.Segments+1,2)).^2);
             T2D = T2D(2:end);
-            
         end
         
         function [tHat, zHat, gamma] = UnitVecs(ant)
