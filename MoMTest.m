@@ -11,12 +11,14 @@ k=w/c;
 %% Creation of objects
 length = 0.995;
 %5/2, 3/2, 1*, 2*
-lambda=3*length/2;
+lambda=2/3*length;
 f=c/lambda;
 w=2*pi*f;
 k=w/c;
 %Antenna(length, pointsline, pointscircle, radii, centre, generator)
-ant1 = Antenna(length, 20, 5, 0.0031, [0,0], 1);
+ant1 = Antenna(length, 40, 15, 0.0031, [0,0], 1);
+
+ant2 = Antenna(length, 100, 15, 0.0031, [0,0], 1);
 %MoM solver object 
 MoMobj = MoM(ant1);
 %Area creation, where the antenna is placed

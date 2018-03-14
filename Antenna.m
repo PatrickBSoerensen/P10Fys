@@ -265,6 +265,7 @@ classdef Antenna
 
             E0(lower)=E0i*(ant.CoordTest(lower,1)+(lim(lower)/2))./(lim(lower)/2);
             E0(upper)=E0i*((lim(upper)/2)-ant.CoordTest(upper,1))./(lim(upper)/2);
+%             E0(:)=1;
         end
     end
 end

@@ -50,8 +50,6 @@ classdef MoM
         function [obj, ant, area] = mombasis(obj, ant, area, alpha, k, w, thetaI, phi, phiS, mu) 
             if alpha == 0
                 iSegments = 1:length(ant.T1);
-%                 jSegments = 1+1:length(ant.T2)+1;
-                
                 jSegments = 1:length(ant.T2);
             
                 G1 = cell([length(ant.T1) length(ant.T1)]);
@@ -105,30 +103,23 @@ classdef MoM
             J2 = besselj(alpha+1, k*ant.CoordTest(:,2)*sin(thetaI));
             
             %% planewave b equations
-            b1=-ant.E0.*pi.*1i.^(alpha).*...
-                (ant.T1.*ant.CoordTest(:,3)...
-                .*exp(1i.*k.*ant.CoordTest(:,1).*cos(thetaI)).*(cos(thetaI)...
-                .*sin(ant.gammaTest(:)).*1i.*(J2-J0)...
-                -2.*sin(thetaI).*cos(ant.gammaTest).*J1));
+%             b1=pi.*1i.^(alpha).*...
+%                 (ant.T1.*ant.CoordTest(:,3)...
+%                 .*exp(1i.*k.*ant.CoordTest(:,1).*cos(thetaI)).*(cos(thetaI)...
+%                 .*sin(ant.gammaTest).*1i.*(J2-J0)...
+%                 -2.*sin(thetaI).*cos(ant.gammaTest).*J1));
+%             
+%             b2=pi.*1i.^(alpha).*...
+%                 (ant.T2.*ant.CoordTest(:,3)...
+%                 .*exp(1i.*k.*ant.CoordTest(:,1).*cos(thetaI)).*(cos(thetaI)...
+%                 .*sin(ant.gammaTest).*1i.*(J2-J0)...
+%                 -2.*sin(thetaI).*cos(ant.gammaTest).*J1));
+            E=@(phi) exp(1i.*k.*ant.CoordTest(:,1).*cos(thetaI)).*exp(1i.*k.*sin(thetaI).*ant.CoordTest(:,3).*cos(phi));
+%             E=@(phi) w./w.*exp(-(sqrt(ant.CoordTest(:,1).^2+ant.CoordTest(:,2).^2).^2/w)-1i.*k.*ant.CoordTest(:,1)-(1i.*pi.*(sqrt(ant.CoordTest(:,1).^2+ant.CoordTest(:,2).^2).^2)+1i*phi));
             
-            b2=-ant.E0.*pi.*1i.^(alpha).*...
-                (ant.T2.*ant.CoordTest(:,3)...
-                .*exp(1i.*k.*ant.CoordTest(:,1).*cos(thetaI)).*(cos(thetaI)...
-                .*sin(ant.gammaTest).*1i.*(J2-J0)...
-                -2.*sin(thetaI).*cos(ant.gammaTest).*J1));
-            
-            ant.btTheta = b1+b2;
-            
-%             ant.btTheta= -ant.E0(2:end-1).*1i./(w.*mu).*pi.*1i.^(alpha).*...
-%                 (ant.T1.*ant.CoordTest(1:end-1,3)...
-%                 .*exp(1i.*k.*ant.CoordTest(1:end-1,1).*cos(thetaI)).*(cos(thetaI)...
-%                 .*sin(ant.gammaTest(1:end-1)).*1i.*(J2(1:end-1)-J0(1:end-1))...
-%                 -2.*sin(thetaI).*cos(ant.gammaTest(1:end-1)).*J1(1:end-1)))...
-%                  -ant.E0(2:end-1).*1i./(w.*mu).*pi.*1i.^(alpha).*...
-%                 (ant.T2.*ant.CoordTest(2:end,3)...
-%                 .*exp(1i.*k.*ant.CoordTest(2:end,1).*cos(thetaI)).*(cos(thetaI)...
-%                 .*sin(ant.gammaTest(2:end)).*1i.*(J2(2:end)-J0(2:end))...
-%                 -2.*sin(thetaI).*cos(ant.gammaTest(2:end)).*J1(2:end)));
+            ant.btTheta=(ant.T1+ant.T2).*ant.CoordTest(:,3).*integral(@(phi)exp(-1i.*alpha.*phi).*E(phi).*cos(thetaI).*sin(ant.gammaTest).*cos(phi)-sin(thetaI).*cos(ant.gammaTest),0,2*pi, 'ArrayValued', true);
+
+%             ant.btTheta = b1+b2;
             
             invZ = ant.Z^(-1);
             
@@ -149,9 +140,8 @@ classdef MoM
             else
                 ant.Jthe = ant.Jthe+2*ant.xtTheta.*ftn.*cos(alpha.*phi);
             end
-            
-%             ant.Jthe(1) = 0;
-%             ant.Jthe(end) = 0;
+            ant.Jthe(1) = 0;
+            ant.Jthe(end) = 0;
             area = emission(obj, ant, area, alpha, k, w, phiS);
         end
 
@@ -163,9 +153,9 @@ classdef MoM
                 
                 B1 = -((1i.*w.*area.mu0)./(2.*pi.*r1)).*(exp(-1i.*k.*r1));
                 if alpha == 0
-                    area.Ethethe = area.Ethethe + B1/2 .* ant.xtTheta(i) .* ant.btTheta(i);
+                    area.Ethethe = area.Ethethe + B1/2 .* ant.xtTheta(i) .* ant.btTheta(i)*ant.CoordTest(i,3);
                 else    
-                    area.Ethethe = area.Ethethe + B1.*ant.xtTheta(i).*ant.btTheta(i);
+                    area.Ethethe = area.Ethethe + B1.*ant.xtTheta(i).*ant.btTheta(i)*ant.CoordTest(i,3);
                 end
         
                 rx = (area.x-ant.CoordTest(:,2)-area.SingularityProtection);
@@ -174,9 +164,9 @@ classdef MoM
                 
                 B1 = -((1i.*w.*area.mu0)./(2.*pi.*r1)).*(exp(-1i.*k.*r1));
                 if alpha == 0
-                    area.Ethethe = area.Ethethe + B1/2 .* ant.xtTheta(i) .* ant.btTheta(i);
+                    area.Ethethe = area.Ethethe + B1/2 .* ant.xtTheta(i) .* ant.btTheta(i)*ant.CoordTest(i,3);
                 else
-                    area.Ethethe = area.Ethethe + B1.*ant.xtTheta(i).*ant.btTheta(i);
+                    area.Ethethe = area.Ethethe + B1.*ant.xtTheta(i).*ant.btTheta(i)*ant.CoordTest(i,3);
                 end
             end
         end

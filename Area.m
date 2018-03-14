@@ -56,12 +56,16 @@ classdef Area
         theta=linspace(0,2*pi,opl);
         E=zeros(1,opl);
         for j=1:opl
-            v=theta(j);
-            r= sqrt((ant.CoordTest(:,1)).^2+(ant.CoordTest(:,2)).^2);
+            v = theta(j);
+            r = sqrt((ant.Centre(1)-ant.CoordTest(:,1)).^2+(ant.Centre(2)-ant.CoordTest(:,2)).^2);
             konst=exp(1i*k*distance)/(4*pi*distance);
-            g= exp(-1i.*k.*r);
-            E(j)=E(j)+sum(-sin(v).*konst.*g.*ant.Jthe.*ant.CoordTest(:,3));
-%             E(j)=E(j)+sum(-sin(v).*konst.*g.*ant.Jthe.*ant.CoordTest(2:end,3));
+            g = exp(-1i.*k.*r);
+            E(j) = E(j)+sum(-sin(v).*konst.*g.*ant.Jthe.*ant.CoordTest(:,3));
+
+            r = sqrt((ant.Centre(1)-ant.CoordTest(:,1)).^2+(ant.Centre(2)+ant.CoordTest(:,2)).^2);                       
+            konst=exp(1i*k*distance)/(4*pi*distance);
+            g = exp(-1i.*k.*r);
+            E(j) = E(j)+sum(-sin(v).*konst.*g.*ant.Jthe.*ant.CoordTest(:,3));
         end
         figure(10)
         polarplot(theta,abs(E)./max(abs(E)))
