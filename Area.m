@@ -39,7 +39,6 @@ classdef Area
                     v=phi(j);
                     v2=theta(j12);
                     Ry=ant.Centre(1);
-                    thetam=@(z) pi/2-atan(z/Ry);
                     r=@(z) z.*cos(v2)+Ry*sin(v2)*sin(v);
                     konst=exp(1i*k*str)/(4*pi*str);
                     g=@(z) exp(-1i.*k.*r(z));
@@ -52,47 +51,39 @@ classdef Area
         title('Far Field 3D plot');
         end
         
-        function farfieldplotXZ(obj, ant, distance, opl, k)
+        function farfieldplotXZ(obj, ant, distance, k)
+            opl = length(obj.x);
         theta=linspace(0,2*pi,opl);
         E=zeros(1,opl);
         for j=1:opl
             v=theta(j);
-            Ry=ant.Centre(1);
-            thetam=@(z) pi/2-atan(z/Ry);
-            r=@(z) z.*cos(v)+Ry*sin(v);
+            r= sqrt((ant.Coord(2:end-1,1)).^2+(ant.Coord(2:end-1,2)).^2);
             konst=exp(1i*k*distance)/(4*pi*distance);
-            g=@(z) exp(-1i.*k.*r(z));
-            E(j)=E(j)+sum(-sin(v).*konst.*g(ant.CoordTest(1:end-1,1)).*ant.Jthe.*ant.CoordTest(1:end-1,3));
-            E(j)=E(j)+sum(-sin(v).*konst.*g(ant.CoordTest(2:end,1)).*ant.Jthe.*ant.CoordTest(2:end,3));
+            g= exp(-1i.*k.*r);
+            E(j)=E(j)+sum(-sin(v).*konst.*g.*ant.Jthe.*ant.CoordTest(1:end-1,3));
+            E(j)=E(j)+sum(-sin(v).*konst.*g.*ant.Jthe.*ant.CoordTest(2:end,3));
         end
-        figure(1)
+        figure(8)
         polarplot(theta,abs(E)./max(abs(E)))
         title('Far field for a Half-wave dipole for $\theta$');
         end
         
-        function farfieldplotXY(obj, ant, distance, opl, k)
+        function farfieldplotXY(obj, ant, distance, k)
+            opl = length(obj.x);
             phi=linspace(0,2*pi,opl);
             theta=pi/2;
-            E=zeros(1,opl); 
+            E=zeros(1,opl);
             for j=1:opl
-                    v=phi(j);
-                    Ry=ant.Centre(1);
-                    r=@(z) z.*cos(theta)+Ry*sin(theta)*sin(v);
+                    r= sqrt((ant.CoordTest(:,1)).^2+(ant.CoordTest(:,2)).^2);
                     konst=exp(1i*k*distance)/(4*pi*distance);
-                    g=@(z) exp(-1i.*k.*r(z));
-                    E(j)=E(j)+sum(-sin(theta).*konst.*g(ant.CoordTest(1:end-1,1)).*ant.Jthe.*ant.CoordTest(1:end-1,3));
-                    E(j)=E(j)+sum(-sin(theta).*konst.*g(ant.CoordTest(2:end,1)).*ant.Jthe.*ant.CoordTest(2:end,3));
+                    g= exp(-1i.*k.*r);
+                    E(j)=E(j)+sum(-sin(theta).*konst.*g(1:end-1).*ant.Jthe.*ant.CoordTest(1:end-1,3));
+                    E(j)=E(j)+sum(-sin(theta).*konst.*g(2:end).*ant.Jthe.*ant.CoordTest(2:end,3));
             end
-            figure(3)
+            figure(9)
             polarplot(phi,abs(E)./max(abs(E)))
             title('Far field for a Half-wave dipole for $\phi$');
         end
-
-        
-%         str=12*lambda; %Distance chosen to be far field
-      
-% %% Plotting xy-plane
-
     end
 end
 

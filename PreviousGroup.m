@@ -31,7 +31,7 @@ b(9)=(3168-312)*10^(-3);
 
 opl=100;
 
-N=20; %Number of
+N=10; %Number of
 delta=L./N; %Length of segments
 
 Eiz=1;
@@ -76,17 +76,17 @@ end
 DSE=SE*delta(1); %Area hit by incident E-field
 
 for j=1:N
-for m=0:1
-z=zv(j,m+1);
-E0=0;
-if z>=-DSE/2 && z<=0
-E0=1i/(w*mu0)*Eiz*(z+(DSE/2))/(DSE/2);
-end
-if z>0 && z<=DSE/2
-E0=1i/(w*mu0)*Eiz*(1-z/(DSE/2));
-end
-E0v(j,m+1)=E0;
-end
+    for m=0:1
+        z=zv(j,m+1);
+        E0=0;
+            if z>=-DSE/2 && z<=0
+                E0=1i/(w*mu0)*Eiz*(z+(DSE/2))/(DSE/2);
+            end
+            if z>0 && z<=DSE/2
+                E0=1i/(w*mu0)*Eiz*(1-z/(DSE/2));
+            end
+        E0v(j,m+1)=E0;
+    end
 end
 
 nulvektor=zeros(N*(antalstang-1),1);

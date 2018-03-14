@@ -234,32 +234,33 @@ classdef Antenna
         end
         
         function E0 = FieldSetup(ant)
-            E0 = (1:ant.Segments);
+            E0 = (1:ant.Points);
+%             E0 = (1:ant.Segments);
             E0(:) = 0;
 
-            SE=ant.Segments/2;
-            lim=SE*ant.CoordTest(:,3);
+            SE=ant.Segments/10;
+            lim=SE*ant.Coord(:,3);
 %             lim=ant.Length;
             
-            upper1 = 0 < ant.CoordTest(:, 1);
-            upper2 = ant.CoordTest(:, 1) <= lim/2;
+            upper1 = 0 < ant.Coord(:, 1);
+            upper2 = ant.Coord(:, 1) <= lim/2;
             upper = logical(upper1.*upper2);
             
-            mid = ant.CoordTest(:,1) == 0;
+            mid = ant.Coord(:,1) == 0;
             
-            lower1 = 0 > ant.CoordTest(:, 1);
-            lower2 = ant.CoordTest(:, 1) >= -lim/2;
+            lower1 = 0 > ant.Coord(:, 1);
+            lower2 = ant.Coord(:, 1) >= -lim/2;
             lower = logical(lower1.*lower2);
             
             if sum(mid)
                 E0(mid) = 1;
             end
             
-%             E0(lower)= (ant.CoordTest(lower,1)+(lim/2))./(lim/2);
-%             E0(upper)= ((lim/2)-ant.CoordTest(upper,1))./(lim/2);
+%             E0(lower)= (ant.Coord(lower,1)+(lim/2))./(lim/2);
+%             E0(upper)= ((lim/2)-ant.Coord(upper,1))./(lim/2);
 
-            E0(lower)=(ant.CoordTest(lower,1)+(lim(lower)/2))./(lim(lower)/2);
-            E0(upper)=((lim(upper)/2)-ant.CoordTest(upper,1))./(lim(upper)/2);
+            E0(lower)=(ant.Coord(lower,1)+(lim(lower)/2))./(lim(lower)/2);
+            E0(upper)=((lim(upper)/2)-ant.Coord(upper,1))./(lim(upper)/2);
 %             E0(:)=1
         end
     end
