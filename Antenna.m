@@ -242,7 +242,7 @@ classdef Antenna
             E0(:) = 0;
             E0i = 1;
 
-            SE=ant.Segments/12;
+            SE=ant.Segments/10;
             lim=SE*ant.CoordTest(:,3);
 %             lim=ant.Length;
             

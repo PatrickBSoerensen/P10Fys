@@ -11,7 +11,7 @@ k=w/c;
 %% Creation of objects
 length = 0.995;
 %5/2, 3/2, 1*, 2*
-lambda=length/4;
+lambda=3*length/2;
 f=c/lambda;
 w=2*pi*f;
 k=w/c;
