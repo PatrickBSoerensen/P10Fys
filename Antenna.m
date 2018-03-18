@@ -22,17 +22,9 @@ classdef Antenna
         zHatTest;
         gammaTest;
         Jthe;
-        Jphi;
         Z;
-        invZ;
         btTheta;
-        btPhi;
-        bPhiTheta;
-        bPhiPhi;
         xtTheta;
-        xPhiTheta;
-        xtPhi;
-        xPhiPhi;
         T1;
         T2;
         T1D;
@@ -79,17 +71,10 @@ classdef Antenna
             
             %Current density
             ant.Jthe = (1:ant.Segments).';
-            ant.Jphi = (1:ant.Segments).';
             
-            ant.Z = zeros(ant.Segments-1,ant.Segments-1);
-            ant.btTheta = (1:ant.Segments-1);
-            ant.btPhi = (1:ant.Segments-1);
-            ant.bPhiTheta = (1:ant.Segments-1);
-            ant.bPhiPhi = (1:ant.Segments-1);
-            ant.xtTheta = (1:ant.Segments-1);
-            ant.xPhiTheta = (ant.Segments:2*ant.Segments-1);    
-            ant.xtPhi = (1:ant.Segments-1);
-            ant.xPhiPhi = (ant.Segments:2*ant.Segments-1);
+            ant.Z = zeros(ant.Segments,ant.Segments);
+            ant.btTheta = (1:ant.Segments);
+            
             %Field limiter
             if generator
                 ant.E0 = FieldSetup(ant);
@@ -103,26 +88,18 @@ classdef Antenna
 %           Rising basis function
             T1 = sqrt((ant.CoordTest(:,1)-ant.Coord(1:ant.Segments,1)).^2 ... 
                 +(ant.CoordTest(:,2)-ant.Coord(1:ant.Segments,2)).^2)...
-                ./sqrt((ant.Coord(1:ant.Segments,1)-ant.Coord(2:ant.Segments+1,1)).^2 ...
-                +(ant.Coord(1:ant.Segments,2)-ant.Coord(2:ant.Segments+1,2)).^2);
-%             T1 = T1(1:end-1);
+                ./ant.CoordTest(:,3);
             T1(end) = 0;
 %           Falling basis function
             T2 = sqrt((ant.Coord(2:ant.Segments+1,1)-ant.CoordTest(:,1)).^2 ... 
                 +(ant.Coord(2:ant.Segments+1,2)-ant.CoordTest(:,2)).^2) ...
-                ./sqrt((ant.Coord(1:ant.Segments,1)-ant.Coord(2:ant.Segments+1,1)).^2 ...
-                +(ant.Coord(1:ant.Segments,2)-ant.Coord(2:ant.Segments+1,2)).^2);
-%             T2 = T2(2:end);
+                ./ant.CoordTest(:,3);
             T2(1) = 0;
             %Rising basis derivative
-            T1D = 1./sqrt((ant.Coord(1:ant.Segments,1)-ant.Coord(2:ant.Segments+1,1)).^2 ...
-                +(ant.Coord(1:ant.Segments,2)-ant.Coord(2:ant.Segments+1,2)).^2);
-%             T1D = T1D(1:end-1);
+            T1D = 1./ant.CoordTest(:,3);
             T1D(end) = 0;
             %Falling basis derivative
-            T2D = -1./sqrt((ant.Coord(1:ant.Segments,1)-ant.Coord(2:ant.Segments+1,1)).^2 ...
-                +(ant.Coord(1:ant.Segments,2)-ant.Coord(2:ant.Segments+1,2)).^2);
-%             T2D = T2D(2:end);
+            T2D = -1./ant.CoordTest(:,3);
             T2D(1) = 0;
         end
         
@@ -266,6 +243,30 @@ classdef Antenna
             E0(lower)=E0i*(ant.CoordTest(lower,1)+(lim(lower)/2))./(lim(lower)/2);
             E0(upper)=E0i*((lim(upper)/2)-ant.CoordTest(upper,1))./(lim(upper)/2);
 %             E0(:)=1;
+        end
+    
+        function [gdc, sf, ns, dl, bt] = CreateGeometry(ant)
+            rect = [3; 4; -ant.Length/2+ant.Radii; ant.Length/2-ant.Radii; ...
+                ant.Length/2-ant.Radii; -ant.Length/2+ant.Radii; ...
+                -ant.Radii; -ant.Radii; ant.Radii; ant.Radii];
+            UpperCirc = [1; ant.Length/2-ant.Radii; ant.Centre(2); ant.Radii];
+            UpperCirc = [UpperCirc;zeros(length(rect) - length(UpperCirc),1)];
+            LowerCirc = [1;  -ant.Length/2+ant.Radii; ant.Centre(2); ant.Radii];
+            LowerCirc = [LowerCirc;zeros(length(rect) - length(LowerCirc),1)];
+            gdc = [rect, UpperCirc, LowerCirc];
+            ns = char('R', 'UC', 'LC');
+            ns = ns';
+%           sf = '((UC-R)+(LC-R))'; Only end semi circles
+            sf = 'R+UC+LC';
+            [dl, bt] = decsg(gdc,sf, ns);
+            [dl, bt] = csgdel(dl,bt);
+        end
+        
+        function solver = TwoDTriangulation(ant,gdc)
+            solver = createpde;
+            geometryFromEdges(solver,gdc);
+            %0.004 er højeste for at få trekanter i enderne
+            generateMesh(solver, 'Hmin', 0.004, 'GeometricOrder', 'quadratic');
         end
     end
 end

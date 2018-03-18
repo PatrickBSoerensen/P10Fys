@@ -10,20 +10,27 @@ w=2*pi*f;
 k=w/c;
 %% Creation of objects
 length = 0.995;
-%5/2, 3/2, 1*, 2*
+%2/5, 2/3, 1*, 2*
 lambda=2/3*length;
 f=c/lambda;
 w=2*pi*f;
 k=w/c;
 %Antenna(length, pointsline, pointscircle, radii, centre, generator)
-ant1 = Antenna(length, 40, 15, 0.0031, [0,0], 1);
-
-ant2 = Antenna(length, 100, 15, 0.0031, [0,0], 1);
+ant1 = Antenna(length, 10, 5, 0.0031, [0,0], 1);
 %MoM solver object 
 MoMobj = MoM(ant1);
 %Area creation, where the antenna is placed
 %Area(SingularityProtection, xsteps, zsteps, xmin, xmax, zmin, zmax, mu0)
 FirstTestZone = Area(0.00001, 500, 500, -5, 5, -5, 5, mu0);
+%% Removing the circle section for testing
+% ant1.CoordTest=ant1.CoordTest(ant1.PointsCircle:ant1.PointsLine+ant1.PointsCircle-2,:);
+% ant1.T1 = ant1.T1(ant1.PointsCircle:ant1.PointsLine+ant1.PointsCircle-2);
+% ant1.T2 = ant1.T2(ant1.PointsCircle:ant1.PointsLine+ant1.PointsCircle-2);
+% ant1.gammaTest = ant1.gammaTest(ant1.PointsCircle:ant1.PointsLine+ant1.PointsCircle-2,:);
+% ant1.tHatTest = ant1.tHatTest(ant1.PointsCircle:ant1.PointsLine+ant1.PointsCircle-2,:);
+% ant1.zHatTest = ant1.zHatTest(ant1.PointsCircle:ant1.PointsLine+ant1.PointsCircle-2,:);
+% ant1.T1D = ant1.T1D(ant1.PointsCircle:ant1.PointsLine+ant1.PointsCircle-2);
+% ant1.T2D = ant1.T2D(ant1.PointsCircle:ant1.PointsLine+ant1.PointsCircle-2);
 %% looping through alpha
 for alpha=0:2
     alpha
@@ -38,12 +45,11 @@ colorbar
 rectangle('Position',[-ant1.Radii -ant1.Length/2 2*ant1.Radii ant1.Length],'Curvature',1);%Antenna
 figure(2)
 %Middle segment
-plot(abs(ant1.Jthe(ant1.PointsCircle:ant1.PointsLine+ant1.PointsCircle-2)), 'k-*')
-figure(3)
-hold on
-%Lower circ
-plot(abs(ant1.Jthe(1:ant1.PointsCircle-1)), 'b-*')
-%Upper circ
-plot(abs(ant1.Jthe(ant1.PointsLine+ant1.PointsCircle-1:end)), 'r-*')
-figure(4)
-plot(ant1.E0)
+plot(abs(ant1.Jthe))
+% plot(abs(ant1.Jthe(ant1.PointsCircle:ant1.PointsLine+ant1.PointsCircle-2)), 'k-*')
+% figure(3)
+% hold on
+% %Lower circ
+% plot(abs(ant1.Jthe(1:ant1.PointsCircle-1)), 'b-*')
+% %Upper circ
+% plot(abs(ant1.Jthe(ant1.PointsLine+ant1.PointsCircle-1:end)), 'r-*')
