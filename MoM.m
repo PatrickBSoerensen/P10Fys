@@ -80,7 +80,6 @@ end
             J2 = besselj(alpha+1, k*ant.CoordTest(:,2)*sin(thetaI));
             
             %% planewave b equations
-%             maybe ant.E0.* front faktor
 %             b1= pi.*1i.^(alpha).*...
 %                 (ant.T1.*ant.CoordTest(:,3)...
 %                 .*exp(1i.*k.*ant.CoordTest(:,1).*cos(thetaI)).*...
@@ -129,24 +128,24 @@ end
             rz = (area.z-ant.CoordTest(:,1));
             for i=1:length(ant.T1)
                 rx = (area.x+ant.CoordTest(:,2)+area.SingularityProtection);
-                r1 = sqrt((rz(i,:).').^2+(rx(i,:)).^2);
+                r = sqrt((rz(i,:).').^2+(rx(i,:)).^2);
                 
-                B1 = -((1i.*w.*area.mu0)./(2.*pi.*r1)).*(exp(-1i.*k.*r1));
+                B = -((1i.*w.*area.mu0)./(2.*pi.*r)).*(exp(-1i.*k.*r));
                 if alpha == 0
-                    area.Ethethe = area.Ethethe + B1/2 .* ant.xtTheta(i) .* ant.btTheta(i);
+                    area.Ethethe = area.Ethethe + B/2 .* ant.xtTheta(i) .* ant.btTheta(i);
                 else    
-                    area.Ethethe = area.Ethethe + B1.*ant.xtTheta(i).*ant.btTheta(i);
+                    area.Ethethe = area.Ethethe + B.*ant.xtTheta(i).*ant.btTheta(i);
                 end
         
                 rx = (area.x-ant.CoordTest(:,2)-area.SingularityProtection);
                 
-                r1 = sqrt((rz(i,:).').^2+(rx(i,:)).^2);
+                r = sqrt((rz(i,:).').^2+(rx(i,:)).^2);
                 
-                B1 = -((1i.*w.*area.mu0)./(2.*pi.*r1)).*(exp(-1i.*k.*r1));
+                B = -((1i.*w.*area.mu0)./(2.*pi.*r)).*(exp(-1i.*k.*r));
                 if alpha == 0
-                    area.Ethethe = area.Ethethe + B1/2 .* ant.xtTheta(i) .* ant.btTheta(i);
+                    area.Ethethe = area.Ethethe + B/2 .* ant.xtTheta(i) .* ant.btTheta(i);
                 else
-                    area.Ethethe = area.Ethethe + B1.*ant.xtTheta(i).*ant.btTheta(i);
+                    area.Ethethe = area.Ethethe + B.*ant.xtTheta(i).*ant.btTheta(i);
                 end
             end
         end
