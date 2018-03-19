@@ -96,10 +96,10 @@ classdef Antenna
                 ./ant.CoordTest(:,3);
             T2(1) = 0;
             %Rising basis derivative
-            T1D = 1./ant.CoordTest(:,3);
+            T1D = 1./ant.CoordTest(:,2);
             T1D(end) = 0;
             %Falling basis derivative
-            T2D = -1./ant.CoordTest(:,3);
+            T2D = -1./ant.CoordTest(:,2);
             T2D(1) = 0;
         end
         
@@ -218,7 +218,7 @@ classdef Antenna
             E0 = (1:ant.Segments);
             E0(:) = 0;
 
-            SE=ant.Segments/10;
+            SE=ant.Segments/5;
             lim=SE*ant.CoordTest(:,3);
 %             lim=ant.Length;
             

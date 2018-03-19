@@ -15,7 +15,7 @@ classdef MoM
             %   Detailed explanation goes here
         end
         
-        function [obj, ant, area] = mombasis(obj, ant, area, alpha, k, w, thetaI, phi, phiS, mu)
+        function [obj, ant, area] = mombasis(obj, ant, area, alpha, k, w, thetaI, phi)
 if alpha == 0
                 iSegments = 1:length(ant.T1);
                 jSegments = 1:length(ant.T2);
@@ -38,8 +38,8 @@ if alpha == 0
                     Func2 = @(phimark, alpha) cos(phimark).*cos(alpha.*phimark).*exp(-1i.*k.*R(phimark))./R(phimark);
                     
                     %Should possibly integrate to 2*pi
-                    obj.G1{i,h} = @(alpha) ant.CoordTest(iSegments(i),3).*ant.CoordTest(jSegments(h),3).*integral(@(phimark)Func1(phimark,alpha), 0, pi);%, 'ArrayValued', true);
-                    obj.G2{i,h} = @(alpha) ant.CoordTest(iSegments(i),3).*ant.CoordTest(jSegments(h),3).*integral(@(phimark)Func2(phimark,alpha), 0, pi);%, 'ArrayValued', true);
+                    obj.G1{i,h} = @(alpha) ant.CoordTest(iSegments(i),3).*ant.CoordTest(jSegments(h),3).*integral(@(phimark)Func1(phimark,alpha), 0, pi);
+                    obj.G2{i,h} = @(alpha) ant.CoordTest(iSegments(i),3).*ant.CoordTest(jSegments(h),3).*integral(@(phimark)Func2(phimark,alpha), 0, pi);
                     end
                 end
            clear Func1; clear Func2;
@@ -106,9 +106,6 @@ end
             ant.btTheta(1) = 0;
             ant.btTheta(end) = 0;
             
-            ant.xtTheta(1) = 0;
-            ant.xtTheta(end) = 0;
-            
             tHatLen = sqrt(ant.tHatTest(:,1).^2+ant.tHatTest(:,3).^2);
             ftn = tHatLen.*ant.T1./ant.CoordTest(:,2)...
                 +tHatLen.*ant.T2./ant.CoordTest(:,2);%T, alpha, n. Expansions function
@@ -120,33 +117,50 @@ end
             end
             ant.Jthe(1) = 0;
             ant.Jthe(end) = 0;
-            area = emission(obj, ant, area, alpha, k, w, phiS);
+%             area = emission(obj, ant, area, alpha, k, w);
+                area=EM(obj,ant,area,k,w,1);
+                area=EM(obj,ant,area,k,w,-1);
         end
 
-        function area = emission(obj, ant, area, alpha, k, w, phiS)
-            rz = (area.z-ant.CoordTest(:,1));
+        function area = emission(obj, ant, area, alpha, k, w)
+            rz = (area.z-ant.CoordTest(:,1)-area.SingularityProtection);
             for i=1:length(ant.T1)
                 rx = (area.x+ant.CoordTest(:,2)+area.SingularityProtection);
                 r = sqrt((rz(i,:).').^2+(rx(i,:)).^2);
                 
-                B = -((1i.*w.*area.mu0)./(2.*pi.*r)).*(exp(-1i.*k.*r));
+                B = -(1i.*w.*area.mu0.*exp(-1i.*k.*r))./(2.*pi.*r);
                 if alpha == 0
                     area.Ethethe = area.Ethethe + B/2 .* ant.xtTheta(i) .* ant.btTheta(i);
                 else    
-                    area.Ethethe = area.Ethethe + B.*ant.xtTheta(i).*ant.btTheta(i);
+                    area.Ethethe = area.Ethethe + B .*ant.xtTheta(i).*ant.btTheta(i);
                 end
         
                 rx = (area.x-ant.CoordTest(:,2)-area.SingularityProtection);
                 
                 r = sqrt((rz(i,:).').^2+(rx(i,:)).^2);
                 
-                B = -((1i.*w.*area.mu0)./(2.*pi.*r)).*(exp(-1i.*k.*r));
+                B = -(1i.*w.*area.mu0.*exp(-1i.*k.*r))./(2.*pi.*r);
                 if alpha == 0
                     area.Ethethe = area.Ethethe + B/2 .* ant.xtTheta(i) .* ant.btTheta(i);
                 else
-                    area.Ethethe = area.Ethethe + B.*ant.xtTheta(i).*ant.btTheta(i);
+                    area.Ethethe = area.Ethethe + B .*ant.xtTheta(i).*ant.btTheta(i);
                 end
             end
+        end
+        
+        function area = EM(obj, ant, area, k, w, side)
+             rz = (area.z-ant.CoordTest(:,1));
+             for i=1:length(ant.T1)
+                rx = (area.x-(ant.CoordTest(:,2)+area.SingularityProtection)*side);
+               
+                r = sqrt((rz(i,:).').^2+(rx(i,:)).^2);
+                
+                B = -(1i.*w.*area.mu0);
+                g = B.*exp(-1i.*k.*r)./(2.*pi.*r);
+                G = g.*((1+1i./(k*r)-1./((k*r).^2)) - ...
+                            ((rx(i,:)).^2)./(r.^2).*(1+3i./(k*r)-3./((k*r).^2)));
+                area.Ethethe = area.Ethethe+G.*ant.Jthe(i).*ant.CoordTest(i,3);
+             end
         end
     end
 end

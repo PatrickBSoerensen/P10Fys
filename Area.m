@@ -7,9 +7,6 @@ classdef Area
         x;
         z;
         Ethethe;
-        Ephithe;
-        Ethephi; 
-        Ephiphi;
         mu0;
     end
     
@@ -22,9 +19,6 @@ classdef Area
             obj.z = linspace(zmin, zmax, zsteps);
             
             obj.Ethethe = 0;
-            obj.Ephithe = 0;
-            obj.Ethephi = 0; 
-            obj.Ephiphi = 0;
             
             obj.mu0 = mu0;
         end
@@ -51,33 +45,23 @@ classdef Area
         title('Far Field 3D plot');
         end
         
-        function farfieldplotXZ(obj, ant, distance, k,w)
-            alpha=2;
+        function farfieldplotXZ(obj, ant, distance, k, w, nr)
         opl = length(obj.x);
         theta=linspace(0,2*pi,opl);
         E=zeros(1,opl);
-            for j = 1:opl
+        rz = (sin(theta)*distance-ant.CoordTest(:,1));
             for i=1:length(ant.T1)
-                r = distance;
+                rx = (sin(theta)*distance-(ant.CoordTest(:,2)+obj.SingularityProtection));
+               
+                r = sqrt((rz(i,:).').^2+(rx(i,:)).^2);
                 
-                B = -((1i.*w.*obj.mu0)./(2.*pi.*r)).*(exp(-1i.*k.*r));
-                if alpha == 0
-                    E(j) = E(j) + B/2 .* sin(theta(j)).*ant.xtTheta(i) .* ant.btTheta(i);
-                else    
-                    E(j) = E(j) + B.* sin(theta(j)).*ant.xtTheta(i).*ant.btTheta(i);
-                end
-        
-                r = distance;
-                
-                B = -((1i.*w.*obj.mu0)./(2.*pi.*r)).*(exp(-1i.*k.*r));
-                if alpha == 0
-                    E(j) = E(j) + B/2 .* sin(theta(j)).*ant.xtTheta(i) .* ant.btTheta(i);
-                else
-                    E(j) = E(j) + B.* sin(theta(j)).* ant.xtTheta(i).*ant.btTheta(i);
-                end
-            end
-            end
-        figure(10)
+                B = -(1i.*w.*obj.mu0);
+                g = B.*exp(-1i.*k.*r)./(2.*pi.*r);
+                G = g.*((1+1i./(k*r)-1./((k*r).^2)) - ...
+                            ((rx(i,:)).^2)./(r.^2).*(1+3i./(k*r)-3./((k*r).^2)));
+                E = E+G(i,:).*ant.Jthe(i).*ant.CoordTest(i,3);
+             end
+        figure(nr)
         polarplot(theta,abs(E)./max(abs(E)))
         title('Far field for a Half-wave dipole for $\theta$');
         end
