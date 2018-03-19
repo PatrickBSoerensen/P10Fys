@@ -50,17 +50,24 @@ classdef Area
         theta=linspace(0,2*pi,opl);
         E=zeros(1,opl);
         rz = (sin(theta)*distance-ant.CoordTest(:,1));
+        rx = (sin(theta)*distance-(ant.CoordTest(:,2)+obj.SingularityProtection));
             for i=1:length(ant.T1)
-                rx = (sin(theta)*distance-(ant.CoordTest(:,2)+obj.SingularityProtection));
-               
                 r = sqrt((rz(i,:).').^2+(rx(i,:)).^2);
                 
                 B = -(1i.*w.*obj.mu0);
-                g = B.*exp(-1i.*k.*r)./(2.*pi.*r);
+                g = B.*exp(-1i.*k.*r)./(4.*pi.*r);
                 G = g.*((1+1i./(k*r)-1./((k*r).^2)) - ...
                             ((rx(i,:)).^2)./(r.^2).*(1+3i./(k*r)-3./((k*r).^2)));
                 E = E+G(i,:).*ant.Jthe(i).*ant.CoordTest(i,3);
-             end
+            end
+%             for j=1:opl
+%             r = ant.CoordTest(:,1).*cos(theta(j))+ant.CoordTest(:,2)*sin(theta(j));
+%             B = -(1i.*w.*obj.mu0);
+%             g = B.*exp(-1i.*k.*r)./(4.*pi.*r);
+%             G = g.*((1+1i./(k*r)-1./((k*r).^2)) - ...
+%                 ((r).^2)./(r.^2).*(1+3i./(k*r)-3./((k*r).^2)));
+%             E(j)=E(j)+sum(G.*ant.Jthe.*ant.CoordTest(:,3));
+%             end
         figure(nr)
         polarplot(theta,abs(E)./max(abs(E)))
         title('Far field for a Half-wave dipole for $\theta$');

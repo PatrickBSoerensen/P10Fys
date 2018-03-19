@@ -16,7 +16,7 @@ f=c/lambda;
 w=2*pi*f;
 k=w/c;
 %Antenna(length, pointsline, pointscircle, radii, centre, generator)
-ant = Antenna(length, 20, 10, 0.0031, [0,0], 1);
+ant = Antenna(length, 20, 20, 0.0031, [0,0], 1);
 %MoM solver object 
 MoMobj = MoM(ant);
 %Area creation, where the antenna is placed
@@ -41,7 +41,7 @@ figure(1)
 pcolor(FirstTestZone.z, FirstTestZone.x, abs(real(FirstTestZone.Ethethe.')))
 shading interp
 colorbar
-caxis([0 2*10^(6)])
+caxis([0 4*10^(4)])
 rectangle('Position',[-ant.Radii -ant.Length/2 2*ant.Radii ant.Length],'Curvature',1);%Antenna
 figure(2)
 %Middle segment

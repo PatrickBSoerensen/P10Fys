@@ -265,7 +265,7 @@ classdef Antenna
             solver = createpde;
             geometryFromEdges(solver,dl);
             %0.004 er højeste for at få trekanter i enderne
-            generateMesh(solver, 'Hmin', 0.004, 'GeometricOrder', 'quadratic');
+            generateMesh(solver, 'Hmin', 0.00001, 'GeometricOrder', 'quadratic');
         end
     end
 end
