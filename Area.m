@@ -51,22 +51,32 @@ classdef Area
         title('Far Field 3D plot');
         end
         
-        function farfieldplotXZ(obj, ant, distance, k)
+        function farfieldplotXZ(obj, ant, distance, k,w)
+            alpha=2;
         opl = length(obj.x);
         theta=linspace(0,2*pi,opl);
         E=zeros(1,opl);
-        for j=1:opl
-            v = theta(j);
-            r = sqrt((ant.Centre(1)-ant.CoordTest(:,1)).^2+(ant.Centre(2)-ant.CoordTest(:,2)).^2);
-            konst=exp(1i*k*distance)/(4*pi*distance);
-            g = exp(-1i.*k.*r);
-            E(j) = E(j)+sum(-sin(v).*konst.*g.*ant.Jthe.*ant.CoordTest(:,3));
-
-            r = sqrt((ant.Centre(1)-ant.CoordTest(:,1)).^2+(ant.Centre(2)+ant.CoordTest(:,2)).^2);                       
-            konst=exp(1i*k*distance)/(4*pi*distance);
-            g = exp(-1i.*k.*r);
-            E(j) = E(j)+sum(-sin(v).*konst.*g.*ant.Jthe.*ant.CoordTest(:,3));
-        end
+            for j = 1:opl
+            for i=1:length(ant.T1)
+                r = distance;
+                
+                B = -((1i.*w.*obj.mu0)./(2.*pi.*r)).*(exp(-1i.*k.*r));
+                if alpha == 0
+                    E(j) = E(j) + B/2 .* sin(theta(j)).*ant.xtTheta(i) .* ant.btTheta(i);
+                else    
+                    E(j) = E(j) + B.* sin(theta(j)).*ant.xtTheta(i).*ant.btTheta(i);
+                end
+        
+                r = distance;
+                
+                B = -((1i.*w.*obj.mu0)./(2.*pi.*r)).*(exp(-1i.*k.*r));
+                if alpha == 0
+                    E(j) = E(j) + B/2 .* sin(theta(j)).*ant.xtTheta(i) .* ant.btTheta(i);
+                else
+                    E(j) = E(j) + B.* sin(theta(j)).* ant.xtTheta(i).*ant.btTheta(i);
+                end
+            end
+            end
         figure(10)
         polarplot(theta,abs(E)./max(abs(E)))
         title('Far field for a Half-wave dipole for $\theta$');

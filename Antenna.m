@@ -217,7 +217,6 @@ classdef Antenna
 %             E0 = (1:ant.Points);
             E0 = (1:ant.Segments);
             E0(:) = 0;
-            E0i = 1;
 
             SE=ant.Segments/10;
             lim=SE*ant.CoordTest(:,3);
@@ -240,12 +239,12 @@ classdef Antenna
 %             E0(lower)= (ant.CoordTest(lower,1)+(lim/2))./(lim/2);
 %             E0(upper)= ((lim/2)-ant.CoordTest(upper,1))./(lim/2);
 
-            E0(lower)=E0i*(ant.CoordTest(lower,1)+(lim(lower)/2))./(lim(lower)/2);
-            E0(upper)=E0i*((lim(upper)/2)-ant.CoordTest(upper,1))./(lim(upper)/2);
+            E0(lower)=(ant.CoordTest(lower,1)+(lim(lower)/2))./(lim(lower)/2);
+            E0(upper)=((lim(upper)/2)-ant.CoordTest(upper,1))./(lim(upper)/2);
 %             E0(:)=1;
         end
     
-        function [gdc, sf, ns, dl, bt] = CreateGeometry(ant)
+        function [dl] = CreateGeometry(ant)
             rect = [3; 4; -ant.Length/2+ant.Radii; ant.Length/2-ant.Radii; ...
                 ant.Length/2-ant.Radii; -ant.Length/2+ant.Radii; ...
                 -ant.Radii; -ant.Radii; ant.Radii; ant.Radii];
@@ -262,9 +261,9 @@ classdef Antenna
             [dl, bt] = csgdel(dl,bt);
         end
         
-        function solver = TwoDTriangulation(ant,gdc)
+        function solver = TwoDTriangulation(ant,dl)
             solver = createpde;
-            geometryFromEdges(solver,gdc);
+            geometryFromEdges(solver,dl);
             %0.004 er højeste for at få trekanter i enderne
             generateMesh(solver, 'Hmin', 0.004, 'GeometricOrder', 'quadratic');
         end

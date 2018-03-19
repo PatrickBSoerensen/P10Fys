@@ -97,12 +97,11 @@ end
 %%General b expression for arbritary wave expression. Specified as tHat dot thetaHat direction          
            E=@(phi) ant.E0.*exp(1i.*k.*ant.CoordTest(:,1).*cos(thetaI)).*exp(1i.*k.*sin(thetaI).*ant.CoordTest(:,3).*cos(phi));           
            ant.btTheta=(ant.T1+ant.T2).*ant.CoordTest(:,3).*...
-               integral(@(phi)exp(-1i.*alpha.*phi).*E(phi).*cos(thetaI).*sin(ant.gammaTest).*cos(phi)-sin(thetaI).*cos(ant.gammaTest),0,2*pi, 'ArrayValued', true);
+               integral(@(phi)exp(-1i.*alpha.*phi).*E(phi).*(cos(thetaI).*sin(ant.gammaTest).*cos(phi)-sin(thetaI).*cos(ant.gammaTest)),0,2*pi, 'ArrayValued', true);
 
             invZ = ant.Z^(-1);
             
             ant.xtTheta = invZ*ant.btTheta;
-            
             
             ant.btTheta(1) = 0;
             ant.btTheta(end) = 0;
