@@ -9,14 +9,18 @@ lambda=c/f;
 w=2*pi*f;
 k=w/c;
 %% Creation of objects
-length = lambda/2;
-LinSeg = linspace(2,52,51);
-CircSeg = linspace(2,52,51);
-Emax = zeros(51, 51);
-parfor lin=1:51
-for circ=1:51
+length = 0.995;
+%2/5, 2/3, 1*, 2*
+lambda=2/3*length;
+f=c/lambda;
+w=2*pi*f;
+k=w/c;
+LinSeg = linspace(2,102,101);
+CircSeg = linspace(2,102,101);
+Emax = 1:101;
+for circ=1:101
 %Antenna(length, pointsline, pointscircle, radii, centre, generator)
-ant1 = Antenna(length, LinSeg(lin), CircSeg(circ), 0.0031, [0,0], 1);
+ant = Antenna(length, CircSeg(circ), 62 , 0.0031, [0,0], 1);
 % MoM solver object 
 MoMobj = MoM(ant1);
 % Area creation, where the antenna is placed
@@ -25,8 +29,7 @@ FirstTestZone = Area(0.000001, 500, 500, -5, 5, -5, 5, mu0);
 %% looping through alpha
 for alpha=0:2
     alpha
-    [MoMobj, ant1, FirstTestZone] = mombasis(MoMobj, ant1, FirstTestZone, alpha, k, w, pi/2, 0, 0, mu0);
+    [MoMobj, ant1, FirstTestZone] = MoMobj.mombasis(ant, FirstTestZone, alpha, k, w, pi/2, 0);
 end
-Emax(lin,circ)=max(max(abs(FirstTestZone.Ethethe)));
-end
+Emax(circ)=max(max(abs(FirstTestZone.Ethethe)));
 end
