@@ -17,6 +17,7 @@ w=2*pi*f;
 k=w/c;
 %Antenna(length, pointsline, pointscircle, radii, centre, generator)
 ant = Antenna(length, 20, 20, 0.0031, [0,0], 1);
+ant2D = TwoDAntenna(length, 20, 20, 0.0031, [0,0], 1);
 %MoM solver object 
 MoMobj = MoM(ant);
 %Area creation, where the antenna is placed

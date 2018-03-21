@@ -244,28 +244,5 @@ classdef Antenna
 %             E0(:)=1;
         end
     
-        function [dl] = CreateGeometry(ant)
-            rect = [3; 4; -ant.Length/2+ant.Radii; ant.Length/2-ant.Radii; ...
-                ant.Length/2-ant.Radii; -ant.Length/2+ant.Radii; ...
-                -ant.Radii; -ant.Radii; ant.Radii; ant.Radii];
-            UpperCirc = [1; ant.Length/2-ant.Radii; ant.Centre(2); ant.Radii];
-            UpperCirc = [UpperCirc;zeros(length(rect) - length(UpperCirc),1)];
-            LowerCirc = [1;  -ant.Length/2+ant.Radii; ant.Centre(2); ant.Radii];
-            LowerCirc = [LowerCirc;zeros(length(rect) - length(LowerCirc),1)];
-            gdc = [rect, UpperCirc, LowerCirc];
-            ns = char('R', 'UC', 'LC');
-            ns = ns';
-%           sf = '((UC-R)+(LC-R))'; Only end semi circles
-            sf = 'R+UC+LC';
-            [dl, bt] = decsg(gdc,sf, ns);
-            [dl, bt] = csgdel(dl,bt);
-        end
-        
-        function solver = TwoDTriangulation(ant,dl)
-            solver = createpde;
-            geometryFromEdges(solver,dl);
-            %0.004 er højeste for at få trekanter i enderne
-            generateMesh(solver, 'Hmin', 0.00001, 'GeometricOrder', 'quadratic');
-        end
     end
 end
