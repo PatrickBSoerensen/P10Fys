@@ -1,5 +1,3 @@
-clear all; close all
-
 wavelength = 700; %[nm]
 eps2 = 12;
 eps1 = 1;
@@ -8,7 +6,7 @@ a = 200;
 steps = 256;
 hmax = 2*pi*a/steps;
 A=[];
-for j=1:steps,
+for j=1:steps
     phi1=(j-1)*2*pi/steps;
     phi2=j*2*pi/steps;
     row=[2 a*cos(phi1) a*cos(phi2) a*sin(phi1) a*sin(phi2) 1 0];
