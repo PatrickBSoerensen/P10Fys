@@ -20,8 +20,8 @@ for i=1:length(stl.vertices)
     b = a==3;
     k=find(b);
     UV(k(1),:) = stl.vertices(k(1),:);
-    for j=2:length(k)
-        c=stl.faces == k(j);
+    for n=2:length(k)
+        c=stl.faces == k(n);
         faces(c) = k(1);
     end
 end
@@ -52,22 +52,23 @@ for i=1:length(UV)
 end
 
 EdgeNumber = 1;
+r = @(x,y,z) sqrt(x.^2+y.^2+z.^2);
 
 for i=1:length(UV)
     temp = faces(ConnectCell{i,2},:);
     nodes = ConnectCell{i,1};
     temp = sort(temp,2);
-    for j=1:length(nodes)
-        a = temp(:,2:end) == nodes(j);
+    for n=1:length(nodes)
+        a = temp(:,2:end) == nodes(n);
         b = sum(a,2);
         b = find(b);
         NodesOfInterrest = temp(b,:);
         c = NodesOfInterrest ~= i;
-        d = logical(NodesOfInterrest ~= nodes(j));
+        d = logical(NodesOfInterrest ~= nodes(n));
         c = logical(c.*d);
         
         Triangles = temp(b,:);
-        EdgePoints = [i,nodes(j)];
+        EdgePoints = [i,nodes(n)];
         NotEdgePoints = Triangles(c);
         
         L = abs(sqrt(sum((UV(EdgePoints(1),:)-UV(EdgePoints(2),:)).^2)));
@@ -81,7 +82,7 @@ for i=1:length(UV)
         %Central point for a cluster
         EdgeList(EdgeNumber, 1) = i;
         %Connection point
-        EdgeList(EdgeNumber, 2) = nodes(j);
+        EdgeList(EdgeNumber, 2) = nodes(n);
         %Plus triangle point
         EdgeList(EdgeNumber, 3) = NotEdgePoints(1);
         %Minus triangle point
@@ -90,7 +91,7 @@ for i=1:length(UV)
         %Plus
         Basis{EdgeNumber,1} = @(r) (NotEdgePoints(1,:)-r) * L/(2*AP);
         %Minus
-        Basis{EdgeNumber,2} = @(r) (NotEdgePoints(1,:)-r) * L/(2*AM);
+        Basis{EdgeNumber,2} = @(r) (r-NotEdgePoints(1,:)) * L/(2*AM);
         %Plus
         BasisDeriv(EdgeNumber,1) = -L/AP;
         %Minus
@@ -100,12 +101,42 @@ for i=1:length(UV)
     end
 end
 %% MoM?
+EdgeNumber = EdgeNumber-1;
     Z = zeros(EdgeNumber, EdgeNumber);
     b = 1:EdgeNumber;
-    g = @(r) exp(1i*k*r)/(4*pi*r);
+    k = 4;
+    g = @(r) exp(1i.*k.*r)./(4.*pi.*r);
     
-    for i=1:EdgeNumber
+    for i=1:2
+    for m=1:EdgeNumber
+        mLim(1,:) = UV(EdgeList(m,1),:);
+        mLim(2,:) = UV(EdgeList(m,2),:);
+        mLim(3,:) = UV(EdgeList(m,3),:);
+        mUpper = max(mLim);
+        mLower = min(mLim);
+        basem = Basis{m,i};
+        basederm = BasisDeriv(m,i);
         
-        Z(i,j) = integral()+integral();
+        for n=1:EdgeNumber
+            nLim(1,:) = UV(EdgeList(n,1),:);
+            nLim(2,:) = UV(EdgeList(n,2),:);
+            nLim(3,:) = UV(EdgeList(n,4),:);
+            nUpper = max(nLim);
+            nLower = min(nLim);
+            
+            basen = Basis{n,i};
+            basedern = BasisDeriv(n,i);
+            
+            a = integral3(@(x,y,z) basem(r(x,y,z)).*g(r(x,y,z)), mLower(1,1), mUpper(1,1), mLower(1,2), mUpper(1,2), mLower(1,3), mUpper(1,3));
+                     
+            b = integral3(@(x,y,z) basen(r(x,y,z)), nLower(1,1), nUpper(1,1), nLower(1,2), nUpper(1,2), nLower(1,3), nUpper(1,3));
+                     
+            c = -1/k^2.*integral3(@(x,y,z) basederm*g(r(x,y,z)), mLower(1,1), mUpper(1,1), mLower(1,2), mUpper(1,2), mLower(1,3), mUpper(1,3));
+                     
+            d = basedern;
         
+            Z(m,n) = a.*b-c.*d + Z(m,n);
+            
+        end
+    end
     end
