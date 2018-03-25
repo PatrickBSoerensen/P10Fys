@@ -136,7 +136,6 @@ EdgeNumber = EdgeNumber-1;
             d = basedern;
         
             Z(m,n) = a.*b-c.*d + Z(m,n);
-            
         end
     end
     end
