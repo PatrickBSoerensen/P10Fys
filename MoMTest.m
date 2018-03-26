@@ -35,7 +35,7 @@ FirstTestZone = Area(0.00001, 1000, 1000, -20, 20, -20, 20, mu0);
 %% looping through alpha
 for alpha=0:2
     alpha
-    [MoMobj, ant, FirstTestZone] = mombasis(MoMobj, ant, FirstTestZone, alpha, k, w, pi/2, 0);
+    [MoMobj, ant, FirstTestZone] = momBOR(MoMobj, ant, FirstTestZone, alpha, k, w, pi/2, 0);
 end
 %% Plots
 figure(1)

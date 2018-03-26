@@ -15,8 +15,8 @@ classdef MoM
             %   Detailed explanation goes here
         end
         
-        function [obj, ant, area] = mom1D(obj, ant, area, alpha, k, w, thetaI, phi)
-if alpha == 0
+        function [obj, ant, area] = momBOR(obj, ant, area, alpha, k, w, thetaI, phi)
+        if alpha == 0
                 iSegments = 1:length(ant.T1);
                 jSegments = 1:length(ant.T2);
             
@@ -43,7 +43,7 @@ if alpha == 0
                     end
                 end
            clear Func1; clear Func2;
-end
+        end
                 for i = 1:length(ant.T1)
                     for h = 1:length(ant.T2)
                     G1{i,h} = obj.G1{i,h}(alpha);
