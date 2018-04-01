@@ -59,9 +59,10 @@ for i=1:length(UV)
     ConnectCell{i,2} = unique(b);
 end
 
-EdgeNumber = 1;
-r = @(v1,v2,v3, alpha, beta) (1-alpha-beta)*v1 + alpha*v2 + beta*v3;
+BasisNumberOuter = 1;
 
+C=zeros(size(faces));
+A=zeros(size(faces));
     for i=1:length(faces)
         C(i,1) = sum(UV(faces(i,:),1))/3;
         C(i,2) = sum(UV(faces(i,:),2))/3;
@@ -72,8 +73,6 @@ r = @(v1,v2,v3, alpha, beta) (1-alpha-beta)*v1 + alpha*v2 + beta*v3;
     L2 = UV(faces(i,3),:)-UV(faces(i,1),:);
         A(i,1) = sqrt(sum((cross(L1,L2)).^2,2))/2;
         
-        
-    L1 = UV(faces(i,1),:)-C(i,:);
     L2 = UV(faces(i,2),:)-UV(faces(i,1),:);
         A(i,2) = sqrt(sum((cross(L1,L2)).^2,2))/2;
         
@@ -116,76 +115,172 @@ for i=1:length(UV)
         L = sqrt(sum(L.^2));
         
         %Central point for a cluster
-        EdgeList(EdgeNumber, 1) = i;
+        EdgeList(BasisNumberOuter, 1) = i;
         %Connection point
-        EdgeList(EdgeNumber, 2) = nodes(n);
+        EdgeList(BasisNumberOuter, 2) = nodes(n);
         %Plus triangle point
-        EdgeList(EdgeNumber, 3) = NotEdgePoints(1);
+        EdgeList(BasisNumberOuter, 3) = NotEdgePoints(1);
         %Minus triangle point
-        EdgeList(EdgeNumber, 4) = NotEdgePoints(2);
+        EdgeList(BasisNumberOuter, 4) = NotEdgePoints(2);
         
         %Plus
-        Basis{EdgeNumber,1} = @(r) (UV(NotEdgePoints(1),:) - r);
-        BasisLA(EdgeNumber,1) =  L./(2*AP);
+        Basis{BasisNumberOuter,1} = @(r) (UV(NotEdgePoints(1),:) - r);
+        BasisLA(BasisNumberOuter,1) =  L./(2*AP);
+        BasisLA(BasisNumberOuter,2) =  L;
         %Minus
-        Basis{EdgeNumber,2} = @(r) (r - UV(NotEdgePoints(2),:));
-        BasisLA(EdgeNumber,2) = L./(2*AM);
+        Basis{BasisNumberOuter,2} = @(r) (r - UV(NotEdgePoints(2),:));
+        BasisLA(BasisNumberOuter,3) = L./(2*AM);
+        BasisLA(BasisNumberOuter,4) = L;
         %Plus
-        BasisDeriv(EdgeNumber,1) = -L./AP;
+        BasisDeriv(BasisNumberOuter,1) = -L./AP;
         %Minus
-        BasisDeriv(EdgeNumber,2) = L./AM;
+        BasisDeriv(BasisNumberOuter,2) = L./AM;
         
-        EdgeNumber = EdgeNumber + 1;
+        BasisNumberOuter = BasisNumberOuter + 1;
     end
 end
-%% MoM?
+    %% MoM faces loop
+    BasisNumberOuter = BasisNumberOuter-1;
     loader = 0;
-    Z = BasisLA(:,1)*BasisLA(:,2).';
-    b = 1:EdgeNumber-1;
-    g = @(r) exp(1i.*k.*r)./(4.*pi.*r);
+    Z = zeros(BasisNumberOuter,BasisNumberOuter);
+    b = 1:BasisNumberOuter-1;
+    g = @(p,q) exp(1i.*k.*sqrt(sum((p-q).^2)))./(4.*pi.*sqrt(sum((p-q).^2)));
+    wp = 1/3;
+    Ei=1;
     
-if ~loader
-    for i=1:2
+for f=1:length(faces)
+    OuterBasis(1,:) = faces(f,1:2);
+    OuterBasis(2,:) = faces(f,2:3);
+    OuterBasis(3,1) = faces(f,1);
+    OuterBasis(3,2) = faces(f,3);
+    
+    for h=1:length(faces)
+        InnerBasis(1,:) = faces(h,1:2);
+        InnerBasis(2,:) = faces(h,2:3);
+        InnerBasis(3,1) = faces(h,1);
+        InnerBasis(3,2) = faces(h,3);
+        
+        for i=1:3
+            BasisNumberOuter = sum(EdgeList(:,1:2)==OuterBasis(i,:),2);
+            BasisNumberOuter = find(BasisNumberOuter==2);
+            
+            BasisNumberInner = sum(EdgeList(:,1:2)==InnerBasis(i,:),2);
+            BasisNumberInner = find(BasisNumberInner==2);
+            v1 = UV(faces(f,1),:);
+            v2 = UV(faces(f,2),:);
+            v3 = UV(faces(f,3),:);
+            
+            u1 = UV(faces(h,1),:);
+            u2 = UV(faces(h,2),:);
+            u3 = UV(faces(h,3),:);
+            
+            [I111, I112, I11] = NearTriangleZ(v1, v2, v3);
+            
+            Z(BasisNumberOuter, BasisNumberInner) = I111+I112+I11 + Z(BasisNumberOuter, BasisNumberInner);
+            
+            [I111, I112, I11] = NearTriangleZ(u1, u2, u3);
+            
+            Z(BasisNumberOuter, BasisNumberInner) = I111+I112+I11 + Z(BasisNumberOuter, BasisNumberInner);
+            
+            if BasisNumberOuter
+                edges(f,i) = BasisNumberOuter;
+            end
+        end
+    end
+end
+
+%% MoM edge loop
+if loader
+    load('IWaited8HoursForThis');
+else
         for m=1:length(EdgeList)
             mv1 = UV(EdgeList(m,1),:);
             mv2 = UV(EdgeList(m,2),:);
             mv3 = UV(EdgeList(m,3),:);
+            mv4 = UV(EdgeList(m,4),:);
+            mv(1,:) = mv1;
+            mv(2,:) = mv2;
+            mv(3,:) = mv3;
+            mv(4,:) = mv4;
+            BaseMP = Basis{m,1};
+            BaseMM = Basis{m,2};
+            BaseDMP = BasisDeriv(m,1);
+            BaseDMM = BasisDeriv(m,2);
             
-            basem = Basis{m,i};
-            basederm = BasisDeriv(m,i);
+            z1M = @(q) wp*(1/4*BaseMP(mv1)+1/k^2)*g(mv1,q);
+            z2M = @(q) wp*(1/4*BaseMP(mv2)+1/k^2)*g(mv2,q);
+            z3M = @(q) wp*(1/4*BaseMP(mv3)+1/k^2)*g(mv3,q);
+            z4M = @(q) wp*(1/4*BaseMM(mv4)-1/k^2)*g(mv4,q);
             
-            test1 = @(alpha, beta) basem(r(mv1,mv2,mv3, alpha, beta)).*g(r(mv1,mv2,mv3, alpha, beta));
-            betamax = @(alpha) alpha - 1;
-            
-            z1 = integral2(test1, 0, 1, 0, betamax);
-            z3 = 1/k^2.*integral2(basederm*g(r(mv1,mv2,mv3, alpha, beta)), mLower(1,1), 0, 1, 0, betamax);
             for n=1:length(EdgeList)
                 nv1 = UV(EdgeList(n,1),:);
                 nv2 = UV(EdgeList(n,2),:);
-                nv3 = UV(EdgeList(n,4),:);
+                nv3 = UV(EdgeList(n,3),:);
+                nv4 = UV(EdgeList(n,4),:);
+                nv(1,:) = nv1;
+                nv(2,:) = nv2;
+                nv(3,:) = nv3;
+                nv(4,:) = nv4;
+                BaseNP = Basis{n,1};
+                BaseNM = Basis{n,2};
+                BaseDNP = BasisDeriv(n,1);
+                BaseDNM = BasisDeriv(n,2);
                 
-                basen = Basis{n,i};
-                basedern = BasisDeriv(n,i);
-                     
-                z2 = integral2(@(alpha, beta) basen(r(nv1,nv2,nv3, alpha, beta)), nLower(1,1), 0, 1, 0, betamax);
-                    
-                z4 = basedern;
-        
-                Z(m,n) = z1.*z2-z3.*z4 + Z(m,n);
-            
+                for sing=1:9
+                    Near(sing) = sum(sum(nv == mv(sing)));
+                    NearOverlap{sing} = nv == mv(sing);
+                end
+                    Nearsum = sum(sum(Near));
+                
+               if Nearsum>=4
+                   [I111, I112, I11] = NearTriangleZ(mv1, nv2, nv3);
+                   
+                   Z(m,n) = I111.*I112.*I11 + Z(m,n);
+                   
+                   [I111, I112, I11] = NearTriangleZ(nv1, mv2, mv3);
+                   
+                   Z(m,n) = I111.*I112.*I11 + Z(m,n); 
+               else
+                   
+                z1N = @(q) wp*(1/4*BaseNP(nv1)+1/k^2)*g(nv1,q);
+                z2N = @(q) wp*(1/4*BaseNP(nv2)+1/k^2)*g(nv2,q);
+                z3N = @(q) wp*(1/4*BaseNP(nv3)+1/k^2)*g(nv3,q);
+                z4N = @(q) wp*(1/4*BaseNM(nv4)-1/k^2)*g(nv4,q);
+                
+                for ns = 1:4
+                    for ms = 1:4
+                    Z(m,n) = (BasisLA(m,2)*BasisLA(n,4))/(4*pi)...
+                    * dot(z1M(nv(ns,:)),z1N(mv(ms,:)))...
+                    + dot(z1M(nv(ns,:)),z2N(mv(ms,:)))...
+                    + dot(z1M(nv(ns,:)),z3N(mv(ms,:)))...
+                    + dot(z1M(nv(ns,:)),z4N(mv(ms,:)))...
+                    + dot(z2M(nv(ns,:)),z1N(mv(ms,:)))...
+                    + dot(z2M(nv(ns,:)),z2N(mv(ms,:)))...
+                    + dot(z2M(nv(ns,:)),z3N(mv(ms,:)))...
+                    + dot(z2M(nv(ns,:)),z4N(mv(ms,:)))...
+                    + dot(z3M(nv(ns,:)),z1N(mv(ms,:)))...
+                    + dot(z3M(nv(ns,:)),z2N(mv(ms,:)))...
+                    + dot(z3M(nv(ns,:)),z3N(mv(ms,:)))...
+                    + dot(z3M(nv(ns,:)),z4N(mv(ms,:)))...
+                    + dot(z4M(nv(ns,:)),z1N(mv(ms,:)))...
+                    + dot(z4M(nv(ns,:)),z2N(mv(ms,:)))...
+                    + dot(z4M(nv(ns,:)),z3N(mv(ms,:)))...
+                    + dot(z4M(nv(ns,:)),z4N(mv(ms,:)))...
+                    + Z(m,n);
+                    end
+                end
+                end
             end
-            b(m) = -1i/(w*mu0)*integral3(@(x,y,z) basem(r(x,y,z)), mLower(1,1), mUpper(1,1), mLower(1,2), mUpper(1,2), mLower(1,3), mUpper(1,3));
+             b(m) = sum(BasisLA(m,2)/2*wp*(BaseMP(mv1)+BaseMP(mv2)+BaseMP(mv3))*Ei);
         end
-    end
-else
-    load('IWaited8HoursForThis');
 end
+             zinv = inv(Z);
+            xtesst = b*zinv;
             
-%% MoM time Pimped
-for f=1:length(faces)
-    for basis=1:2
-        
-    end
+%             Z2 = zeros(EdgeNumber,EdgeNumber);
+%% Alternate Edge loop
+for m=1:length(EdgeList)
+    
 end
 %% current  
         
@@ -229,3 +324,47 @@ end
 %                             ((rx(i,:)).^2)./(r.^2).*(1+3i./(k*r)-3./((k*r).^2)));
 %                 E(i,:) = E(i,:)+G.*ant.Jthe(i);
 %              end
+
+function [I111, I112, I11] = NearTriangleZ(v1, v2, v3)
+                   a = dot((v1-v3),(v1-v3));
+                   b = dot((v1-v3),(v1-v2));
+                   c = dot((v1-v2),(v1-v2));
+                   I111 = log((b+sqrt(a).*sqrt(c))./(b-c-sqrt(c).*sqrt(a-2*b+c)))./(40*sqrt(c))...
+                          + log((-b+c+sqrt(c).*sqrt(a-2*b+c)./(-b+sqrt(a).*sqrt(c))))./(40*sqrt(c))...
+                          + (sqrt(a).*sqrt(a-2*b+c)-sqrt(c).*sqrt(a-2*b+c))./(120*(a-2*b+c).^(3/2))...
+                          + ((2*a-5*b+3*c).*log((a-b+sqrt(a).*sqrt(a-2*b+c).*(c-b+sqrt(c).*sqrt(a-2*b+c)))) ...
+                          ./(b-a+sqrt(a).*sqrt(a-2*b+c).*(b-c+sqrt(c).*sqrt(a-2*b+c))))./(120*(a-2*b+c).^(3/2))...
+                          +(-sqrt(a).*sqrt(c)+sqrt(a).*sqrt(a-2*b+c))./(120*a.^(3/2))...
+                          + ((2*a+b).*log(((b+sqrt(a).*sqrt(c)).*(a-b+sqrt(a).*sqrt(a-2*b+c)))...
+                          ./((-b+sqrt(a).*sqrt(c)).*(-a+b+sqrt(a).*sqrt(a-2*b+c)))))./(120*a.^(3/2));
+                      
+                   I112 = log((b+sqrt(a).*sqrt(c))./(b-c+sqrt(c).*sqrt(a-2*b+c)))./(120*sqrt(c))...
+                          + log((a-b+sqrt(a).*sqrt(a-2*b+c))./(-b+sqrt(a).*sqrt(c)))./(120*sqrt(a))...
+                          + (-sqrt(a).*sqrt(a-2*b+c)+sqrt(c).*sqrt(a-2*b+c))./(120*(a-2*b+c).^(3/2))...
+                          + (2*a-3*b+c).*log((a-b+sqrt(a).*sqrt(a-2*b+c))./(b-c+sqrt(c).*sqrt(a-2*b+c)))./(120*(a-2*b+c).^(3/2))...
+                          + (sqrt(a).*sqrt(a-2*b+c)-sqrt(c).*sqrt(a-2*b+c))./(120*(a-2*b+c).^(3/2))...
+                          + (a-3*b+2*c).*log((-b+c+sqrt(c).*sqrt(a-2*b+c))./(-a+b+sqrt(a).*sqrt(a-2*b+c)))./(120*(a-2*b+c).^(3/2))...
+                          + (-3*sqrt(a).*sqrt(c)+3*sqrt(c).*sqrt(a-2*b+c))./(120*(c).^(3/2))...
+                          + (3*b+2*c).*log((-b+c+sqrt(c).*sqrt(a-2*b+c))./(-b+sqrt(a).*sqrt(c)))./(120*c.^(3/2))...
+                          + (-3*sqrt(a).*sqrt(c)+3*sqrt(a).*sqrt(a-2*b+c))./(120*(c).^(3/2))...
+                          + (2*a+3*b).*log((b+sqrt(a).*sqrt(c))./(-a+b+sqrt(a).*sqrt(a-2*b+c)))./(120*a.^(3/2));
+                   
+                      I11  = (-log((-b+sqrt(a).*sqrt(c))./(a-b+sqrt(a).*sqrt(a-2*b+c))))./(24*sqrt(a))...
+                        + (log((b+sqrt(a).*sqrt(c))./(b-c+sqrt(c).*sqrt(a-2*b+c))))./(24*sqrt(c))...
+                        + (-sqrt(a).*sqrt(c)+sqrt(a).*sqrt(a-2*b+c))./(24*a.^(3/2))...
+                        + (a+b).*log((b+sqrt(a).*sqrt(c)./(-a+b+sqrt(a).*sqrt(a-2*b+c))))./(24*a.^(3/2))...
+                        + (log((a-b+sqrt(a).*sqrt(a-2*b+c))./(b-c+sqrt(c).*sqrt(a-2*b+c))))./(24*sqrt(a-2*b+c))...
+                        - (log((b+sqrt(a).*sqrt(c))./(-b+c+sqrt(c).*sqrt(a-2*b+c))))./(12*sqrt(c)) ...
+                        + (sqrt(a).*sqrt(a-2*b+c)-sqrt(c).*sqrt(a-2*b+c))./(24*(a-2*b+c).^(3/2))...
+                        + ((a-3*b+2*c).*log((-b+c+sqrt(c).*sqrt(a-2*b+c))./(-a+b+sqrt(a).*sqrt(a-2*b+c))))./(24*(a-2*b+c).^(3/2));
+end
+
+function [I2] = NearTriangleB(v1, v2, v3)
+                   a = dot((v1-v3),(v1-v3));
+                   b = dot((v1-v3),(v1-v2));
+                   c = dot((v1-v2),(v1-v2));
+                   
+                   I2   = (log(((a-b+sqrt(a).*sqrt(a-2*b+c)).*(b+sqrt(a).*sqrt(c))./((-b+sqrt(a).*sqrt(c)).*(-a+b+sqrt(a).*sqrt(a-2*b+c))))))./(6*sqrt(a))...
+                        + (log(((b+sqrt(a).*sqrt(c)).*(-b+c+sqrt(c).*sqrt(a-2*b+c))./((b-c+sqrt(c).*sqrt(a-2*b+c)).*(-b+sqrt(a).*sqrt(a-2*b+c))))))./(6*sqrt(c))...
+                        + (log((a-b+sqrt(a).*sqrt(a-2*b+c)).*(-b+c+sqrt(c).*sqrt(a-2*b+c))./((b-c+sqrt(c).*sqrt(a-2*b+c)).*(-a+b+sqrt(a).*sqrt(a-2*b+c)))))./(6*sqrt(a-2*b+c));
+end
