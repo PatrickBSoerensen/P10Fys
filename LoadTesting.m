@@ -7,16 +7,7 @@ f=146.5*10^6;
 lambda=c/f;
 w=2*pi*f;
 k=w/c;
-%%
-% model = createpde;
-% gd = importGeometry(model,'ShortAntMesh.stl');
-% stl2 = stlread('AntBinMesh2556.stl');
-%             geometryFromEdges(model,gd);
-            %0.004 er højeste for at få trekanter i enderne
-% generateMesh(model, 'Hmin', 0.001,'Hmax', 3, 'GeometricOrder', 'quadratic');
-%             figure(1)
-% pdeplot3D(model, 'FaceAlpha', 0)
-%Load the binary stl file
+%% load STL file into matlab
 stl = stlread('AntBinMesh.stl');
 %% faces and unique vertices
 UV = zeros(size(stl.vertices));
@@ -42,7 +33,6 @@ for i=1:length(UV)
     faces(faces==UV(i,4)) = i;
 end
 UV(:,4) = [];
-
 %% Gibson connectivity list
 ConnectCell = cell(length(UV),2);
 for i=1:length(UV)
@@ -58,16 +48,13 @@ for i=1:length(UV)
     
     ConnectCell{i,2} = unique(b);
 end
-
-BasisNumberOuter = 1;
-
+%% Calculating areas for Simplex Coords
 C=zeros(size(faces));
 A=zeros(size(faces));
     for i=1:length(faces)
         C(i,1) = sum(UV(faces(i,:),1))/3;
         C(i,2) = sum(UV(faces(i,:),2))/3;
         C(i,3) = sum(UV(faces(i,:),3))/3;
-        
     
     L1 = UV(faces(i,1),:)-C(i,:);
     L2 = UV(faces(i,3),:)-UV(faces(i,1),:);
@@ -86,7 +73,9 @@ A=zeros(size(faces));
         
     Atot = sqrt(sum((cross(L1,L2)).^2,2))/2;
     A = A./Atot;
-    
+%% Basis Function setup
+BasisNumberOuter = 1;
+
 for i=1:length(UV)
     temp = faces(ConnectCell{i,2},:);
     nodes = ConnectCell{i,1};
@@ -139,6 +128,15 @@ for i=1:length(UV)
         BasisNumberOuter = BasisNumberOuter + 1;
     end
 end
+
+for f=1:length(faces)
+    
+    v1 = UV(faces(f,1),:);
+    v2 = UV(faces(f,2),:);
+    v3 = UV(faces(f,3),:);
+    
+    [I111(f), I112(f), I11(f)] = NearTriangleZ(v1, v2, v3);
+end
     %% MoM faces loop
     BasisNumberOuter = BasisNumberOuter-1;
     loader = 0;
@@ -149,139 +147,133 @@ end
     Ei=1;
     
 for f=1:length(faces)
+    clear BasisNumberOuter
     OuterBasis(1,:) = faces(f,1:2);
     OuterBasis(2,:) = faces(f,2:3);
     OuterBasis(3,1) = faces(f,1);
     OuterBasis(3,2) = faces(f,3);
     
+    v1 = UV(faces(f,1),:);
+    v2 = UV(faces(f,2),:);
+    v3 = UV(faces(f,3),:);
+    v(1,:) = v1;
+    v(2,:) = v2;
+    v(3,:) = v3;
+    
+    for i=1:3
+        if isempty(find(sum(EdgeList(:,1:2)==OuterBasis(i,:),2)==2,1))
+            value = find(sum(fliplr(EdgeList(:,1:2))==OuterBasis(i,:),2)==2);
+            BasisNumberOuter(i) = find(sum(fliplr(EdgeList(:,1:2))==OuterBasis(i,:),2)==2);
+        else
+            value = find(sum(EdgeList(:,1:2)==OuterBasis(i,:),2)==2);
+            BasisNumberOuter(i) = value;
+        end
+    v(3+i,:) = UV(EdgeList(value,4),:);
+    end
+    
     for h=1:length(faces)
+        clear BasisNumberInner
         InnerBasis(1,:) = faces(h,1:2);
         InnerBasis(2,:) = faces(h,2:3);
         InnerBasis(3,1) = faces(h,1);
         InnerBasis(3,2) = faces(h,3);
+       
+        u1 = UV(faces(h,1),:);
+        u2 = UV(faces(h,2),:);
+        u3 = UV(faces(h,3),:);
         
+        u(1,:) = u1;
+        u(2,:) = u2;
+        u(3,:) = u3;
+     
         for i=1:3
-            BasisNumberOuter = sum(EdgeList(:,1:2)==OuterBasis(i,:),2);
-            BasisNumberOuter = find(BasisNumberOuter==2);
-            
-            BasisNumberInner = sum(EdgeList(:,1:2)==InnerBasis(i,:),2);
-            BasisNumberInner = find(BasisNumberInner==2);
-            v1 = UV(faces(f,1),:);
-            v2 = UV(faces(f,2),:);
-            v3 = UV(faces(f,3),:);
-            
-            u1 = UV(faces(h,1),:);
-            u2 = UV(faces(h,2),:);
-            u3 = UV(faces(h,3),:);
-            
-            [I111, I112, I11] = NearTriangleZ(v1, v2, v3);
-            
-            Z(BasisNumberOuter, BasisNumberInner) = I111+I112+I11 + Z(BasisNumberOuter, BasisNumberInner);
-            
-            [I111, I112, I11] = NearTriangleZ(u1, u2, u3);
-            
-            Z(BasisNumberOuter, BasisNumberInner) = I111+I112+I11 + Z(BasisNumberOuter, BasisNumberInner);
-            
-            if BasisNumberOuter
-                edges(f,i) = BasisNumberOuter;
+            if isempty(find(sum(EdgeList(:,1:2)==InnerBasis(i,:),2)==2,1))
+                value = find(sum(fliplr(EdgeList(:,1:2))==InnerBasis(i,:),2)==2);
+                BasisNumberInner(i) =  value;
+            else
+                value = find(sum(EdgeList(:,1:2)==InnerBasis(i,:),2)==2);
+                BasisNumberInner(i) = value;
             end
+        u(3+i,:) = UV(EdgeList(value,4),:);
         end
-    end
-end
-
-%% MoM edge loop
-if loader
-    load('IWaited8HoursForThis');
-else
-        for m=1:length(EdgeList)
-            mv1 = UV(EdgeList(m,1),:);
-            mv2 = UV(EdgeList(m,2),:);
-            mv3 = UV(EdgeList(m,3),:);
-            mv4 = UV(EdgeList(m,4),:);
-            mv(1,:) = mv1;
-            mv(2,:) = mv2;
-            mv(3,:) = mv3;
-            mv(4,:) = mv4;
-            BaseMP = Basis{m,1};
-            BaseMM = Basis{m,2};
-            BaseDMP = BasisDeriv(m,1);
-            BaseDMM = BasisDeriv(m,2);
+             for sing=1:6
+                 if ~isempty(find(sum(u(1:6,:) == v(sing,:),2)==3,1))
+                     a = find(sum(u(1:6,:) == v(sing,:),2)==3)
+                    Near(sing) = a(1);
+                 else
+                     Near(sing) = 0;
+                 end
+             end
+             Nearsum = sum(sum(Near));
+             clear Near
+            if Nearsum > 0
+                Z(BasisNumberOuter, BasisNumberInner) = I111(f)+I112(f)+I11(f) + Z(BasisNumberOuter, BasisNumberInner);
             
-            z1M = @(q) wp*(1/4*BaseMP(mv1)+1/k^2)*g(mv1,q);
-            z2M = @(q) wp*(1/4*BaseMP(mv2)+1/k^2)*g(mv2,q);
-            z3M = @(q) wp*(1/4*BaseMP(mv3)+1/k^2)*g(mv3,q);
-            z4M = @(q) wp*(1/4*BaseMM(mv4)-1/k^2)*g(mv4,q);
+                Z(BasisNumberOuter, BasisNumberInner) = I111(h)+I112(h)+I11(h) + Z(BasisNumberOuter, BasisNumberInner);
+            else
+                for i = 1:3
+                    for j = 1:3
+                BaseMP = Basis{BasisNumberOuter(i),1};
+                BaseMM = Basis{BasisNumberOuter(i),2};
+                BaseDMP = BasisDeriv(BasisNumberOuter(i),1);
+                BaseDMM = BasisDeriv(BasisNumberOuter(i),2);
             
-            for n=1:length(EdgeList)
-                nv1 = UV(EdgeList(n,1),:);
-                nv2 = UV(EdgeList(n,2),:);
-                nv3 = UV(EdgeList(n,3),:);
-                nv4 = UV(EdgeList(n,4),:);
-                nv(1,:) = nv1;
-                nv(2,:) = nv2;
-                nv(3,:) = nv3;
-                nv(4,:) = nv4;
-                BaseNP = Basis{n,1};
-                BaseNM = Basis{n,2};
-                BaseDNP = BasisDeriv(n,1);
-                BaseDNM = BasisDeriv(n,2);
+                BaseNP = Basis{BasisNumberInner(j),1};
+                BaseNM = Basis{BasisNumberInner(j),2};
+                BaseDNP = BasisDeriv(BasisNumberInner(j),1);
+                BaseDNM = BasisDeriv(BasisNumberInner(j),2);
                 
-                for sing=1:9
-                    Near(sing) = sum(sum(nv == mv(sing)));
-                    NearOverlap{sing} = nv == mv(sing);
-                end
-                    Nearsum = sum(sum(Near));
+                %Determine if + og - is correctly placed
+                z1M = @(q) wp*(1/4*BaseMP(UV(EdgeList(BasisNumberOuter(i),1),:))+1/k^2)*g(UV(EdgeList(BasisNumberOuter(i),1),:),q);
+                z2M = @(q) wp*(1/4*BaseMP(UV(EdgeList(BasisNumberOuter(i),2),:))+1/k^2)*g(UV(EdgeList(BasisNumberOuter(i),2),:),q);
+                z3M = @(q) wp*(1/4*BaseMP(UV(EdgeList(BasisNumberOuter(i),3),:))+1/k^2)*g(UV(EdgeList(BasisNumberOuter(i),3),:),q);
+                z4M = @(q) wp*(1/4*BaseMM(UV(EdgeList(BasisNumberOuter(i),4),:))-1/k^2)*g(UV(EdgeList(BasisNumberOuter(i),4),:),q);
+                outer(1,:) =  UV(EdgeList(BasisNumberOuter(i),1),:);
+                outer(2,:) =  UV(EdgeList(BasisNumberOuter(i),2),:);
+                outer(3,:) =  UV(EdgeList(BasisNumberOuter(i),3),:);
+                outer(4,:) =  UV(EdgeList(BasisNumberOuter(i),4),:);
                 
-               if Nearsum>=4
-                   [I111, I112, I11] = NearTriangleZ(mv1, nv2, nv3);
-                   
-                   Z(m,n) = I111.*I112.*I11 + Z(m,n);
-                   
-                   [I111, I112, I11] = NearTriangleZ(nv1, mv2, mv3);
-                   
-                   Z(m,n) = I111.*I112.*I11 + Z(m,n); 
-               else
-                   
-                z1N = @(q) wp*(1/4*BaseNP(nv1)+1/k^2)*g(nv1,q);
-                z2N = @(q) wp*(1/4*BaseNP(nv2)+1/k^2)*g(nv2,q);
-                z3N = @(q) wp*(1/4*BaseNP(nv3)+1/k^2)*g(nv3,q);
-                z4N = @(q) wp*(1/4*BaseNM(nv4)-1/k^2)*g(nv4,q);
+                z1N = @(q) wp*(1/4*BaseNP(UV(EdgeList(BasisNumberInner(j),1),:))+1/k^2)*g(UV(EdgeList(BasisNumberInner(j),1),:),q);
+                z2N = @(q) wp*(1/4*BaseNP(UV(EdgeList(BasisNumberInner(j),2),:))+1/k^2)*g(UV(EdgeList(BasisNumberInner(j),2),:),q);
+                z3N = @(q) wp*(1/4*BaseNP(UV(EdgeList(BasisNumberInner(j),3),:))+1/k^2)*g(UV(EdgeList(BasisNumberInner(j),3),:),q);
+                z4N = @(q) wp*(1/4*BaseNM(UV(EdgeList(BasisNumberInner(j),4),:))-1/k^2)*g(UV(EdgeList(BasisNumberInner(j),4),:),q);
+                inner(1,:) =  UV(EdgeList(BasisNumberInner(j),1),:);
+                inner(2,:) =  UV(EdgeList(BasisNumberInner(j),2),:);
+                inner(3,:) =  UV(EdgeList(BasisNumberInner(j),3),:);
+                inner(4,:) =  UV(EdgeList(BasisNumberInner(j),4),:);
                 
-                for ns = 1:4
-                    for ms = 1:4
-                    Z(m,n) = (BasisLA(m,2)*BasisLA(n,4))/(4*pi)...
-                    * dot(z1M(nv(ns,:)),z1N(mv(ms,:)))...
-                    + dot(z1M(nv(ns,:)),z2N(mv(ms,:)))...
-                    + dot(z1M(nv(ns,:)),z3N(mv(ms,:)))...
-                    + dot(z1M(nv(ns,:)),z4N(mv(ms,:)))...
-                    + dot(z2M(nv(ns,:)),z1N(mv(ms,:)))...
-                    + dot(z2M(nv(ns,:)),z2N(mv(ms,:)))...
-                    + dot(z2M(nv(ns,:)),z3N(mv(ms,:)))...
-                    + dot(z2M(nv(ns,:)),z4N(mv(ms,:)))...
-                    + dot(z3M(nv(ns,:)),z1N(mv(ms,:)))...
-                    + dot(z3M(nv(ns,:)),z2N(mv(ms,:)))...
-                    + dot(z3M(nv(ns,:)),z3N(mv(ms,:)))...
-                    + dot(z3M(nv(ns,:)),z4N(mv(ms,:)))...
-                    + dot(z4M(nv(ns,:)),z1N(mv(ms,:)))...
-                    + dot(z4M(nv(ns,:)),z2N(mv(ms,:)))...
-                    + dot(z4M(nv(ns,:)),z3N(mv(ms,:)))...
-                    + dot(z4M(nv(ns,:)),z4N(mv(ms,:)))...
-                    + Z(m,n);
+                %Clean up loop and functions
+                Z(BasisNumberOuter(i), BasisNumberInner(j)) = ...
+                        (BasisLA(BasisNumberOuter(i),2)*BasisLA(BasisNumberInner(j),4))/(4*pi)...
+                        * dot(z1M(inner(1,:)),z1N(outer(1,:)))...
+                        + dot(z1M(inner(2,:)),z2N(outer(2,:)))...
+                        + dot(z1M(inner(3,:)),z3N(outer(3,:)))...
+                        + dot(z1M(inner(4,:)),z4N(outer(4,:)))...
+                        + dot(z2M(inner(1,:)),z1N(outer(1,:)))...
+                        + dot(z2M(inner(2,:)),z2N(outer(2,:)))...
+                        + dot(z2M(inner(3,:)),z3N(outer(3,:)))...
+                        + dot(z2M(inner(4,:)),z4N(outer(4,:)))...
+                        + dot(z3M(inner(1,:)),z1N(outer(1,:)))...
+                        + dot(z3M(inner(2,:)),z2N(outer(2,:)))...
+                        + dot(z3M(inner(3,:)),z3N(outer(3,:)))...
+                        + dot(z3M(inner(4,:)),z4N(outer(4,:)))...
+                        + dot(z4M(inner(1,:)),z1N(outer(1,:)))...
+                        + dot(z4M(inner(2,:)),z2N(outer(2,:)))...
+                        + dot(z4M(inner(3,:)),z3N(outer(3,:)))...
+                        + dot(z4M(inner(4,:)),z4N(outer(4,:)))...
+                        + Z(BasisNumberOuter(i), BasisNumberInner(j));
                     end
                 end
-                end
             end
-             b(m) = sum(BasisLA(m,2)/2*wp*(BaseMP(mv1)+BaseMP(mv2)+BaseMP(mv3))*Ei);
-        end
+    end
 end
-             zinv = inv(Z);
-            xtesst = b*zinv;
+hej=55;
+
+b(m) = sum(BasisLA(m,2)/2*wp*(BaseMP(mv1)+BaseMP(mv2)+BaseMP(mv3))*Ei);
+
+zinv = inv(Z);
+xtesst = b/Z;
             
-%             Z2 = zeros(EdgeNumber,EdgeNumber);
-%% Alternate Edge loop
-for m=1:length(EdgeList)
-    
-end
 %% current  
         
 %             for i=1:2
