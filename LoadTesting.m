@@ -197,6 +197,11 @@ for f=1:length(faces)
         end
         
         for i = 1:3
+            
+                BaseMP = Basis{BasisNumberOuter(i),1};
+                BaseMM = Basis{BasisNumberOuter(i),2};
+                BaseDMP = BasisDeriv(BasisNumberOuter(i),1);
+                BaseDMM = BasisDeriv(BasisNumberOuter(i),2);
             for j = 1:3
                 nearOuter = EdgeList(BasisNumberOuter(i),:);
                 nearInner = EdgeList(BasisNumberInner(j),:);
@@ -217,11 +222,6 @@ for f=1:length(faces)
             
                 Z(BasisNumberOuter, BasisNumberInner) = I111(h)+I112(h)+I11(h) + Z(BasisNumberOuter, BasisNumberInner);
             else
-                BaseMP = Basis{BasisNumberOuter(i),1};
-                BaseMM = Basis{BasisNumberOuter(i),2};
-                BaseDMP = BasisDeriv(BasisNumberOuter(i),1);
-                BaseDMM = BasisDeriv(BasisNumberOuter(i),2);
-            
                 BaseNP = Basis{BasisNumberInner(j),1};
                 BaseNM = Basis{BasisNumberInner(j),2};
                 BaseDNP = BasisDeriv(BasisNumberInner(j),1);
