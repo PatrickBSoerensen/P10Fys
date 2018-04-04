@@ -143,7 +143,7 @@ for f=1:length(faces)
     v2 = UV(faces(f,2),:);
     v3 = UV(faces(f,3),:);
     
-    [I111(f,1), I112(f,1), I11(f,1), I2(f,1)] = NearTriangleZ(v1, v2, v3);
+    [I111(f,1), I112(f,1), I11(f,1)] = NearTriangleZ(v1, v2, v3);
 end
 I111(f,2) = -I111(f,1);
 I112(f,2) = -I112(f,1);
@@ -210,7 +210,6 @@ for f=1:length(faces)
         end
         
         for i = 1:3
-            
                 BaseMP = Basis{BasisNumberOuter(i),1};
                 BaseMM = Basis{BasisNumberOuter(i),2};
                 BaseDMP = BasisDeriv(BasisNumberOuter(i),1);
@@ -231,9 +230,9 @@ for f=1:length(faces)
              clear Near
              
             if Nearsum > 0
-                Z(BasisNumberOuter, BasisNumberInner) = I111(f)+I112(f)+I11(f) + Z(BasisNumberOuter, BasisNumberInner);
+%                 Z(BasisNumberOuter, BasisNumberInner) = I111(f)+I112(f)+I11(f) + Z(BasisNumberOuter, BasisNumberInner);
             
-                Z(BasisNumberOuter, BasisNumberInner) = I111(h)+I112(h)+I11(h) + Z(BasisNumberOuter, BasisNumberInner);
+%                 Z(BasisNumberOuter, BasisNumberInner) = I111(h)+I112(h)+I11(h) + Z(BasisNumberOuter, BasisNumberInner);
             else
                 BaseNP = Basis{BasisNumberInner(j),1};
                 BaseNM = Basis{BasisNumberInner(j),2};
