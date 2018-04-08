@@ -191,7 +191,7 @@ end
 
 
     %% MoM faces loop
-    NearAnalyticFixed = 0;
+    NearAnalyticFixed = 1;
     BasisNumberOuter = BasisNumberOuter-1;
     loader = 0;
     Z = zeros(BasisNumberOuter,BasisNumberOuter);
@@ -437,12 +437,12 @@ for f=1:length(faces)
     end
 end
 %%
-b = b(:,1)./2.*wp.*Ei.*(sqrt(b1(:,1).^2+b1(:,2).^2+b1(:,3).^2)...
+b = b(:,1)./2.*A(PlusOuter,:).*Ei.*(sqrt(b1(:,1).^2+b1(:,2).^2+b1(:,3).^2)...
     +sqrt(b2(:,1).^2+b2(:,2).^2+b2(:,3).^2)+sqrt(b3(:,1).^2+b3(:,2).^2+b3(:,3).^2)...
     +sqrt(b4(:,1).^2+b4(:,2).^2+b4(:,3).^2)+sqrt(b5(:,1).^2+b5(:,2).^2+b5(:,3).^2)...
     +sqrt(b6(:,1).^2+b6(:,2).^2+b6(:,3).^2));
 % Z\b is a newer faster version of inv(Z)*b
-xtesst = Z\b;
+xtesst = Z\b(:,1);
             
 %% current  
         
