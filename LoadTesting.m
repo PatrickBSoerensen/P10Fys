@@ -10,74 +10,74 @@ k=w/c;
 %% load STL file into matlab
 stl = stlread('AntBinMesh.stl');
 %% faces and unique vertices
-UV = zeros(size(stl.vertices));
-faces=stl.faces;
+p = zeros(size(stl.vertices));
+t = stl.faces;
 count = 1;
 for i=1:length(stl.vertices)
     a = stl.vertices==stl.vertices(i,:);
     a = sum(a,2);
     b = a==3;
     d=find(b);
-    UV(d(1),:) = stl.vertices(d(1),:);
+    p(d(1),:) = stl.vertices(d(1),:);
     for n=2:length(d)
         c=stl.faces == d(n);
-        faces(c) = d(1);
+        t(c) = d(1);
     end
 end
-for i=1:length(UV)
-    UV(i,4) = i;
+for i=1:length(p)
+    p(i,4) = i;
 end
-d = find(~any(UV(:,1:3),2));
-UV( ~any(UV(:,1:3),2), : ) = []; 
-for i=1:length(UV)
-    faces(faces==UV(i,4)) = i;
+d = find(~any(p(:,1:3),2));
+p( ~any(p(:,1:3),2), : ) = []; 
+for i=1:length(p)
+    t(t==p(i,4)) = i;
 end
-UV(:,4) = [];
+p(:,4) = [];
 %% Gibson connectivity list
-ConnectCell = cell(length(UV),2);
-for i=1:length(UV)
-    a = faces==i;
+ConnectCell = cell(length(p),2);
+for i=1:length(p)
+    a = t==i;
     b = sum(a,2);
     b = find(b);
     a(~any(a,2),:) = logical(1-a(~any(a,2),:));
     a = logical(1-a);
     
-    Connected = unique(faces(a));
+    Connected = unique(t(a));
     Connected = Connected(Connected>i);
     ConnectCell{i,1} = Connected;
     
     ConnectCell{i,2} = unique(b);
 end
 %% Calculating areas for Simplex Coords
-C=zeros(size(faces));
-A=zeros(size(faces));
-    for i=1:length(faces)
-        C(i,1) = sum(UV(faces(i,:),1))/3;
-        C(i,2) = sum(UV(faces(i,:),2))/3;
-        C(i,3) = sum(UV(faces(i,:),3))/3;
+C=zeros(size(t));
+A=zeros(size(t));
+    for i=1:length(t)
+        C(i,1) = sum(p(t(i,:),1))/3;
+        C(i,2) = sum(p(t(i,:),2))/3;
+        C(i,3) = sum(p(t(i,:),3))/3;
     
-    L1 = UV(faces(i,1),:)-C(i,:);
-    L2 = UV(faces(i,3),:)-UV(faces(i,1),:);
+    L1 = p(t(i,1),:)-C(i,:);
+    L2 = p(t(i,3),:)-p(t(i,1),:);
         A(i,1) = sqrt(sum((cross(L1,L2)).^2,2))/2;
         
-    L2 = UV(faces(i,2),:)-UV(faces(i,1),:);
+    L2 = p(t(i,2),:)-p(t(i,1),:);
         A(i,2) = sqrt(sum((cross(L1,L2)).^2,2))/2;
         
-    L1 = UV(faces(i,2),:)-C(i,:);
-    L2 = UV(faces(i,3),:)-UV(faces(i,2),:);
+    L1 = p(t(i,2),:)-C(i,:);
+    L2 = p(t(i,3),:)-p(t(i,2),:);
         A(i,3) = sqrt(sum((cross(L1,L2)).^2,2))/2;
     end
     
-    L1 = UV(faces(:,2),:)-UV(faces(:,1),:);
-    L2 = UV(faces(:,3),:)-UV(faces(:,1),:);
+    L1 = p(t(:,2),:)-p(t(:,1),:);
+    L2 = p(t(:,3),:)-p(t(:,1),:);
         
     Atot = sqrt(sum((cross(L1,L2)).^2,2))/2;
     A = A./Atot;
 %% Basis Function setup
 BasisNumberOuter = 1;
 
-for i=1:length(UV)
-    temp = faces(ConnectCell{i,2},:);
+for i=1:length(p)
+    temp = t(ConnectCell{i,2},:);
     nodes = ConnectCell{i,1};
     temp = sort(temp,2);
     for n=1:length(nodes)
@@ -93,10 +93,10 @@ for i=1:length(UV)
         EdgePoints = [i,nodes(n)];
         NotEdgePoints = Triangles(c);
         
-        L = UV(EdgePoints(1),:)-UV(EdgePoints(2),:);
+        L = p(EdgePoints(1),:)-p(EdgePoints(2),:);
         
-        LforAP = UV(EdgePoints(1),:)-UV(NotEdgePoints(1),:);
-        LforAM = UV(EdgePoints(1),:)-UV(NotEdgePoints(2),:);
+        LforAP = p(EdgePoints(1),:)-p(NotEdgePoints(1),:);
+        LforAM = p(EdgePoints(1),:)-p(NotEdgePoints(2),:);
         
         AP =  sqrt(sum((cross(L,LforAP)).^2,2))./2;
         AM =  sqrt(sum((cross(L,LforAM)).^2,2))./2;
@@ -113,11 +113,11 @@ for i=1:length(UV)
         EdgeList(BasisNumberOuter, 4) = NotEdgePoints(2);
         
         %Plus
-        Basis{BasisNumberOuter,1} = @(r) (UV(NotEdgePoints(1),:) - r);
+        Basis{BasisNumberOuter,1} = @(r) (p(NotEdgePoints(1),:) - r);
         BasisLA(BasisNumberOuter,1) =  L./(2*AP);
         BasisLA(BasisNumberOuter,2) =  L;
         %Minus
-        Basis{BasisNumberOuter,2} = @(r) (r - UV(NotEdgePoints(2),:));
+        Basis{BasisNumberOuter,2} = @(r) (r - p(NotEdgePoints(2),:));
         BasisLA(BasisNumberOuter,3) = L./(2*AM);
         BasisLA(BasisNumberOuter,4) = L;
         %Plus
@@ -131,8 +131,8 @@ end
 %% Basis Function simplex setup
 BasisNumberOuter = 1;
 r = @(alpha, beta, v1, v2, v3) (1-alpha-beta)*v1+alpha*v2+beta*v3;
-for i=1:length(UV)
-    temp = faces(ConnectCell{i,2},:);
+for i=1:length(p)
+    temp = t(ConnectCell{i,2},:);
     nodes = ConnectCell{i,1};
     temp = sort(temp,2);
     for n=1:length(nodes)
@@ -148,10 +148,10 @@ for i=1:length(UV)
         EdgePoints = [i,nodes(n)];
         NotEdgePoints = Triangles(c);
         
-        L = UV(EdgePoints(1),:)-UV(EdgePoints(2),:);
+        L = p(EdgePoints(1),:)-p(EdgePoints(2),:);
         
-        LforAP = UV(EdgePoints(1),:)-UV(NotEdgePoints(1),:);
-        LforAM = UV(EdgePoints(1),:)-UV(NotEdgePoints(2),:);
+        LforAP = p(EdgePoints(1),:)-p(NotEdgePoints(1),:);
+        LforAM = p(EdgePoints(1),:)-p(NotEdgePoints(2),:);
         
         AP =  sqrt(sum((cross(L,LforAP)).^2,2))./2;
         AM =  sqrt(sum((cross(L,LforAM)).^2,2))./2;
@@ -159,31 +159,31 @@ for i=1:length(UV)
         L = sqrt(sum(L.^2));
         
         %Plus
-        BasisSimp{BasisNumberOuter,1} = @(r) (UV(NotEdgePoints(1),1) - r);
-        BasisSimp{BasisNumberOuter,2} = @(r) (UV(NotEdgePoints(1),2) - r);
-        BasisSimp{BasisNumberOuter,3} = @(r) (UV(NotEdgePoints(1),3) - r);
+        BasisSimp{BasisNumberOuter,1} = @(r) (p(NotEdgePoints(1),1) - r);
+        BasisSimp{BasisNumberOuter,2} = @(r) (p(NotEdgePoints(1),2) - r);
+        BasisSimp{BasisNumberOuter,3} = @(r) (p(NotEdgePoints(1),3) - r);
         %Minus
-        BasisSimp{BasisNumberOuter,4} = @(r) (r - UV(NotEdgePoints(2),1));
-        BasisSimp{BasisNumberOuter,5} = @(r) (r - UV(NotEdgePoints(2),2));
-        BasisSimp{BasisNumberOuter,6} = @(r) (r - UV(NotEdgePoints(2),3));
+        BasisSimp{BasisNumberOuter,4} = @(r) (r - p(NotEdgePoints(2),1));
+        BasisSimp{BasisNumberOuter,5} = @(r) (r - p(NotEdgePoints(2),2));
+        BasisSimp{BasisNumberOuter,6} = @(r) (r - p(NotEdgePoints(2),3));
   
         BasisNumberOuter = BasisNumberOuter + 1;
     end
 end
 
 %% pre analytic calculations
-for f=1:length(faces)
-    v1 = UV(faces(f,1),:);
-    v2 = UV(faces(f,2),:);
-    v3 = UV(faces(f,3),:);
+for f=1:length(t)
+    v1 = p(t(f,1),:);
+    v2 = p(t(f,2),:);
+    v3 = p(t(f,3),:);
     
     I2(f) = NearTriangleFaces(v1, v2, v3);
 end
 
-for f=1:length(faces)
-    v1 = UV(faces(f,1),:);
-    v2 = UV(faces(f,2),:);
-    v3 = UV(faces(f,3),:);
+for f=1:length(t)
+    v1 = p(t(f,1),:);
+    v2 = p(t(f,2),:);
+    v3 = p(t(f,3),:);
     for permut=1:3
     [I111(f,permut), I112(f,permut), I11(f,permut)] = NearTriangleZ(v1, v2, v3, permut);
     end
@@ -194,7 +194,7 @@ end
     NearAnalyticFixed = 1;
     BasisNumberOuter = BasisNumberOuter-1;
     loader = 0;
-    Z = zeros(BasisNumberOuter,BasisNumberOuter);
+    Z = zeros(BasisNumberOuter,BasisNumberOuter)+1i*zeros(BasisNumberOuter,BasisNumberOuter);
 %     b = 1:BasisNumberOuter-1;
     g = @(p,q) exp(1i.*k.*sqrt(sum((p-q).^2)))./(sqrt(sum((p-q).^2)));
     
@@ -203,18 +203,18 @@ end
         -1/sqrt((r1-rm1+0.0001).^2+(r2-rm2+0.0001).^2+(r3-rm3+0.0001).^2))...
         +1/sqrt((r1-rm1+0.0001).^2+(r2-rm2+0.0001).^2+(r3-rm3+0.0001).^2);
     Ei = 1;
-    faces = sort(faces,2);
+    t = sort(t,2);
     
-for f=1:length(faces)
+for f=1:length(t)
     clear BasisNumberOuter
-    OuterBasis(1,:) = faces(f,1:2);
-    OuterBasis(2,:) = faces(f,2:3);
-    OuterBasis(3,1) = faces(f,1);
-    OuterBasis(3,2) = faces(f,3);
+    OuterBasis(1,:) = t(f,1:2);
+    OuterBasis(2,:) = t(f,2:3);
+    OuterBasis(3,1) = t(f,1);
+    OuterBasis(3,2) = t(f,3);
     
-    v(1,:) = UV(faces(f,1),:);
-    v(2,:) = UV(faces(f,2),:);
-    v(3,:) = UV(faces(f,3),:);
+    v(1,:) = p(t(f,1),:);
+    v(2,:) = p(t(f,2),:);
+    v(3,:) = p(t(f,3),:);
      
     for i=1:3
         if isempty(find(sum(EdgeList(:,1:2)==OuterBasis(i,:),2)==2,1))
@@ -224,19 +224,19 @@ for f=1:length(faces)
             value = find(sum(EdgeList(:,1:2)==OuterBasis(i,:),2)==2);
             BasisNumberOuter(i) = value;
         end
-    v(3+i,:) = UV(EdgeList(value,4),:);
+    v(3+i,:) = p(EdgeList(value,4),:);
     end
     
-    for h=1:length(faces)
+    for h=1:length(t)
         clear BasisNumberInner
-        InnerBasis(1,:) = faces(h,1:2);
-        InnerBasis(2,:) = faces(h,2:3);
-        InnerBasis(3,1) = faces(h,1);
-        InnerBasis(3,2) = faces(h,3);
+        InnerBasis(1,:) = t(h,1:2);
+        InnerBasis(2,:) = t(h,2:3);
+        InnerBasis(3,1) = t(h,1);
+        InnerBasis(3,2) = t(h,3);
        
-        u(1,:) = UV(faces(h,1),:);
-        u(2,:) = UV(faces(h,2),:);
-        u(3,:) = UV(faces(h,3),:);
+        u(1,:) = p(t(h,1),:);
+        u(2,:) = p(t(h,2),:);
+        u(3,:) = p(t(h,3),:);
         
         for i=1:3
             if isempty(find(sum(EdgeList(:,1:2)==InnerBasis(i,:),2)==2,1))
@@ -246,7 +246,7 @@ for f=1:length(faces)
                 value = find(sum(EdgeList(:,1:2)==InnerBasis(i,:),2)==2);
                 BasisNumberInner(i) = value;
             end
-        u(3+i,:) = UV(EdgeList(value,4),:);
+        u(3+i,:) = p(EdgeList(value,4),:);
         end
         
         for i = 1:3
@@ -255,10 +255,10 @@ for f=1:length(faces)
                 BaseDMP = BasisDeriv(BasisNumberOuter(i),1);
                 BaseDMM = BasisDeriv(BasisNumberOuter(i),2);
                 
-                outer(1,:) =  UV(EdgeList(BasisNumberOuter(i),1),:);
-                outer(2,:) =  UV(EdgeList(BasisNumberOuter(i),2),:);
-                outer(3,:) =  UV(EdgeList(BasisNumberOuter(i),3),:);
-                outer(4,:) =  UV(EdgeList(BasisNumberOuter(i),4),:);
+                outer(1,:) =  p(EdgeList(BasisNumberOuter(i),1),:);
+                outer(2,:) =  p(EdgeList(BasisNumberOuter(i),2),:);
+                outer(3,:) =  p(EdgeList(BasisNumberOuter(i),3),:);
+                outer(4,:) =  p(EdgeList(BasisNumberOuter(i),4),:);
             for j = 1:3
                 BaseNP = Basis{BasisNumberInner(j),1};
                 BaseNM = Basis{BasisNumberInner(j),2};
@@ -268,10 +268,10 @@ for f=1:length(faces)
                 nearOuter = EdgeList(BasisNumberOuter(i),:);
                 nearInner = EdgeList(BasisNumberInner(j),:);
                 
-                inner(1,:) =  UV(EdgeList(BasisNumberInner(j),1),:);
-                inner(2,:) =  UV(EdgeList(BasisNumberInner(j),2),:);
-                inner(3,:) =  UV(EdgeList(BasisNumberInner(j),3),:);
-                inner(4,:) =  UV(EdgeList(BasisNumberInner(j),4),:);
+                inner(1,:) =  p(EdgeList(BasisNumberInner(j),1),:);
+                inner(2,:) =  p(EdgeList(BasisNumberInner(j),2),:);
+                inner(3,:) =  p(EdgeList(BasisNumberInner(j),3),:);
+                inner(4,:) =  p(EdgeList(BasisNumberInner(j),4),:);
                 for sing=1:4
                     if ~isempty(find(nearInner == nearOuter(sing),1))
                         %Overlap of faces
@@ -342,30 +342,30 @@ for f=1:length(faces)
                 FaceEdgeOuterP = sort(FaceEdgeOuterP);
                 FaceEdgeOuterM = [FaceEdgeOuter  EdgeList(BasisNumberOuter(i),4)];
                 FaceEdgeOuterM = sort(FaceEdgeOuterM);
-                PlusOuter = find(sum(faces==FaceEdgeOuterP,2)==3);
-                MinusOuter = find(sum(faces==FaceEdgeOuterM,2)==3);
+                PlusOuter = find(sum(t==FaceEdgeOuterP,2)==3);
+                MinusOuter = find(sum(t==FaceEdgeOuterM,2)==3);
                 
-                z1Mp = A(PlusOuter,:).*(1/4*BaseMP(UV(EdgeList(BasisNumberOuter(i),1),:)));
-                z2Mp = A(PlusOuter,:).*(1/4*BaseMP(UV(EdgeList(BasisNumberOuter(i),2),:)));
-                z1Mm = A(MinusOuter,:).*(1/4*BaseMM(UV(EdgeList(BasisNumberOuter(i),1),:)));
-                z2Mm = A(MinusOuter,:).*(1/4*BaseMM(UV(EdgeList(BasisNumberOuter(i),2),:)));
-                z3M = A(PlusOuter,:).*(1/4*BaseMP(UV(EdgeList(BasisNumberOuter(i),3),:)));
-                z4M = A(MinusOuter,:).*(1/4*BaseMM(UV(EdgeList(BasisNumberOuter(i),4),:)));
+                z1Mp = A(PlusOuter,:).*(1/4*BaseMP(p(EdgeList(BasisNumberOuter(i),1),:)));
+                z2Mp = A(PlusOuter,:).*(1/4*BaseMP(p(EdgeList(BasisNumberOuter(i),2),:)));
+                z1Mm = A(MinusOuter,:).*(1/4*BaseMM(p(EdgeList(BasisNumberOuter(i),1),:)));
+                z2Mm = A(MinusOuter,:).*(1/4*BaseMM(p(EdgeList(BasisNumberOuter(i),2),:)));
+                z3M = A(PlusOuter,:).*(1/4*BaseMP(p(EdgeList(BasisNumberOuter(i),3),:)));
+                z4M = A(MinusOuter,:).*(1/4*BaseMM(p(EdgeList(BasisNumberOuter(i),4),:)));
                 
                 FaceEdgeInner(1:2) = EdgeList(BasisNumberInner(j),1:2);
                 FaceEdgeInnerP = [FaceEdgeInner  EdgeList(BasisNumberInner(j),3)];
                 FaceEdgeInnerP = sort(FaceEdgeInnerP); 
                 FaceEdgeInnerM = [FaceEdgeInner  EdgeList(BasisNumberInner(j),4)];
                 FaceEdgeInnerM = sort(FaceEdgeInnerM);
-                PlusInner = find(sum(faces==FaceEdgeInnerP,2)==3);
-                MinusInner = find(sum(faces==FaceEdgeInnerM,2)==3);
+                PlusInner = find(sum(t==FaceEdgeInnerP,2)==3);
+                MinusInner = find(sum(t==FaceEdgeInnerM,2)==3);
                 
-                z1Np = A(PlusInner,:).*(1/4*BaseNP(UV(EdgeList(BasisNumberInner(j),1),:)));
-                z2Np = A(PlusInner,:).*(1/4*BaseNP(UV(EdgeList(BasisNumberInner(j),2),:)));
-                z1Nm = A(MinusInner,:).*(1/4*BaseNM(UV(EdgeList(BasisNumberInner(j),1),:)));
-                z2Nm = A(MinusInner,:).*(1/4*BaseNM(UV(EdgeList(BasisNumberInner(j),2),:)));
-                z3N = A(PlusInner,:).*(1/4*BaseNP(UV(EdgeList(BasisNumberInner(j),3),:)));
-                z4N = A(MinusInner,:).*(1/4*BaseNM(UV(EdgeList(BasisNumberInner(j),4),:)));
+                z1Np = A(PlusInner,:).*(1/4*BaseNP(p(EdgeList(BasisNumberInner(j),1),:)));
+                z2Np = A(PlusInner,:).*(1/4*BaseNP(p(EdgeList(BasisNumberInner(j),2),:)));
+                z1Nm = A(MinusInner,:).*(1/4*BaseNM(p(EdgeList(BasisNumberInner(j),1),:)));
+                z2Nm = A(MinusInner,:).*(1/4*BaseNM(p(EdgeList(BasisNumberInner(j),2),:)));
+                z3N = A(PlusInner,:).*(1/4*BaseNP(p(EdgeList(BasisNumberInner(j),3),:)));
+                z4N = A(MinusInner,:).*(1/4*BaseNM(p(EdgeList(BasisNumberInner(j),4),:)));
                                 
                 g11 = g(outer(1,:),inner(1,:));
                 g12 = g(outer(1,:),inner(2,:));
@@ -427,12 +427,12 @@ for f=1:length(faces)
                     end
             end
         b(BasisNumberOuter(i)) = BasisLA(BasisNumberOuter(i),2);
-        b1(BasisNumberOuter(i),:) = BaseMP(UV(EdgeList(BasisNumberOuter(i),1),:));
-        b2(BasisNumberOuter(i),:) = BaseMM(UV(EdgeList(BasisNumberOuter(i),1),:));
-        b3(BasisNumberOuter(i),:) = BaseMP(UV(EdgeList(BasisNumberOuter(i),2),:));
-        b4(BasisNumberOuter(i),:) = BaseMM(UV(EdgeList(BasisNumberOuter(i),2),:));
-        b5(BasisNumberOuter(i),:) = BaseMP(UV(EdgeList(BasisNumberOuter(i),3),:));
-        b6(BasisNumberOuter(i),:) = BaseMM(UV(EdgeList(BasisNumberOuter(i),4),:));
+        b1(BasisNumberOuter(i),:) = BaseMP(p(EdgeList(BasisNumberOuter(i),1),:));
+        b2(BasisNumberOuter(i),:) = BaseMM(p(EdgeList(BasisNumberOuter(i),1),:));
+        b3(BasisNumberOuter(i),:) = BaseMP(p(EdgeList(BasisNumberOuter(i),2),:));
+        b4(BasisNumberOuter(i),:) = BaseMM(p(EdgeList(BasisNumberOuter(i),2),:));
+        b5(BasisNumberOuter(i),:) = BaseMP(p(EdgeList(BasisNumberOuter(i),3),:));
+        b6(BasisNumberOuter(i),:) = BaseMM(p(EdgeList(BasisNumberOuter(i),4),:));
         end
     end
 end

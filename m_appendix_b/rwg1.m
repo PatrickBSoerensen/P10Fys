@@ -1,6 +1,9 @@
 %RWG1 Geometry calculations - all Chapters
+
 %   Uses the structure mesh file, e.g. platefine.mat, 
+
 %   as an input.
+
 %
 %   Creates the RWG edge element for every inner edge of 
 %   the structure. The total number of elements is EdgesTotal.
