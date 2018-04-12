@@ -250,15 +250,15 @@ classdef ArbitraryAntenna
             end
         end
         
-        function [Z, b, x] = MoM(p, t, EdgeList, BasisNumber, BasisLA, A, RhoP, RhoM, I2, Center, k)
+        function [Z, b, x] = MoM(p, t, EdgeList, BasisNumber, BasisLA, A, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k, SubTri)
         Z = zeros(BasisNumber,BasisNumber)+1i*zeros(BasisNumber,BasisNumber);
         Ei = 1;
     
-        for f=1:length(t)
-            OuterEdge(1,:) = t(f,1:2);
-            OuterEdge(2,:) = t(f,2:3);
-            OuterEdge(3,1) = t(f,1);
-            OuterEdge(3,2) = t(f,3);
+        for y=1:length(t)
+            OuterEdge(1,:) = t(y,1:2);
+            OuterEdge(2,:) = t(y,2:3);
+            OuterEdge(3,1) = t(y,1);
+            OuterEdge(3,2) = t(y,3);
      
             for i=1:3
                 if isempty(find(sum(EdgeList(:,1:2)==OuterEdge(i,:),2)==2,1))
@@ -292,12 +292,7 @@ classdef ArbitraryAntenna
                     outer(3,:) =  p(EdgeList(EdgeNumberOuter(i),3),:);
                     outer(4,:) =  p(EdgeList(EdgeNumberOuter(i),4),:);
                     
-                    for j = 1:3
-                        inner(1,:) =  p(EdgeList(EdgeNumberInner(j),1),:);
-                        inner(2,:) =  p(EdgeList(EdgeNumberInner(j),2),:);
-                        inner(3,:) =  p(EdgeList(EdgeNumberInner(j),3),:);
-                        inner(4,:) =  p(EdgeList(EdgeNumberInner(j),4),:);
-                            
+                    
                         FaceEdgeOuter(1:2) = EdgeList(EdgeNumberOuter(i),1:2);
                         FaceEdgeOuterP = [FaceEdgeOuter EdgeList(EdgeNumberOuter(i),3)];
                         FaceEdgeOuterP = sort(FaceEdgeOuterP);
@@ -309,6 +304,12 @@ classdef ArbitraryAntenna
                         zMP = A(PlusOuter,:).*(1/4*RhoP(EdgeNumberOuter(i)));
                         zMM = A(MinusOuter,:).*(1/4*RhoM(EdgeNumberOuter(i)));
                 
+                    for j = 1:3
+                        inner(1,:) =  p(EdgeList(EdgeNumberInner(j),1),:);
+                        inner(2,:) =  p(EdgeList(EdgeNumberInner(j),2),:);
+                        inner(3,:) =  p(EdgeList(EdgeNumberInner(j),3),:);
+                        inner(4,:) =  p(EdgeList(EdgeNumberInner(j),4),:);
+                            
                         FaceEdgeInner(1:2) = EdgeList(EdgeNumberInner(j),1:2);
                         FaceEdgeInnerP = [FaceEdgeInner EdgeList(EdgeNumberInner(j), 3)];
                         FaceEdgeInnerP = sort(FaceEdgeInnerP);
@@ -319,42 +320,61 @@ classdef ArbitraryAntenna
                 
                         zNP = A(PlusInner,:).*(1/4*RhoP(EdgeNumberInner(j)));
                         zNM = A(MinusInner,:).*(1/4*RhoM(EdgeNumberInner(j)));
-                
+                        
+                        SPI = reshape(SubTri(:,:,PlusInner),[3,9]).';
+                        SMI = reshape(SubTri(:,:,MinusInner),[3,9]).';
+                        
+                            g = I2(y)/4;
+                        
+                            gPP = exp(1i.*k.*sqrt(sum((Center(PlusOuter,:)-SPI).^2,2)))./(sqrt(sum((Center(PlusOuter,:)-SPI).^2,2)));
+                            gMP = exp(1i.*k.*sqrt(sum((Center(MinusOuter,:)-SPI).^2,2)))./(sqrt(sum((Center(MinusOuter,:)-SPI).^2,2)));
+                            gPM = exp(1i.*k.*sqrt(sum((Center(PlusOuter,:)-SMI).^2,2)))./(sqrt(sum((Center(PlusOuter,:)-SMI).^2,2)));
+                            gMM = exp(1i.*k.*sqrt(sum((Center(MinusOuter,:)-SMI).^2,2)))./(sqrt(sum((Center(MinusOuter,:)-SMI).^2,2)));
+                        
+                        
                         if PlusOuter==PlusInner
-                            Z(EdgeNumberOuter(i), EdgeNumberInner(j)) = I2(f) + Z(EdgeNumberOuter(i), EdgeNumberInner(j)); 
+                            Z(EdgeNumberOuter(i), EdgeNumberInner(j)) = ...
+                            (BasisLA(EdgeNumberOuter(i),2)*BasisLA(EdgeNumberInner(j),4))/(36*pi)...
+                            *((dot(zMP, zNP)-1/k^2) * g)...
+                            + Z(EdgeNumberOuter(i), EdgeNumberInner(j));
                         else
-                            g=exp(1i.*k.*sqrt(sum((Center(PlusOuter,:)-Center(PlusInner,:)).^2)))./(sqrt(sum((Center(PlusOuter,:)-Center(PlusInner,:)).^2)));
                             Z(EdgeNumberOuter(i), EdgeNumberInner(j)) = ...
                             (BasisLA(EdgeNumberOuter(i),2)*BasisLA(EdgeNumberInner(j),4))/(4*pi)...
-                            *((dot(zMP, zNP)-1/k^2) * g)...
+                            *sum((dot(zMP, zNP)-1/k^2) * gPP)...
                             + Z(EdgeNumberOuter(i), EdgeNumberInner(j));
                         end
                         if PlusOuter==MinusInner 
-                            Z(EdgeNumberOuter(i), EdgeNumberInner(j)) = I2(f) + Z(EdgeNumberOuter(i), EdgeNumberInner(j)); 
+                           Z(EdgeNumberOuter(i), EdgeNumberInner(j)) = ...
+                            (BasisLA(EdgeNumberOuter(i),2)*BasisLA(EdgeNumberInner(j),4))/(36*pi)...
+                            *((dot(zMP, zNM)-1/k^2) * g)...
+                            + Z(EdgeNumberOuter(i), EdgeNumberInner(j));
                         else
-                            g=exp(1i.*k.*sqrt(sum((Center(PlusOuter,:)-Center(MinusInner,:)).^2)))./(sqrt(sum((Center(PlusOuter,:)-Center(MinusInner,:)).^2)));
                             Z(EdgeNumberOuter(i), EdgeNumberInner(j)) = ...
                             (BasisLA(EdgeNumberOuter(i),2)*BasisLA(EdgeNumberInner(j),4))/(4*pi)...
-                            *((dot(zMP, zNM)+1/k^2) * g )...
+                            *sum((dot(zMP, zNM)+1/k^2) * gPM )...
                             + Z(EdgeNumberOuter(i), EdgeNumberInner(j));
                         end
                         if MinusOuter==PlusInner        
-                            Z(EdgeNumberOuter(i), EdgeNumberInner(j)) = I2(f) + Z(EdgeNumberOuter(i), EdgeNumberInner(j)); 
+                        Z(EdgeNumberOuter(i), EdgeNumberInner(j)) = ...
+                            (BasisLA(EdgeNumberOuter(i),2)*BasisLA(EdgeNumberInner(j),4))/(36*pi)...
+                            *((dot(zMM, zNP)-1/k^2) * g)...
+                            + Z(EdgeNumberOuter(i), EdgeNumberInner(j));
                         else
-                            g=exp(1i.*k.*sqrt(sum((Center(MinusOuter,:)-Center(PlusInner,:)).^2)))./(sqrt(sum((Center(MinusOuter,:)-Center(PlusInner,:)).^2)));
                             Z(EdgeNumberOuter(i), EdgeNumberInner(j)) = ...
                             (BasisLA(EdgeNumberOuter(i),2)*BasisLA(EdgeNumberInner(j),4))/(4*pi)...
-                            *((dot(zMM, zNP)+1/k^2) * g)...
+                            *sum((dot(zMM, zNP)+1/k^2) * gMP)...
                             + Z(EdgeNumberOuter(i), EdgeNumberInner(j));
                         end
                         if MinusOuter==MinusInner
-                            Z(EdgeNumberOuter(i), EdgeNumberInner(j)) = I2(f) + Z(EdgeNumberOuter(i), EdgeNumberInner(j)); 
+                           Z(EdgeNumberOuter(i), EdgeNumberInner(j)) = ...
+                            (BasisLA(EdgeNumberOuter(i),2)*BasisLA(EdgeNumberInner(j),4))/(36*pi)...
+                            *((dot(zMM, zNM)-1/k^2) * g)...
+                            + Z(EdgeNumberOuter(i), EdgeNumberInner(j));
                         else
-                            g=exp(1i.*k.*sqrt(sum((Center(MinusOuter,:)-Center(MinusInner,:)).^2)))./(sqrt(sum((Center(MinusOuter,:)-Center(MinusInner,:)).^2)));
                             Z(EdgeNumberOuter(i), EdgeNumberInner(j)) = ...
                             (BasisLA(EdgeNumberOuter(i),2)*BasisLA(EdgeNumberInner(j),4))/(4*pi)...
-                            *((dot(zMM, zNM)-1/k^2) * g)...
-                            + Z(EdgeNumberOuter(i), EdgeNumberInner(j));            
+                            *sum((dot(zMM, zNM)-1/k^2) * gMM)...
+                            + Z(EdgeNumberOuter(i), EdgeNumberInner(j));           
                         end
                     end
                     b(EdgeNumberOuter(i)) = BasisLA(EdgeNumberOuter(i),2);

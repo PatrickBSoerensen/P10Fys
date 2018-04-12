@@ -38,8 +38,8 @@ for p=1:TrianglesTotal
     %Block for self-coupling terms
     Index=1:TrianglesTotal;
     Index(p)=[];
-    g(:,:,Index) =exp(-K*R(:,:,Index))./R(:,:,Index);
-    g(:,:,p)     =-K+Integral(p);
+    g(:,:,Index) = exp(-K*R(:,:,Index))./R(:,:,Index);
+    g(:,:,p)     = -K+Integral(p);
            
     gP=g(:,:,TrianglePlus);                         %[1 9 EdgesTotal]
     gM=g(:,:,TriangleMinus);                        %[1 9 EdgesTotal]
