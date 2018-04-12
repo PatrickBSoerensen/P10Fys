@@ -16,7 +16,8 @@ clear all
 load('mesh2');
 
 %EM parameters (f=3e8 means that f=300 MHz) 
-f           =3e8;  
+
+f           =146.5*10^6;  
 epsilon_    =8.854e-012;
 mu_         =1.257e-006;
 %Speed of light

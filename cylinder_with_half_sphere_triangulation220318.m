@@ -424,25 +424,26 @@ if add_points_for_second_order_interpolation == true && ...
           nx=(x6-xc); ny=(y6-yc); nz=(z6-zc); n=sqrt(nx^2+ny^2+nz^2);
           nx=nx/n; ny=ny/n; nz=nz/n;
           x6=xc+nx*R; y6=yc+ny*R; z6=zc+nz*R;
-%           %a few more points are added to cyl
-%            v=0;
-%            uv=linspace(0,1,11);
-%            xv1=x1+(x2-x1)*uv; yv1=y1+(y2-y1)*uv; zv1=z1+(z2-z1)*uv;
-%            xv2=x2+(x3-x2)*uv; yv2=y2+(y3-y2)*uv; zv2=z2+(z3-z2)*uv;
-%            xv3=x3+(x1-x3)*uv; yv3=y3+(y1-y3)*uv; zv3=z3+(z1-z3)*uv;
-%            xv=[xv1(1:10) xv2(1:10) xv3]; yv=[yv1(1:10) yv2(1:10) yv3]; zv=[zv1(1:10) zv2(1:10) zv3];
-%            for ju=1:length(xv)
-%               nx=xv(ju)-xc; ny=yv(ju)-yc; nz=zv(ju)-zc;
-%               n=sqrt(nx^2+ny^2+nz^2); nx=nx/n; ny=ny/n; nz=nz/n;
-%               xv(ju)=xc+nx*R; yv(ju)=yc+ny*R; zv(ju)=zc+nz*R;
-%            end
-%         
+
+          %a few more points are added to cyl
+           v=0;
+           uv=linspace(0,1,11);
+           xv1=x1+(x2-x1)*uv; yv1=y1+(y2-y1)*uv; zv1=z1+(z2-z1)*uv;
+           xv2=x2+(x3-x2)*uv; yv2=y2+(y3-y2)*uv; zv2=z2+(z3-z2)*uv;
+           xv3=x3+(x1-x3)*uv; yv3=y3+(y1-y3)*uv; zv3=z3+(z1-z3)*uv;
+           xv=[xv1(1:10) xv2(1:10) xv3]; yv=[yv1(1:10) yv2(1:10) yv3]; zv=[zv1(1:10) zv2(1:10) zv3];
+           for ju=1:length(xv)
+              nx=xv(ju)-xc; ny=yv(ju)-yc; nz=zv(ju)-zc;
+              n=sqrt(nx^2+ny^2+nz^2); nx=nx/n; ny=ny/n; nz=nz/n;
+              xv(ju)=xc+nx*R; yv(ju)=yc+ny*R; zv(ju)=zc+nz*R;
+           end
+        
         end
-     %            xvd=[x1 x2 x3 x1]; yvd=[y1 y2 y3 y1]; zvd=[z1 z2 z3 z1];
-    %       h=fill3(xvd,yvd,zvd,'w'); set(h,'linewidth',2,'EdgeColor','w')              
+                xvd=[x1 x2 x3 x1]; yvd=[y1 y2 y3 y1]; zvd=[z1 z2 z3 z1];
+          h=fill3(xvd,yvd,zvd,'w'); set(h,'linewidth',2,'EdgeColor','w')              
            
-      %     h=fill3(xv,yv,zv,'w'); set(h,'linewidth',3)
-         % h=plot3(xv,yv,zv,'k'); set(h,'linewidth',2)   
+          h=fill3(xv,yv,zv,'w'); set(h,'linewidth',3)
+         h=plot3(xv,yv,zv,'k'); set(h,'linewidth',2)   
        if k==1
            hold on;
        end

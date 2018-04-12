@@ -91,9 +91,9 @@ for m=1:EdgesTotal
     n1=t(1,NoPlus);
     n2=t(2,NoPlus);
     n3=t(3,NoPlus); 
-    if((n1~=Edge_(1,m))&(n1~=Edge_(2,m))) NODE=n1; end;
-    if((n2~=Edge_(1,m))&(n2~=Edge_(2,m))) NODE=n2; end;
-    if((n3~=Edge_(1,m))&(n3~=Edge_(2,m))) NODE=n3; end;
+    if((n1~=Edge_(1,m))&&(n1~=Edge_(2,m))) NODE=n1; end;
+    if((n2~=Edge_(1,m))&&(n2~=Edge_(2,m))) NODE=n2; end;
+    if((n3~=Edge_(1,m))&&(n3~=Edge_(2,m))) NODE=n3; end;
     FreeVertex=p(:,NODE);
     
     RHO_Plus(:,m)   =+Center(:,NoPlus)-FreeVertex;
