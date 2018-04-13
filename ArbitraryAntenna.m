@@ -389,13 +389,13 @@ classdef ArbitraryAntenna
         x = Z\b(:,1);
         end
         
-        function [Exy, Exz, Eyz, xrange] = EField(Center, w, k, mu, J, xmin, xmax, zmin, zmax, ymin, ymax, steps, Area)
+        function [Eyx, Ezx, Eyz, xrange] = EField(Center, w, k, mu, J, xmin, xmax, zmin, zmax, ymin, ymax, steps, Area)
             xrange = linspace(xmin, xmax, steps);
             yrange = linspace(ymin, ymax, steps);
             zrange = linspace(zmin, zmax, steps);
             
-            Exy = zeros(steps,steps);
-            Exz = zeros(steps,steps);
+            Eyx = zeros(steps,steps);
+            Ezx = zeros(steps,steps);
             Eyz = zeros(steps,steps);
             for j=1:3
                 if j == 1
@@ -412,17 +412,32 @@ classdef ArbitraryAntenna
                     rz = (zrange-Center(:,3));
                 end
              for i=1:length(Center)
-                r = sqrt((rz(i,:).').^2+ry(i,:).^2+(rx(i,:)).^2);
-                
+                if j == 1    
+                r = sqrt((rz(i,:)).^2+(ry(i,:).').^2+(rx(i,:)).^2);
+               
                 B = -(1i.*w.*mu);
                 g = B.*exp(-1i.*k.*r)./(4.*pi.*r);
                 G = g.*((1+1i./(k*r)-1./((k*r).^2)) - ...
                             ((rx(i,:)).^2)./(r.^2).*(1+3i./(k*r)-3./((k*r).^2)));
-                if j == 1
-                Exy = Exy+G.*J(i).*Area(i);
-                elseif j==2
-                Exz = Exz+G.*J(i).*Area(i);    
+                        
+                Eyx = Eyx+G.*J(i).*Area(i);
+                elseif j==2 
+                r = sqrt((rz(i,:).').^2+(ry(i,:)).^2+(rx(i,:)).^2);
+                
+                B = -(1i.*w.*mu);
+                g = B.*exp(-1i.*k.*r)./(4.*pi.*r);
+                
+                G = g.*((1+1i./(k*r)-1./((k*r).^2)) - ...
+                            ((rx(i,:)).^2)./(r.^2).*(1+3i./(k*r)-3./((k*r).^2)));
+                Ezx = Ezx+G.*J(i).*Area(i);    
                 else
+                r = sqrt((rz(i,:)).^2+(ry(i,:).').^2+(rx(i,:)).^2);
+                
+                B = -(1i.*w.*mu);
+                g = B.*exp(-1i.*k.*r)./(4.*pi.*r);
+                
+                G = g.*((1+1i./(k*r)-1./((k*r).^2)) - ...
+                            ((rz(i,:)).^2)./(r.^2).*(1+3i./(k*r)-3./((k*r).^2)));
                 Eyz = Eyz+G.*J(i).*Area(i);
                 end
              end

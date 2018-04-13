@@ -1,6 +1,11 @@
 %% load STL file into matlab
 stl = stlread('AntBinMesh.stl');
-% Calculating dimensions of dipole
+%% faces and unique vertices
+tic;
+[p, t] = ArbitraryAntenna.RemoveEqualPoints(stl);
+t = sort(t,2);
+toc;
+%% Calculating dimensions of dipole
 minp = min(p);
 maxp = max(p);
 [maxmaxp, maxaxis] = max(max(p));
@@ -20,11 +25,6 @@ lambda=2/3*length;
 f=c/lambda;
 w=2*pi*f;
 k=w/c;
-%% faces and unique vertices
-tic;
-[p, t] = ArbitraryAntenna.RemoveEqualPoints(stl);
-t = sort(t,2);
-toc;
 %% Gibson connectivity list
 tic;
 ConnectCell = ArbitraryAntenna.GibsonConnect(p, t);
@@ -54,30 +54,30 @@ tic;
 toc;
 %% Calculating E
 tic;
-[Exy, Exz, Eyz, size] = ArbitraryAntenna.EField(Center, w, k, mu0, J, -1, 1, -1, 1, -1, 1, 100, A);
+[Eyx, Ezx, Eyz, size] = ArbitraryAntenna.EField(Center, w, k, mu0, J, -1, 1, -1, 1, -1, 1, 100, A);
 toc;
 
-Exy = Exy/max(max(Exy));
-Exz = Exz/max(max(Exz));
+Eyx = Eyx/max(max(Eyx));
+Ezx = Ezx/max(max(Ezx));
 Eyz = Eyz/max(max(Eyz));
 %% Plotting E
 figure(1)
-pcolor(size, size, abs(real(Exy.')))
+pcolor(size, size, abs(real(Eyx.')))
 shading interp
 colorbar
-caxis([0 0.1])
-title('xy plane');
+caxis([0 0.3])
+title('yx plane');
 
 figure(2)
-pcolor(size, size, abs(real(Exz.')))
+pcolor(size, size, abs(real(Ezx.')))
 shading interp
 colorbar
-caxis([0 0.1])
-title('xz plane');
+% caxis([0 0.3])
+title('zx plane');
 
 figure(3)
 pcolor(size, size, abs(real(Eyz.')))
 shading interp
 colorbar
-caxis([0 0.1])
+% caxis([0 0.3])
 title('yz plane');
