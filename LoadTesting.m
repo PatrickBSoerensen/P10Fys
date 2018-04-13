@@ -1,3 +1,11 @@
+%% load STL file into matlab
+stl = stlread('AntBinMesh.stl');
+% Calculating dimensions of dipole
+minp = min(p);
+maxp = max(p);
+[maxmaxp, maxaxis] = max(max(p));
+radius = abs(min(min(p))+min(min(p)));
+length = (maxmaxp+minp(maxaxis));
 %% konstants
 eps0=8.854187817*10^-12; %F/m
 mu0=4*pi*10^-7; %N/A^2
@@ -7,8 +15,11 @@ f=146.5*10^6;
 lambda=c/f;
 w=2*pi*f;
 k=w/c;
-%% load STL file into matlab
-stl = stlread('AntBinMesh.stl');
+
+lambda=2/3*length;
+f=c/lambda;
+w=2*pi*f;
+k=w/c;
 %% faces and unique vertices
 tic;
 [p, t] = ArbitraryAntenna.RemoveEqualPoints(stl);
@@ -39,32 +50,34 @@ I2 = ArbitraryAntenna.SelfTerm(p, t);
 toc;
 %MoM
 tic;
-[Z, b, x] = ArbitraryAntenna.MoM(p, t, EdgeList, BasisNumber, BasisLA, A, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k, SubTri);
+[Z, b, J] = ArbitraryAntenna.MoM(p, t, EdgeList, BasisNumber, BasisLA, A, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k, SubTri);
 toc;
 %% Calculating E
 tic;
-[E, z, x] = ArbitraryAntenna.EFieldXZ(Center, w, k, mu0, x, -5, 5, -5, 5, 1000, 1000, A);
+[Exy, Exz, Eyz, size] = ArbitraryAntenna.EField(Center, w, k, mu0, J, -1, 1, -1, 1, -1, 1, 100, A);
 toc;
+
+Exy = Exy/max(max(Exy));
+Exz = Exz/max(max(Exz));
+Eyz = Eyz/max(max(Eyz));
 %% Plotting E
 figure(1)
-pcolor(z, x, abs(real(E.')))
+pcolor(size, size, abs(real(Exy.')))
 shading interp
 colorbar
-caxis([0 4*10^(2)])
-minp = min(p);
-maxp = max(p);
-[maxmaxp, maxaxis] = max(max(p));
-r = abs(min(min(p))+min(min(p)));
-l = (maxmaxp+minp(maxaxis));
-rectangle('Position',[-r -l/2 2*r l],'Curvature',1);
-    %% Emission
-%     r = linspace(0,10,100);
-%     E = zeros(100,100);
-%              for i=1:length(r)
-%                 
-%                 g = exp(-1i.*k.*r)./(4.*pi.*r);
-%                 G = g.*((1+1i./(k*r)-1./((k*r).^2)) - ...
-%                             ((rx(i,:)).^2)./(r.^2).*(1+3i./(k*r)-3./((k*r).^2)));
-%                 E(i,:) = E(i,:)+G.*ant.Jthe(i);
-%              end
+caxis([0 0.1])
+title('xy plane');
 
+figure(2)
+pcolor(size, size, abs(real(Exz.')))
+shading interp
+colorbar
+caxis([0 0.1])
+title('xz plane');
+
+figure(3)
+pcolor(size, size, abs(real(Eyz.')))
+shading interp
+colorbar
+caxis([0 0.1])
+title('yz plane');

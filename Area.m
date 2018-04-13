@@ -23,7 +23,7 @@ classdef Area
             obj.mu0 = mu0;
         end
         
-        function ThreeDplot(obj, opl1, opl2, ant,k, str)
+        function ThreeDplot(obj, opl1, opl2, ant, k, str)
             %% Far Field 3d
         phi=linspace(0,2*pi,opl1);
         theta=linspace(0,pi,opl2);
