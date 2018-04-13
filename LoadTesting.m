@@ -41,7 +41,22 @@ toc;
 tic;
 [Z, b, x] = ArbitraryAntenna.MoM(p, t, EdgeList, BasisNumber, BasisLA, A, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k, SubTri);
 toc;
-            
+%% Calculating E
+tic;
+[E, z, x] = ArbitraryAntenna.EFieldXZ(Center, w, k, mu0, x, -5, 5, -5, 5, 1000, 1000, A);
+toc;
+%% Plotting E
+figure(1)
+pcolor(z, x, abs(real(E.')))
+shading interp
+colorbar
+caxis([0 4*10^(2)])
+minp = min(p);
+maxp = max(p);
+[maxmaxp, maxaxis] = max(max(p));
+r = abs(min(min(p))+min(min(p)));
+l = (maxmaxp+minp(maxaxis));
+rectangle('Position',[-r -l/2 2*r l],'Curvature',1);
     %% Emission
 %     r = linspace(0,10,100);
 %     E = zeros(100,100);

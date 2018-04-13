@@ -23,7 +23,7 @@ load('our');
 p=100*p;    %sphere radius is 100 m
 
 k=omega/c_;
-K=j*k;
+K=1i*k;
 
 for m=1:EdgesTotal
     Point1=Center(:,TrianglePlus(m));

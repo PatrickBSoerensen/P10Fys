@@ -17,7 +17,7 @@ load('mesh2');
 load('current');
 
 k=omega/c_;
-K=j*k;
+K=1i*k;
 
 for m=1:EdgesTotal
     Point1=Center(:,TrianglePlus(m));
