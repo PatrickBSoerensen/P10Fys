@@ -130,7 +130,7 @@ classdef MoM
                 r = sqrt((rz(i,:).').^2+(rx(i,:)).^2);
                 
                 B = -(1i.*w.*area.mu0);
-                g = B.*exp(-1i.*k.*r)./(4.*pi.*r);
+                g = B.*exp(-1i.*k.*r)./(2.*pi.*r);
                 G = g.*((1+1i./(k*r)-1./((k*r).^2)) - ...
                             ((rx(i,:)).^2)./(r.^2).*(1+3i./(k*r)-3./((k*r).^2)));
                 area.Ethethe = area.Ethethe+G.*ant.Jthe(i).*ant.CoordTest(i,3);
