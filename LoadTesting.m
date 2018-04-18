@@ -1,5 +1,8 @@
 %% load STL file into matlab
 stl = stlread('AntBinMesh.stl');
+% stl = stlread('AntBinMesh2.stl');
+% stl = stlread('AntBinMesh2556.stl');
+% stl = stlread('BinMeshHigh.stl');
 % stl = stlread('HalfAntMany.stl');
 %% faces and unique vertices
 tic;
@@ -14,7 +17,7 @@ maxp = max(p);
 [maxmaxp, maxaxis] = max(max(p));
 radius = abs(min(min(p))+min(min(p)));
 length = (maxmaxp+minp(maxaxis));
-%% konstants
+%% constants
 eps0=8.854187817*10^-12; %F/m
 mu0=4*pi*10^-7; %N/A^2
 c=1/sqrt(eps0*mu0); %m/s
@@ -32,7 +35,7 @@ k=w/c;
 tic;
 fprintf('\n')
 disp('Connectivity Cell')
-ConnectCell = ArbitraryAntenna.GibsonConnect(p, t);
+ConnectCell = ArbitraryAntenna.Connectivity(p, t);
 toc;
 %% Calculating areas for Simplex Coords
 tic;
@@ -43,7 +46,7 @@ toc;
 tic;
 fprintf('\n')
 disp('Calculating areals for subtriangles')
-[SubTri, Integral] = ArbitraryAntenna.SubTriangles(p, t, Center);
+[SubTri] = ArbitraryAntenna.SubTriangles(p, t, Center);
 toc;
 %% Basis Function setup
 tic;
