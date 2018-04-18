@@ -119,7 +119,6 @@ classdef ArbitraryAntenna
         function [SubTri] = SubTriangles(p, t, Center)
             % Method for creating subtriangles
             TotTri = length(t);
-%             SubTri = zeros(1,9,TotTri);
             
             for i=1:TotTri
                 % Triangle points index
@@ -168,7 +167,7 @@ classdef ArbitraryAntenna
                 % Point index
                 n1 = t(i,1);
                 n2 = t(i,2);
-                n3 = t(i,3); 
+                n3 = t(i,3);
                 % vertices coordinates
                 v1 = p(n1,:);
                 v2 = p(n2,:);
@@ -411,7 +410,13 @@ classdef ArbitraryAntenna
                         % evaluated in center points
                         zMP = A(PlusOuter,1).*(1/4*RhoP(EdgeNumberOuter(i),:));
                         zMM = A(MinusOuter,2).*(1/4*RhoM(EdgeNumberOuter(i),:));
-                    
+                            
+                        
+                        % Subtriangles for the inner triangles basis
+                        % functions
+                        SPO = reshape(SubTri(:,:,PlusOuter),[9,3]);
+                        SMO = reshape(SubTri(:,:,MinusOuter),[9,3]);
+                            
                         %Inner triangle basis functions loop
                         for j = 1:3
                             % inner(1,:) and inner(2,:) are edge points
@@ -446,16 +451,16 @@ classdef ArbitraryAntenna
                             g = I2(y);
                             
                             % Intermediate calculations
-                            pp = sqrt(sum((Center(PlusOuter,:)-SPI).^2,2));
-                            mp = sqrt(sum((Center(MinusOuter,:)-SPI).^2,2));
-                            pm = sqrt(sum((Center(PlusOuter,:)-SMI).^2,2));
-                            mm = sqrt(sum((Center(MinusOuter,:)-SMI).^2,2));
+                            ppo = sqrt(sum((Center(PlusOuter,:)-SPI).^2,2));
+                            mpo = sqrt(sum((Center(MinusOuter,:)-SPI).^2,2));
+                            pmo = sqrt(sum((Center(PlusOuter,:)-SMI).^2,2));
+                            mmo = sqrt(sum((Center(MinusOuter,:)-SMI).^2,2));
                             
                             % greens for different couplings
-                            gPP = exp(1i.*k.*pp)./pp;
-                            gMP = exp(1i.*k.*mp)./mp;
-                            gPM = exp(1i.*k.*pm)./pm;
-                            gMM = exp(1i.*k.*mm)./mm;
+                            gPP = exp(1i.*k.*ppo)./ppo;
+                            gMP = exp(1i.*k.*mpo)./mpo;
+                            gPM = exp(1i.*k.*pmo)./pmo;
+                            gMM = exp(1i.*k.*mmo)./mmo;
                         
                             if PlusOuter==PlusInner
                                 Z(EdgeNumberOuter(i), EdgeNumberInner(j)) = ...
@@ -470,55 +475,58 @@ classdef ArbitraryAntenna
                             end
                             if PlusOuter==MinusInner 
                                 Z(EdgeNumberOuter(i), EdgeNumberInner(j)) = ...
-                                (BasisLA(EdgeNumberOuter(i),2)*BasisLA(EdgeNumberInner(j),4))/(36*pi)...
+                                (BasisLA(EdgeNumberOuter(i),2)*BasisLA(EdgeNumberInner(j),4))/(4*pi)...
                                 *((dot(zMP, zNM)-1/k^2) * g)...
                                 + Z(EdgeNumberOuter(i), EdgeNumberInner(j));
                             else
                                 Z(EdgeNumberOuter(i), EdgeNumberInner(j)) = ...
-                                (BasisLA(EdgeNumberOuter(i),2)*BasisLA(EdgeNumberInner(j),4))/(4*pi)...
+                                (BasisLA(EdgeNumberOuter(i),2)*BasisLA(EdgeNumberInner(j),4))/(36*pi)...
                                 *sum((dot(zMP, zNM)+1/k^2) * gPM )...
                                 + Z(EdgeNumberOuter(i), EdgeNumberInner(j));
                             end
                             if MinusOuter==PlusInner        
                                 Z(EdgeNumberOuter(i), EdgeNumberInner(j)) = ...
-                                (BasisLA(EdgeNumberOuter(i),2)*BasisLA(EdgeNumberInner(j),4))/(36*pi)...
+                                (BasisLA(EdgeNumberOuter(i),2)*BasisLA(EdgeNumberInner(j),4))/(4*pi)...
                                 *((dot(zMM, zNP)-1/k^2) * g)...
                                 + Z(EdgeNumberOuter(i), EdgeNumberInner(j));
                             else
                                 Z(EdgeNumberOuter(i), EdgeNumberInner(j)) = ...
-                                (BasisLA(EdgeNumberOuter(i),2)*BasisLA(EdgeNumberInner(j),4))/(4*pi)...
+                                (BasisLA(EdgeNumberOuter(i),2)*BasisLA(EdgeNumberInner(j),4))/(36*pi)...
                                 *sum((dot(zMM, zNP)+1/k^2) * gMP)...
                                 + Z(EdgeNumberOuter(i), EdgeNumberInner(j));
                             end
                             if MinusOuter==MinusInner
                                 Z(EdgeNumberOuter(i), EdgeNumberInner(j)) = ...
-                                (BasisLA(EdgeNumberOuter(i),2)*BasisLA(EdgeNumberInner(j),4))/(36*pi)...
+                                (BasisLA(EdgeNumberOuter(i),2)*BasisLA(EdgeNumberInner(j),4))/(4*pi)...
                                 *((dot(zMM, zNM)-1/k^2) * g)...
                                 + Z(EdgeNumberOuter(i), EdgeNumberInner(j));
                             else
                                 Z(EdgeNumberOuter(i), EdgeNumberInner(j)) = ...
-                                (BasisLA(EdgeNumberOuter(i),2)*BasisLA(EdgeNumberInner(j),4))/(4*pi)...
+                                (BasisLA(EdgeNumberOuter(i),2)*BasisLA(EdgeNumberInner(j),4))/(36*pi)...
                                 *sum((dot(zMM, zNM)-1/k^2) * gMM)...
-                                + Z(EdgeNumberOuter(i), EdgeNumberInner(j));           
+                                + Z(EdgeNumberOuter(i), EdgeNumberInner(j));
                             end
                         end
                         % Intermediate variables for b calculation
                         b1 = RhoP_(:,:,EdgeNumberOuter(i));
                         b2 = RhoM_(:,:,EdgeNumberOuter(i));
                         b3 = BasisLA(EdgeNumberOuter(i),2);
-                    
+                        % Ret arealer til positiv trekant og negativ trekant 
                         bCollect(EdgeNumberOuter(i),:) = sum((b1+b2).*b3./18);
                     end    
                 end
             end
             % Final b calculation
             b = dot(Ei,bCollect,2);
+%             Upper = triu(Z,1);
+%             Lower = tril(Z,-1);
+%             Z = Z + Upper.' + Lower.';
             % Z\b is a newer faster version of inv(Z)*b
             a = Z\b;
             J = a.*(RhoP+RhoM);
         end
         
-        function [Exy, Exz, Eyz, xrange, yrange, zrange] = EField(Center, w, k, mu, J,...
+        function [Exy, Exz, Eyz, xrange, yrange, zrange, Exy2, Exz2, Eyz2] = EField(Center, w, k, mu, J,...
                 xmin, xmax, zmin, zmax, ymin, ymax, steps, Area, LA, RhoP_, RhoM_, a, SubTri, t, EdgeList)
             xrange = linspace(xmin, xmax, steps);
             yrange = linspace(ymin, ymax, steps);
@@ -527,6 +535,10 @@ classdef ArbitraryAntenna
             Exy = zeros(steps,steps);
             Exz = zeros(steps,steps);
             Eyz = zeros(steps,steps);
+            
+            Exy2 = zeros(steps,steps);
+            Exz2 = zeros(steps,steps);
+            Eyz2 = zeros(steps,steps);
             
             for j=1:3
                 if j == 1
@@ -544,7 +556,7 @@ classdef ArbitraryAntenna
                 end
                 
                 B = (-1i.*w.*mu);
-                
+                I = eye(500,500);
                 for i=1:length(Center)
                     Edge(1,:) = t(i,1:2);
                     Edge(2,:) = t(i,2:3);
@@ -570,12 +582,15 @@ classdef ArbitraryAntenna
                             r = sqrt((rz(PlusEdge,:)).^2+(ry(PlusEdge,:).').^2+(rx(PlusEdge,:)).^2);
                
                             g = B.*exp(1i.*k.*r)./(4.*pi.*r);
-%                     
-%                     hejtest = dot(reshape(SubTri(:,:,PlusEdge),[9,3]),rr,2);
-                    
+                                                        
                             Exy = Exy + 1/9 * g .* a(PlusEdge) .* LA(PlusEdge,1) ...
                             .* sum(dot(reshape(RhoP_(:,:,PlusEdge),[9,3]), ...
                             exp(1i.*k.*reshape(SubTri(:,:,PlusEdge),[9,3])),2));
+                       
+%                             G = g*(I*(1+1./(k*r)-1./(k*r).^2)-rr.*rr.'./(r).^2*(1+3*1i./(k*r)-3./(k*r)^2));
+%                             Exy2 = Exy2 + 1/9 * G .* a(PlusEdge) .* LA(PlusEdge,1) ...
+%                             .* sum(dot(reshape(RhoP_(:,:,PlusEdge),[9,3]), ...
+%                             exp(1i.*k.*reshape(SubTri(:,:,PlusEdge),[9,3])),2));
                        
                             %Minus
                             rr(:,1) = rx(MinusEdge,:).';
@@ -584,10 +599,15 @@ classdef ArbitraryAntenna
                             r = sqrt((rz(MinusEdge,:)).^2+(ry(MinusEdge,:).').^2+(rx(MinusEdge,:)).^2);
                
                             g = B.*exp(1i.*k.*r)./(4.*pi.*r);
-                    
+                            
                             Exy = Exy + 1/9 * g .* a(MinusEdge) .* LA(MinusEdge,1) ...
                             .* sum(dot(reshape(RhoM_(:,:,MinusEdge),[9,3]), ...
-                            exp(1i.*k.*reshape(SubTri(:,:,MinusEdge),[9,3])),2));                    
+                            exp(1i.*k.*reshape(SubTri(:,:,MinusEdge),[9,3])),2));
+                        
+%                             G = g*(I*(1+1./(k*r)-1./(k*r).^2)-rr.*rr.'./(r).^2*(1+3*1i./(k*r)-3./(k*r)^2));
+%                             Exy2 = Exy2 + 1/9 * G .* a(PlusEdge) .* LA(PlusEdge,1) ...
+%                             .* sum(dot(reshape(RhoM_(:,:,MinusEdge),[9,3]), ...
+%                             exp(1i.*k.*reshape(SubTri(:,:,MinusEdge),[9,3])),2));
                         elseif j==2
                             rr(:,1) = rx(PlusEdge,:).';
                             rr(:,2) = ry(PlusEdge,:).';
@@ -595,11 +615,15 @@ classdef ArbitraryAntenna
                             r = sqrt((rz(PlusEdge,:).').^2+(ry(PlusEdge,:)).^2+(rx(PlusEdge,:)).^2);
                 
                             g = B.*exp(1i.*k.*r)./(4.*pi.*r);
-                    
+                             
                             Exz = Exz + 1/9 *  g .* a(PlusEdge) .* LA(PlusEdge,1) ...
                             .* sum(dot(reshape(RhoP_(:,:,PlusEdge),[9,3]), ...
                                exp(1i.*k.*reshape(SubTri(:,:,PlusEdge),[9,3])),2));
-                    
+                            
+%                             G = g*(I*(1+1./(k*r)-1./(k*r).^2)-rr.*rr.'./(r).^2*(1+3*1i./(k*r)-3./(k*r)^2));
+%                             Exz2 = Exz2 + 1/9 * G .* a(PlusEdge) .* LA(PlusEdge,1) ...
+%                             .* sum(dot(reshape(RhoP_(:,:,PlusEdge),[9,3]), ...
+%                             exp(1i.*k.*reshape(SubTri(:,:,PlusEdge),[9,3])),2));
                             %Minus
                             rr(:,1) = rx(MinusEdge,:).';
                             rr(:,2) = ry(MinusEdge,:).';
@@ -607,10 +631,15 @@ classdef ArbitraryAntenna
                             r = sqrt((rz(MinusEdge,:).').^2+(ry(MinusEdge,:)).^2+(rx(MinusEdge,:)).^2);
                
                             g = B.*exp(1i.*k.*r)./(4.*pi.*r);
-                    
+                             
                             Exz = Exz + 1/9 * g .* a(MinusEdge) .* LA(MinusEdge,1) ...
                             .* sum(dot(reshape(RhoM_(:,:,MinusEdge),[9,3]), ...
-                               exp(1i.*k.*reshape(SubTri(:,:,MinusEdge),[9,3])),2));    
+                               exp(1i.*k.*reshape(SubTri(:,:,MinusEdge),[9,3])),2)); 
+                        
+%                             G = g*(I*(1+1./(k*r)-1./(k*r).^2)-rr.*rr.'./(r).^2*(1+3*1i./(k*r)-3./(k*r)^2));
+%                             Exz2 = Exz2 + 1/9 * G .* a(PlusEdge) .* LA(PlusEdge,1) ...
+%                                 .* sum(dot(reshape(RhoM_(:,:,MinusEdge),[9,3]), ...
+%                             exp(1i.*k.*reshape(SubTri(:,:,MinusEdge),[9,3])),2));
                         else
                             rr(:,1) = rx(PlusEdge,:).';
                             rr(:,2) = ry(PlusEdge,:).';
@@ -618,11 +647,15 @@ classdef ArbitraryAntenna
                             r = sqrt((rz(PlusEdge,:)).^2+(ry(PlusEdge,:).').^2+(rx(PlusEdge,:)).^2);
                
                             g = B.*exp(1i.*k.*r)./(4.*pi.*r);
-                    
+                            
                             Eyz = Eyz + 1/9 * g .* a(PlusEdge) .* LA(PlusEdge,1) ...
                             .* sum(dot(reshape(RhoP_(:,:,PlusEdge),[9,3]), ...
                             exp(1i.*k.*reshape(SubTri(:,:,PlusEdge),[9,3])),2));
-                       
+                            
+%                             G = g*(I*(1+1./(k*r)-1./(k*r).^2)-rr.*rr.'./(r.^2).*(1+3*1i./(k*r)-3./(k*r)^2));
+%                             Eyz2 = Eyz2 + 1/9 * G .* a(PlusEdge) .* LA(PlusEdge,1) ...
+%                             .* sum(dot(reshape(RhoP_(:,:,PlusEdge),[9,3]), ...
+%                             exp(1i.*k.*reshape(SubTri(:,:,PlusEdge),[9,3])),2));
                             %Minus
                             rr(:,1) = rx(MinusEdge,:).';
                             rr(:,2) = ry(MinusEdge,:).';
@@ -630,10 +663,16 @@ classdef ArbitraryAntenna
                             r = sqrt((rz(MinusEdge,:)).^2+(ry(MinusEdge,:).').^2+(rx(MinusEdge,:)).^2);
                
                             g = B.*exp(1i.*k.*r)./(4.*pi.*r);
-                    
+                            
                             Eyz = Eyz + 1/9 * g .* a(MinusEdge) .* LA(MinusEdge,1) ...
                             .* sum(dot(reshape(RhoM_(:,:,MinusEdge),[9,3]), ...
                             exp(1i.*k.*reshape(SubTri(:,:,MinusEdge),[9,3])),2));
+                            
+                        
+%                             G = g*(I*(1+1./(k*r)-1./(k*r).^2)-rr.*rr.'./(r).^2*(1+3*1i./(k*r)-3./(k*r)^2));
+%                             Eyz2 = Eyz2 + 1/9 * G .* a(PlusEdge) .* LA(PlusEdge,1) ...
+%                           .* sum(dot(reshape(RhoM_(:,:,MinusEdge),[9,3]), ...
+%                             exp(1i.*k.*reshape(SubTri(:,:,MinusEdge),[9,3])),2));
                         end    
                     end    
                 end
