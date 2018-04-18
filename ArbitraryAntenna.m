@@ -45,6 +45,8 @@ classdef ArbitraryAntenna
             end
             % Removing the temporary index from p
             p(:,4) = [];
+            
+            t = sort(t,2);
         end
         
         function [ConnectCell] = Connectivity(p, t)
