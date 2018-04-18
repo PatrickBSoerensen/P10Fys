@@ -107,30 +107,30 @@ caxis([0 0.1])
 xlabel('z');
 ylabel('y');
 title('yz plane');
-
-figure(4)
-pcolor(x, y, abs((Exy2)))
-shading interp
-colorbar
-% caxis([0 0.1])
-xlabel('x');
-ylabel('y');
-title('yx plane');
-
-figure(5)
-pcolor(x, z, abs((Exz2)))
-shading interp
-colorbar
-% caxis([0 0.1])
-xlabel('x');
-ylabel('z');
-title('zx plane');
-
-figure(6)
-pcolor(z, y, abs((Eyz2)))
-shading interp
-colorbar
-% caxis([0 0.1])
-xlabel('z');
-ylabel('y');
-title('yz plane');
+% 
+% figure(4)
+% pcolor(x, y, abs((Exy2)))
+% shading interp
+% colorbar
+% % caxis([0 0.1])
+% xlabel('x');
+% ylabel('y');
+% title('yx plane');
+% 
+% figure(5)
+% pcolor(x, z, abs((Exz2)))
+% shading interp
+% colorbar
+% % caxis([0 0.1])
+% xlabel('x');
+% ylabel('z');
+% title('zx plane');
+% 
+% figure(6)
+% pcolor(z, y, abs((Eyz2)))
+% shading interp
+% colorbar
+% % caxis([0 0.1])
+% xlabel('z');
+% ylabel('y');
+% title('yz plane');
