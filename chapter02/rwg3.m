@@ -8,16 +8,15 @@
 %   Dielectric constant (SI)        epsilon_
 %   Magnetic permeability (SI)      mu_
 %
-%   Copyright 2002 AEMM. Revision 2002/03/26 
-%   Chapter 2/Appendix B
+%   Copyright 2002 AEMM. Revision 2002/03/11 
+%   Chapter 2
 
 clear all
 %Load the data
 load('mesh2');
 
 %EM parameters (f=3e8 means that f=300 MHz) 
-
-f           =146.5*10^6;  
+f           =3e8;  
 epsilon_    =8.854e-012;
 mu_         =1.257e-006;
 %Speed of light
@@ -47,14 +46,14 @@ FactorFi=FactorFi.';
 %Impedance matrix Z
 tic; %start timer
 
-Z =  impmet( EdgesTotal,TrianglesTotal,...
+Z=  impmet( EdgesTotal,TrianglesTotal,...
             EdgeLength,K,...
             Center,Center_,...
             TrianglePlus,TriangleMinus,...
             RHO_P,RHO_M,...
             RHO__Plus,RHO__Minus,...
-            FactorA,FactorFi,Integral);   
-        
+            FactorA,FactorFi);   
+
 toc %elapsed time
 
 %Save result
