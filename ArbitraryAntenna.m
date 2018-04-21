@@ -563,6 +563,11 @@ classdef ArbitraryAntenna
                     end    
                 end
             end
+            % Final b calculation
+            b = dot(Ei,bCollect,2);
+            Upper = triu(Z,1);
+            Lower = tril(Z,-1);
+            Z = Z + Upper.' + Lower.';
             % Z\b is a newer faster version of inv(Z)*b
             a = Z\b;
             J = a.*(BasisLA(:,1).*RhoP+BasisLA(:,3).*RhoM);

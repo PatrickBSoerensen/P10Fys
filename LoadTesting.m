@@ -142,7 +142,11 @@ caxis([0 0.1])
 xlabel('z');
 ylabel('y');
 title('yz plane');
+<<<<<<< HEAD
 
+=======
+% 
+>>>>>>> 56fefb2e9f2103f02173acd0c324b4ca9d130450
 % figure(4)
 % pcolor(x, y, abs((Exy2)))
 % shading interp
