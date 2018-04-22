@@ -1,7 +1,7 @@
 %% load STL file into matlab
 % stl = stlread('AntBinMesh.stl');
-% stl = stlread('Dipole10cm.stl');
-stl = stlread('Dipole10cmT1104.stl');
+stl = stlread('Dipole10cm.stl');
+% stl = stlread('Dipole10cmT1104.stl');
 % stl = stlread('AntBinMesh2556.stl');
 % stl = stlread('BinMeshHigh.stl');
 % stl = stlread('HalfAntMany.stl');
@@ -69,8 +69,12 @@ toc;
 tic;
 fprintf('\n')
 disp('MoM')
+
+[ZN,aN, bN ] = ArbitraryAntenna.MoMLoopCut(p, t, EdgeList, BasisNumber, BasisLA, BasisArea, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k, w, mu0, eps0, SubTri, 0, 1, 0);
+toc;
 [Z, b, J, a] = ArbitraryAntenna.MoM(p, t, EdgeList, BasisNumber, BasisLA, BasisArea, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k, SubTri, 0, 1, 0);
 toc;
+sum(sum(ZN==Z))
 %% Current calc in center Triangle
 Jt = zeros(length(t),3);
 for i=1:length(t)
@@ -80,8 +84,7 @@ for i=1:length(t)
     Edge(3,2) = t(i,3);
     [BasisNumberJ] = ArbitraryAntenna.EdgeNumbering(EdgeList, Edge);
     
-    Jt(i,:) = sum(J(BasisNumberJ,:),1)/3; 
-    
+    Jt(i,:) = sum(J(BasisNumberJ,:),1)/3;
 end
 %% Plot current Edges
 pJ = (p(EdgeList(:,1),:)-p(EdgeList(:,2),:))/2;
@@ -97,15 +100,8 @@ title('Current in y')
 tic;
 fprintf('\n')
 disp('Calculating E-field')
-% [Eyx, Ezx, Eyz, x, y, z] = ArbitraryAntenna.EField(Center, w, k, mu0, J, -25, 325, -10, 10, -10, 10, 200, BasisArea, BasisLA, RhoP_, RhoM_, a, SubTri, t, EdgeList);
 
-[Eyx, Ezx, Eyz, x, y, z, Exyx, Exzx, Eyzx, Exyy, Exzy, Eyzy, Exyz, Exzz, Eyzz] = ArbitraryAntenna.EField(Center, w, k, mu0, J, -5, 5, -5, 5, -5, 5, 100, BasisArea, BasisLA, RhoP_, RhoM_, a, SubTri, t, EdgeList);
-
-% [Exy, Exz, Eyz, xrange, yrange, zrange] = ArbitraryAntenna.EFieldAlt(pJ, w, k, mu0,...
-%                 -5, 5, -5, 5, -5, 5, 500, BasisArea, RhoP_, RhoM_, a, SubTri);
-% 
-% [Exyx, Exyy, Exyz, xrange, yrange] = ArbitraryAntenna.EFieldXY(Center, pJ, w, k, mu0, Area,...
-%                 -5, 5, -5, 5, 50, BasisLA, RhoP_, RhoM_, a, SubTri, t, EdgeList);
+[Eyx, Ezx, Eyz, x, y, z, Exyx, Exzx, Eyzx, Exyy, Exzy, Eyzy, Exyz, Exzz, Eyzz] = ArbitraryAntenna.EField(Center, w, k, mu0, J, -5, 5, -5, 5, -5, 5, 1000, BasisArea, BasisLA, RhoP_, RhoM_, a, SubTri, t, EdgeList);
 toc;
 
 Exyx = Exyx/max(max(Exyx));
@@ -121,7 +117,7 @@ Eyzy = Eyzy/max(max(Eyzy));
 Eyzz = Eyzz/max(max(Eyzz));
 %% Plotting E
 figure(4)
-pcolor(abs(Exyx))
+pcolor(x, y, abs(Exyx).')
 shading interp
 colorbar
 caxis([0 0.1])
@@ -130,7 +126,7 @@ ylabel('y');
 title('xy - x plane');
 
 figure(5)
-pcolor(abs((Exyy)))
+pcolor(x, y, abs(Exyy).')
 shading interp
 colorbar
 caxis([0 0.1])
@@ -139,7 +135,7 @@ ylabel('y');
 title('xyy plane');
 
 figure(6)
-pcolor(abs((Exyz)))
+pcolor(x, y, abs(Exyz).')
 shading interp
 colorbar
 caxis([0 0.1])
@@ -148,7 +144,7 @@ ylabel('y');
 title('xyz plane');
 
 figure(7)
-pcolor(abs(Exyx+Exyy+Exyz))
+pcolor(x, y, abs(Exyx+Exyy+Exyz).'/3)
 shading interp
 colorbar
 caxis([0 0.1])
@@ -157,7 +153,7 @@ ylabel('y');
 title('xy sum plane');
 %%
 figure(8)
-pcolor(x, z, abs(Exzx))
+pcolor(x, z, abs(Exzx).')
 shading interp
 colorbar
 caxis([0 0.1])
@@ -166,7 +162,7 @@ ylabel('z');
 title('xzx plane');
 
 figure(9)
-pcolor(x, z, abs((Exzy)))
+pcolor(x, z, abs(Exzy).')
 shading interp
 colorbar
 caxis([0 0.1])
@@ -175,7 +171,7 @@ ylabel('z');
 title('xzy plane');
 
 figure(10)
-pcolor(x, z, abs((Exzz)))
+pcolor(x, z, abs(Exzz).')
 shading interp
 colorbar
 caxis([0 0.1])
@@ -184,7 +180,7 @@ ylabel('z');
 title('xzz plane');
 
 figure(11)
-pcolor(x, z, abs(Exzx+Exzy+Exzz))
+pcolor(x, z, abs(Exzx+Exzy+Exzz).'/3)
 shading interp
 colorbar
 caxis([0 0.1])
@@ -193,7 +189,7 @@ ylabel('z');
 title('xz sum plane');
 %%
 figure(12)
-pcolor(z, y, abs(Eyzx))
+pcolor(z, y, abs(Eyzx).')
 shading interp
 colorbar
 caxis([0 0.1])
@@ -202,7 +198,7 @@ ylabel('y');
 title('xzx plane');
 
 figure(13)
-pcolor(z, y, abs((Eyzy)))
+pcolor(z, y, abs(Eyzy).')
 shading interp
 colorbar
 caxis([0 0.1])
@@ -211,7 +207,7 @@ ylabel('y');
 title('xzy plane');
 
 figure(14)
-pcolor(z, y, abs((Eyzz)))
+pcolor(z, y, abs(Eyzz).')
 shading interp
 colorbar
 caxis([0 0.1])
@@ -220,7 +216,7 @@ ylabel('y');
 title('xzz plane');
 
 figure(15)
-pcolor(z, y, abs(Eyzx+Eyzy+Eyzz))
+pcolor(z, y, abs(Eyzx+Eyzy+Eyzz).')
 shading interp
 colorbar
 caxis([0 0.1])
