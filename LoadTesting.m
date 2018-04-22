@@ -1,7 +1,7 @@
 %% load STL file into matlab
 % stl = stlread('AntBinMesh.stl');
-stl = stlread('Dipole10cm.stl');
-% stl = stlread('Dipole10cmT1104.stl');
+% stl = stlread('Dipole10cm.stl');
+stl = stlread('Dipole10cmT1104.stl');
 % stl = stlread('AntBinMesh2556.stl');
 % stl = stlread('BinMeshHigh.stl');
 % stl = stlread('HalfAntMany.stl');
@@ -99,77 +99,131 @@ fprintf('\n')
 disp('Calculating E-field')
 % [Eyx, Ezx, Eyz, x, y, z] = ArbitraryAntenna.EField(Center, w, k, mu0, J, -25, 325, -10, 10, -10, 10, 200, BasisArea, BasisLA, RhoP_, RhoM_, a, SubTri, t, EdgeList);
 
-% [Eyx, Ezx, Eyz, x, y, z, Exyx, Exzx, Eyzx, Exyy, Exzy, Eyzy, Exyz, Exzz, Eyzz] = ArbitraryAntenna.EField(Center, w, k, mu0, J, -5, 5, -5, 5, -5, 5, 500, BasisArea, BasisLA, RhoP_, RhoM_, a, SubTri, t, EdgeList);
+[Eyx, Ezx, Eyz, x, y, z, Exyx, Exzx, Eyzx, Exyy, Exzy, Eyzy, Exyz, Exzz, Eyzz] = ArbitraryAntenna.EField(Center, w, k, mu0, J, -5, 5, -5, 5, -5, 5, 100, BasisArea, BasisLA, RhoP_, RhoM_, a, SubTri, t, EdgeList);
 
 % [Exy, Exz, Eyz, xrange, yrange, zrange] = ArbitraryAntenna.EFieldAlt(pJ, w, k, mu0,...
 %                 -5, 5, -5, 5, -5, 5, 500, BasisArea, RhoP_, RhoM_, a, SubTri);
-
-[Exyx, Exyy, Exyz, xrange, yrange] = ArbitraryAntenna.EFieldXY(Center, pJ, w, k, mu0,...
-                -5, 5, -5, 5, 50, BasisLA, RhoP_, RhoM_, a, SubTri, t, EdgeList);
+% 
+% [Exyx, Exyy, Exyz, xrange, yrange] = ArbitraryAntenna.EFieldXY(Center, pJ, w, k, mu0, Area,...
+%                 -5, 5, -5, 5, 50, BasisLA, RhoP_, RhoM_, a, SubTri, t, EdgeList);
 toc;
 
 Exyx = Exyx/max(max(Exyx));
 Exyy = Exyy/max(max(Exyy));
 Exyz = Exyz/max(max(Exyz));
 
-% Exy = Exy/max(max(Exy));
-% Ezx = Ezx/max(max(Ezx));
-% Eyz = Eyz/max(max(Eyz));
+Exzx = Exzx/max(max(Exzx));
+Exzy = Exzy/max(max(Exzy));
+Exzz = Exzz/max(max(Exzz));
+
+Eyzx = Eyzx/max(max(Eyzx));
+Eyzy = Eyzy/max(max(Eyzy));
+Eyzz = Eyzz/max(max(Eyzz));
 %% Plotting E
-figure(5)
-pcolor(xrange, yrange, abs((Exyx)))
+figure(4)
+pcolor(abs(Exyx))
 shading interp
 colorbar
 caxis([0 0.1])
 xlabel('x');
 ylabel('y');
-title('yx plane');
+title('xy - x plane');
+
+figure(5)
+pcolor(abs((Exyy)))
+shading interp
+colorbar
+caxis([0 0.1])
+xlabel('x');
+ylabel('y');
+title('xyy plane');
 
 figure(6)
-pcolor(xrange, yrange, abs((Exyy)))
+pcolor(abs((Exyz)))
+shading interp
+colorbar
+caxis([0 0.1])
+xlabel('x');
+ylabel('y');
+title('xyz plane');
+
+figure(7)
+pcolor(abs(Exyx+Exyy+Exyz))
+shading interp
+colorbar
+caxis([0 0.1])
+xlabel('x');
+ylabel('y');
+title('xy sum plane');
+%%
+figure(8)
+pcolor(x, z, abs(Exzx))
 shading interp
 colorbar
 caxis([0 0.1])
 xlabel('x');
 ylabel('z');
-title('zx plane');
+title('xzx plane');
 
-figure(7)
-pcolor(xrange, yrange, abs((Exyz)))
+figure(9)
+pcolor(x, z, abs((Exzy)))
+shading interp
+colorbar
+caxis([0 0.1])
+xlabel('x');
+ylabel('z');
+title('xzy plane');
+
+figure(10)
+pcolor(x, z, abs((Exzz)))
+shading interp
+colorbar
+caxis([0 0.1])
+xlabel('x');
+ylabel('z');
+title('xzz plane');
+
+figure(11)
+pcolor(x, z, abs(Exzx+Exzy+Exzz))
+shading interp
+colorbar
+caxis([0 0.1])
+xlabel('x');
+ylabel('z');
+title('xz sum plane');
+%%
+figure(12)
+pcolor(z, y, abs(Eyzx))
 shading interp
 colorbar
 caxis([0 0.1])
 xlabel('z');
 ylabel('y');
-title('yz plane');
-<<<<<<< HEAD
+title('xzx plane');
 
-=======
-% 
->>>>>>> 56fefb2e9f2103f02173acd0c324b4ca9d130450
-% figure(4)
-% pcolor(x, y, abs((Exy2)))
-% shading interp
-% colorbar
-% % caxis([0 0.1])
-% xlabel('x');
-% ylabel('y');
-% title('yx plane');
-% 
-% figure(5)
-% pcolor(x, z, abs((Exz2)))
-% shading interp
-% colorbar
-% % caxis([0 0.1])
-% xlabel('x');
-% ylabel('z');
-% title('zx plane');
-% 
-% figure(6)
-% pcolor(z, y, abs((Eyz2)))
-% shading interp
-% colorbar
-% % caxis([0 0.1])
-% xlabel('z');
-% ylabel('y');
-% title('yz plane');
+figure(13)
+pcolor(z, y, abs((Eyzy)))
+shading interp
+colorbar
+caxis([0 0.1])
+xlabel('z');
+ylabel('y');
+title('xzy plane');
+
+figure(14)
+pcolor(z, y, abs((Eyzz)))
+shading interp
+colorbar
+caxis([0 0.1])
+xlabel('z');
+ylabel('y');
+title('xzz plane');
+
+figure(15)
+pcolor(z, y, abs(Eyzx+Eyzy+Eyzz))
+shading interp
+colorbar
+caxis([0 0.1])
+xlabel('z');
+ylabel('y');
+title('xz sum plane');
