@@ -97,14 +97,14 @@ sum(sum(ZN==Z))
 % title('Current in y')
 %% Calculating E
 %x-min/max, z-min/max, y-min/max
+norm = 1;
+PlotComp = 0;
 tic;
 fprintf('\n')
 disp('Calculating E-field')
-
 [Eyx, Ezx, Eyz, x, y, z, Exyx, Exzx, Eyzx, Exyy, Exzy, Eyzy, Exyz, Exzz, Eyzz] = ArbitraryAntenna.EField(Center, w, k, mu0, J, -5, 5, -5, 5, -5, 5, 100, BasisArea, BasisLA, RhoP_, RhoM_, a, SubTri, t, EdgeList);
-
 toc;
-
+if norm
 Exyx = Exyx/max(max(Exyx));
 Exyy = Exyy/max(max(Exyy));
 Exyz = Exyz/max(max(Exyz));
@@ -116,7 +116,9 @@ Exzz = Exzz/max(max(Exzz));
 Eyzx = Eyzx/max(max(Eyzx));
 Eyzy = Eyzy/max(max(Eyzy));
 Eyzz = Eyzz/max(max(Eyzz));
+end
 %% Plotting E
+if PlotComp
 figure(4)
 pcolor(x, y, abs(Exyx).')
 shading interp
@@ -143,6 +145,7 @@ caxis([0 0.1])
 xlabel('x');
 ylabel('y');
 title('xy plane - z comp');
+end
 
 figure(7)
 pcolor(x, y, sqrt(abs(Exyx).^2+abs(Exyy).^2+abs(Exyz).^2).')
@@ -152,7 +155,8 @@ caxis([0 0.1])
 xlabel('x');
 ylabel('y');
 title('xy plane E-size');
-%%
+
+if PlotComp
 figure(8)
 pcolor(x, z, abs(Exzx).')
 shading interp
@@ -179,6 +183,7 @@ caxis([0 0.1])
 xlabel('x');
 ylabel('z');
 title('xz plane - z comp');
+end
 
 figure(11)
 pcolor(x, z, sqrt(abs(Exzx).^2+abs(Exzy).^2+abs(Exzz).^2).')
@@ -188,7 +193,8 @@ caxis([0 0.1])
 xlabel('x');
 ylabel('z');
 title('xz  plane E-size');
-%%
+
+if PlotComp
 figure(12)
 pcolor(z, y, abs(Eyzx).')
 shading interp
@@ -215,6 +221,7 @@ caxis([0 0.1])
 xlabel('z');
 ylabel('y');
 title('xzz plane');
+end
 
 figure(15)
 pcolor(z, y, sqrt(abs(Eyzx).^2+abs(Eyzy).^2+abs(Eyzz).^2).')
@@ -223,4 +230,4 @@ colorbar
 caxis([0 0.1])
 xlabel('z');
 ylabel('y');
-title('xz sum plane');
+title('xz plane E-size');
