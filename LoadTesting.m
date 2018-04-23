@@ -25,8 +25,8 @@ Length = (maxmaxp-minp(maxaxis));
 eps0=8.854187817*10^-12; %F/m
 mu0=4*pi*10^-7; %N/A^2
 c=1/sqrt(eps0*mu0); %m/s
-
-lambda=2*Length;
+%2/5, 2/3, 2 
+lambda=2/5*Length;
 f=c/lambda;
 w=2*pi*f;
 k=w/c;
