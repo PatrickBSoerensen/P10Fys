@@ -1,7 +1,7 @@
 %% load STL file into matlab
 % stl = stlread('AntBinMesh.stl');
-stl = stlread('Dipole10cm.stl');
-% stl = stlread('Dipole10cmT1104.stl');
+% stl = stlread('Dipole10cm.stl');
+stl = stlread('Dipole10cmT1104.stl');
 % stl = stlread('AntBinMesh2556.stl');
 % stl = stlread('BinMeshHigh.stl');
 % stl = stlread('HalfAntMany.stl');
@@ -76,29 +76,6 @@ toc;
 toc;
 sum(sum(ZN==Z))
 %% Current calc in center Triangle
-Jt = zeros(length(t),3);
-for i=1:length(t)
-    Edge(1,:) = t(i,1:2);
-    Edge(2,:) = t(i,2:3);
-    Edge(3,1) = t(i,1);
-    Edge(3,2) = t(i,3);
-    [BasisNumberJ] = ArbitraryAntenna.EdgeNumbering(EdgeList, Edge);
-    
-    Jt(i,:) = sum(J(BasisNumberJ,:),1)/3;
-end
-%% Plot current Edges
-figure(2)
-plot(pJ(:,2),abs(J(:,2)),'*');
-title('Current in y, plottet at midpoint of edge')
-%% Plot current Triangles
-figure(3)
-plot(Center(:,2),abs(Jt(:,2)),'*');
-title('Current in y')
-%% Surf plot Current
-[TrianglePlus, TriangleMinus] = ArbitraryAntenna.PMTri(t, EdgeList);
-clear xthree; clear ythree; clear zthree;
-JT = sqrt(Jt(:,1).^2+Jt(:,2).^2+Jt(:,3).^2);
-J1 = sqrt(J(:,1).^2+J(:,2).^2+J(:,3).^2);
 Jface = 1:length(t);
 for n=1:length(t)
       Edge(1,:) = t(n,1:2);
@@ -120,6 +97,8 @@ for n=1:length(t)
             +a(MinusEdge)*BasisLA(MinusEdge,1)*RhoM(MinusEdge) + Jface(n);
     end
 end
+%% Surf plot Current
+[TrianglePlus, TriangleMinus] = ArbitraryAntenna.PMTri(t, EdgeList);
 
 Jmax=max(Jface);
 MaxCurrent=strcat(num2str(Jmax),'[A/m]')
