@@ -99,34 +99,41 @@ title('Current in y')
 clear xthree; clear ythree; clear zthree;
 JT = sqrt(Jt(:,1).^2+Jt(:,2).^2+Jt(:,3).^2);
 J1 = sqrt(J(:,1).^2+J(:,2).^2+J(:,3).^2);
-
+Jface = 1:length(t);
 for n=1:length(t)
-    i=[0 0 0];
-    for m=1:length(EdgeList)
-        IE=a(m)*BasisLA(m,2);
-        if(TrianglePlus(m)==n)
-            i=i+IE*RhoP(m,:)/(2*Area(TrianglePlus(m)));
-        end
-        if(TriangleMinus(m)==n)
-            i=i+IE*RhoM(m,:)/(2*Area(TriangleMinus(m)));
-        end
+      Edge(1,:) = t(n,1:2);
+      Edge(2,:) = t(n,2:3);
+      Edge(3,1) = t(n,1);
+      Edge(3,2) = t(n,3);
+      
+      EdgeNumber = ArbitraryAntenna.EdgeNumbering(EdgeList, Edge);
+    for y=1:3
+        FaceEdge(1:2) = EdgeList(EdgeNumber(y),1:2);
+        FaceEdgeP = [FaceEdge EdgeList(EdgeNumber(y),3)];
+        FaceEdgeP = sort(FaceEdgeP);
+        FaceEdgeM = [FaceEdge EdgeList(EdgeNumber(y),4)];
+        FaceEdgeM = sort(FaceEdgeM);
+        PlusEdge = find(sum(t==FaceEdgeP,2)==3);
+        MinusEdge = find(sum(t==FaceEdgeM,2)==3);
+        
+        Jface(n) = a(PlusEdge)*BasisLA(PlusEdge,1)*RhoP(PlusEdge)...
+            +a(MinusEdge)*BasisLA(MinusEdge,1)*RhoM(MinusEdge) + Jface(n);
     end
-    CurrentNorm(n)=abs(norm(i));
 end
 
-Jmax=max(CurrentNorm);
+Jmax=max(Jface);
 MaxCurrent=strcat(num2str(Jmax),'[A/m]')
-CurrentNorm1=CurrentNorm/max(CurrentNorm);
+CurrentNorm1=Jface/max(Jface);
 for m=1:length(t)
     N=t(m,1:3);
     xthree(m,1:3) = p(N,1);
     ythree(m,1:3) = p(N,2);
     zthree(m,1:3) = p(N,3);
 end
-ourC=repmat(CurrentNorm1,3,1);
+C=repmat(CurrentNorm1,3,1);
 
 figure(5)
-h=fill3(xthree', ythree', zthree', ourC); %linear scale
+h=fill3(xthree', ythree', zthree', C); %linear scale
 colormap gray;
 colorbar;
 axis('equal');
