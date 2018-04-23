@@ -41,7 +41,6 @@ for m=1:Triangles
 end
 C=repmat(CurrentNorm1,3,1);
 
-
 h=fill3(X, Y, Z, C); %linear scale
 colormap gray;
 axis('equal');
