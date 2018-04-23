@@ -101,7 +101,10 @@ tic;
 fprintf('\n')
 disp('Calculating E-field')
 
+<<<<<<< HEAD
 [Eyx, Ezx, Eyz, x, y, z, Exyx, Exzx, Eyzx, Exyy, Exzy, Eyzy, Exyz, Exzz, Eyzz] = ArbitraryAntenna.EField(Center, w, k, mu0, J, -5, 5, -5, 5, -5, 5, 100, BasisArea, BasisLA, RhoP_, RhoM_, a, SubTri, t, EdgeList);
+=======
+>>>>>>> 941932061bfcb9ff6a1c5d0e0b6297d6b6eae2ef
 toc;
 
 Exyx = Exyx/max(max(Exyx));
