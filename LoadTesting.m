@@ -1,7 +1,7 @@
 %% load STL file into matlab
 % stl = stlread('AntBinMesh.stl');
-% stl = stlread('Dipole10cm.stl');
-stl = stlread('Dipole10cmT1104.stl');
+stl = stlread('Dipole10cm.stl');
+% stl = stlread('Dipole10cmT1104.stl');
 % stl = stlread('AntBinMesh2556.stl');
 % stl = stlread('BinMeshHigh.stl');
 % stl = stlread('HalfAntMany.stl');
@@ -76,25 +76,25 @@ toc;
 [Z, b, J, a] = ArbitraryAntenna.MoM(p, t, EdgeList, BasisNumber, BasisLA, BasisArea, RhoP, RhoM, RhoP_, RhoM_, I2, Center, pJ, k,  SubTri, 0, 1, 0);
 toc;
 sum(sum(ZN==Z))
-%% Current calc in center Triangle
-Jt = zeros(length(t),3);
-for i=1:length(t)
-    Edge(1,:) = t(i,1:2);
-    Edge(2,:) = t(i,2:3);
-    Edge(3,1) = t(i,1);
-    Edge(3,2) = t(i,3);
-    [BasisNumberJ] = ArbitraryAntenna.EdgeNumbering(EdgeList, Edge);
-    
-    Jt(i,:) = sum(J(BasisNumberJ,:),1)/3;
-end
-%% Plot current Edges
-figure(2)
-plot(pJ(:,2),abs(J(:,2)),'*');
-title('Current in y, plottet at midpoint of edge')
-%% Plot current Triangles
-figure(3)
-plot(Center(:,2),abs(Jt(:,2)),'*');
-title('Current in y')
+% %% Current calc in center Triangle
+% Jt = zeros(length(t),3);
+% for i=1:length(t)
+%     Edge(1,:) = t(i,1:2);
+%     Edge(2,:) = t(i,2:3);
+%     Edge(3,1) = t(i,1);
+%     Edge(3,2) = t(i,3);
+%     [BasisNumberJ] = ArbitraryAntenna.EdgeNumbering(EdgeList, Edge);
+%     
+%     Jt(i,:) = sum(J(BasisNumberJ,:),1)/3;
+% end
+% %% Plot current Edges
+% figure(2)
+% plot(pJ(:,2),abs(J(:,2)),'*');
+% title('Current in y, plottet at midpoint of edge')
+% %% Plot current Triangles
+% figure(3)
+% plot(Center(:,2),abs(Jt(:,2)),'*');
+% title('Current in y')
 %% Calculating E
 %x-min/max, z-min/max, y-min/max
 tic;
@@ -124,7 +124,7 @@ colorbar
 caxis([0 0.1])
 xlabel('x');
 ylabel('y');
-title('xy - x plane');
+title('xy plane- x comp');
 
 figure(5)
 pcolor(x, y, abs(Exyy).')
@@ -133,7 +133,7 @@ colorbar
 caxis([0 0.1])
 xlabel('x');
 ylabel('y');
-title('xyy plane');
+title('xy plane - y comp');
 
 figure(6)
 pcolor(x, y, abs(Exyz).')
@@ -142,16 +142,16 @@ colorbar
 caxis([0 0.1])
 xlabel('x');
 ylabel('y');
-title('xyz plane');
+title('xy plane - z comp');
 
 figure(7)
-pcolor(x, y, abs(Exyx+Exyy+Exyz).'/3)
+pcolor(x, y, sqrt(abs(Exyx).^2+abs(Exyy).^2+abs(Exyz).^2).')
 shading interp
 colorbar
 caxis([0 0.1])
 xlabel('x');
 ylabel('y');
-title('xy sum plane');
+title('xy plane E-size');
 %%
 figure(8)
 pcolor(x, z, abs(Exzx).')
@@ -160,7 +160,7 @@ colorbar
 caxis([0 0.1])
 xlabel('x');
 ylabel('z');
-title('xzx plane');
+title('xz plane - x comp');
 
 figure(9)
 pcolor(x, z, abs(Exzy).')
@@ -169,7 +169,7 @@ colorbar
 caxis([0 0.1])
 xlabel('x');
 ylabel('z');
-title('xzy plane');
+title('xz plane - y comp');
 
 figure(10)
 pcolor(x, z, abs(Exzz).')
@@ -178,16 +178,16 @@ colorbar
 caxis([0 0.1])
 xlabel('x');
 ylabel('z');
-title('xzz plane');
+title('xz plane - z comp');
 
 figure(11)
-pcolor(x, z, abs(Exzx+Exzy+Exzz).'/3)
+pcolor(x, z, sqrt(abs(Exzx).^2+abs(Exzy).^2+abs(Exzz).^2).')
 shading interp
 colorbar
 caxis([0 0.1])
 xlabel('x');
 ylabel('z');
-title('xz sum plane');
+title('xz  plane E-size');
 %%
 figure(12)
 pcolor(z, y, abs(Eyzx).')
