@@ -96,8 +96,9 @@ plot(Center(:,2),abs(Jt(:,2)),'*');
 title('Current in y')
 %% Surf plot Current
 [TrianglePlus, TriangleMinus] = ArbitraryAntenna.PMTri(t, EdgeList);
-JT = sqrt(sum(Jt(:,1).^2+Jt(:,2).^2+Jt(:,3).^2,2));
-J1 = sqrt(sum(J(:,1).^2+J(:,2).^2+J(:,3).^2,2));
+clear xthree; clear ythree; clear zthree;
+JT = sqrt(Jt(:,1).^2+Jt(:,2).^2+Jt(:,3).^2);
+J1 = sqrt(J(:,1).^2+J(:,2).^2+J(:,3).^2);
 
 for n=1:length(t)
     i=[0 0 0];
@@ -115,18 +116,17 @@ end
 
 Jmax=max(CurrentNorm);
 MaxCurrent=strcat(num2str(Jmax),'[A/m]')
-CurrentNorm1=JT/max(JT);
+CurrentNorm1=CurrentNorm/max(CurrentNorm);
 for m=1:length(t)
     N=t(m,1:3);
-    X(m,1:3) = p(N,1).';
-    Y(m,1:3) = p(N,2).';
-    z(m,1:3) = p(N,3).';
+    xthree(m,1:3) = p(N,1);
+    ythree(m,1:3) = p(N,2);
+    zthree(m,1:3) = p(N,3);
 end
+ourC=repmat(CurrentNorm1,3,1);
 
-C=repmat(CurrentNorm1,1,3).';
-
-figure(3)
-h=fill3(X, Y, z, abs(C)); %linear scale
+figure(5)
+h=fill3(xthree', ythree', zthree', ourC); %linear scale
 colormap gray;
 colorbar;
 axis('equal');

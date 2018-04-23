@@ -35,14 +35,15 @@ MaxCurrent=strcat(num2str(Jmax),'[A/m]')
 CurrentNorm1=CurrentNorm/max(CurrentNorm);
 for m=1:Triangles
     N=t(1:3,m);
-    X(1:3,m)=[p(1,N)]';
-    Y(1:3,m)=[p(2,N)]';
-    Z(1:3,m)=[p(3,N)]';      
+    x(1:3,m)=[p(1,N)]';
+    y(1:3,m)=[p(2,N)]';
+    z(1:3,m)=[p(3,N)]';      
 end
 C=repmat(CurrentNorm1,3,1);
 
-h=fill3(X, Y, Z, C); %linear scale
+h=fill3(x, y, z, C); %linear scale
 colormap gray;
+colorbar;
 axis('equal');
 rotate3d
 
