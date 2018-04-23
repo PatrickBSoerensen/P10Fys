@@ -103,7 +103,7 @@ J1 = sqrt(J(:,1).^2+J(:,2).^2+J(:,3).^2);
 for n=1:length(t)
     i=[0 0 0];
     for m=1:length(EdgeList)
-        IE=J1(m)*BasisLA(m,2);
+        IE=a(m)*BasisLA(m,2);
         if(TrianglePlus(m)==n)
             i=i+IE*RhoP(m,:)/(2*Area(TrianglePlus(m)));
         end
