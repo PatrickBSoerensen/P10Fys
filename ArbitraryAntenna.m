@@ -597,7 +597,7 @@ classdef ArbitraryAntenna
             Ei(:,3) = z.*exp(-1i*k.*(Center(:,1)));
             TotTri = length(t);
             EdgesTotal = length(EdgeList);
-            SubTri = reshape(SubTri,[3, 9, TotTri]);
+            SubTri = reshape(SubTri,[9, 3, TotTri]);
                             
             for m=1:EdgesTotal
                 RhoP__(:,:,m)=repmat(RhoP(m,:),[1 9]);   %[3 9 EdgesTotal]
@@ -641,8 +641,8 @@ classdef ArbitraryAntenna
                     Minus(i) = find(sum(abs(t-FaceEdgeM(i,:)),2)==0);
                 end
     
-                D=SubTri-reshape(repmat(Center(y,:),[1 9 TotTri]),[3, 9, TotTri]); %[3 9 EdgesTotal]
-                R=sqrt(sum(D.*D));                               %[1 9 TrianglesTotal]
+                D=SubTri-reshape(repmat(Center(y,:),[1 9 TotTri]),[9, 3, TotTri]); %[9 3 EdgesTotal]
+                R=sqrt(sum(D.*D,2));                               %[9 1 TrianglesTotal]
       
                 %Block for self-coupling terms
                 Index=1:TotTri;
@@ -650,8 +650,8 @@ classdef ArbitraryAntenna
                 g(:,:,Index) = exp(-1i*k*R(:,:,Index))./R(:,:,Index);
                 g(:,:,y)     = -1i*k+I2(y);
            
-                gP=g(:,:,PlusTri);                         %[1 9 EdgesTotal]
-                gM=g(:,:,MinusTri);                        %[1 9 EdgesTotal]
+                gP=g(:,:,PlusTri);                         %[9 1 EdgesTotal]
+                gM=g(:,:,MinusTri);                        %[9 1 EdgesTotal]
         
                 Fi=sum(gP)-sum(gM);                             %[1 1 EdgesTotal]
                 ZF= FactorFi.*reshape(Fi,EdgesTotal,1);

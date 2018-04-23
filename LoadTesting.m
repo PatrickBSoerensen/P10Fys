@@ -101,7 +101,7 @@ tic;
 fprintf('\n')
 disp('Calculating E-field')
 
-[Eyx, Ezx, Eyz, x, y, z, Exyx, Exzx, Eyzx, Exyy, Exzy, Eyzy, Exyz, Exzz, Eyzz] = ArbitraryAntenna.EField(Center, w, k, mu0, J, -5, 5, -5, 5, -5, 5, 1000, BasisArea, BasisLA, RhoP_, RhoM_, a, SubTri, t, EdgeList);
+[Eyx, Ezx, Eyz, x, y, z, Exyx, Exzx, Eyzx, Exyy, Exzy, Eyzy, Exyz, Exzz, Eyzz] = ArbitraryAntenna.EField(Center, w, k, mu0, J, -5, 5, -5, 5, -5, 5, 80, BasisArea, BasisLA, RhoP_, RhoM_, a, SubTri, t, EdgeList);
 toc;
 
 Exyx = Exyx/max(max(Exyx));
