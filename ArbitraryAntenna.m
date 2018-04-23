@@ -362,13 +362,13 @@ classdef ArbitraryAntenna
             end
         end
         
-        function [Z, b, J, a] = MoM(p, t, EdgeList, BasisNumber, BasisLA, A, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k, SubTri, x, y, z)
+        function [Z, b, J, a] = MoM(p, t, EdgeList, BasisNumber, BasisLA, A, RhoP, RhoM, RhoP_, RhoM_, I2, Center, jP, k, SubTri, x, y, z)
             % alocating space
             Z = zeros(BasisNumber,BasisNumber)+1i*zeros(BasisNumber,BasisNumber);
-            Ei = zeros(size(t));
-            Ei(:,1) = x.*exp(-1i*k.*(Center(:,2)));
-            Ei(:,2) = y.*exp(-1i*k.*(Center(:,1)));
-            Ei(:,3) = z.*exp(-1i*k.*(Center(:,1)));
+%             Ei = zeros(size(t));
+            Ei(:,1) = x.*exp(-1i*k.*(jP(:,2)));
+            Ei(:,2) = y.*exp(-1i*k.*(jP(:,1)));
+            Ei(:,3) = z.*exp(-1i*k.*(jP(:,1)));
 
             % Outer loop over triangles
             for y=1:length(t)
@@ -559,7 +559,7 @@ classdef ArbitraryAntenna
                         b2 = RhoM_(:,:,EdgeNumberOuter(i));
                         b3 = BasisLA(EdgeNumberOuter(i),2)/2;
                         
-                        b(EdgeNumberOuter(i),:) = sum(sum(b1.*Ei(PlusOuter,:)/9,2)+sum(b2.*Ei(MinusOuter,:)/9,2).*b3);
+                        b(EdgeNumberOuter(i),:) = sum(sum(b1.*Ei(EdgeNumberOuter(i),:)/9,2)+sum(b2.*Ei(EdgeNumberOuter(i),:)/9,2).*b3);
                     end    
                 end
             end

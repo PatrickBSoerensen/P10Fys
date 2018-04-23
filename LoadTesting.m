@@ -1,7 +1,7 @@
 %% load STL file into matlab
 % stl = stlread('AntBinMesh.stl');
-stl = stlread('Dipole10cm.stl');
-% stl = stlread('Dipole10cmT1104.stl');
+% stl = stlread('Dipole10cm.stl');
+stl = stlread('Dipole10cmT1104.stl');
 % stl = stlread('AntBinMesh2556.stl');
 % stl = stlread('BinMeshHigh.stl');
 % stl = stlread('HalfAntMany.stl');
@@ -66,13 +66,14 @@ disp('Pre-Calculating self-coupling terms')
 I2 = ArbitraryAntenna.SelfTerm(p, t);
 toc;
 %% MoM
+
+pJ = (p(EdgeList(:,1),:)-p(EdgeList(:,2),:))/2;
 tic;
 fprintf('\n')
 disp('MoM')
-
 [ZN,aN, bN ] = ArbitraryAntenna.MoMLoopCut(p, t, EdgeList, BasisNumber, BasisLA, BasisArea, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k, w, mu0, eps0, SubTri, 0, 1, 0);
 toc;
-[Z, b, J, a] = ArbitraryAntenna.MoM(p, t, EdgeList, BasisNumber, BasisLA, BasisArea, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k, SubTri, 0, 1, 0);
+[Z, b, J, a] = ArbitraryAntenna.MoM(p, t, EdgeList, BasisNumber, BasisLA, BasisArea, RhoP, RhoM, RhoP_, RhoM_, I2, Center, pJ, k,  SubTri, 0, 1, 0);
 toc;
 sum(sum(ZN==Z))
 %% Current calc in center Triangle
@@ -87,7 +88,6 @@ for i=1:length(t)
     Jt(i,:) = sum(J(BasisNumberJ,:),1)/3;
 end
 %% Plot current Edges
-pJ = (p(EdgeList(:,1),:)-p(EdgeList(:,2),:))/2;
 figure(2)
 plot(pJ(:,2),abs(J(:,2)),'*');
 title('Current in y, plottet at midpoint of edge')
@@ -101,7 +101,7 @@ tic;
 fprintf('\n')
 disp('Calculating E-field')
 
-[Eyx, Ezx, Eyz, x, y, z, Exyx, Exzx, Eyzx, Exyy, Exzy, Eyzy, Exyz, Exzz, Eyzz] = ArbitraryAntenna.EField(Center, w, k, mu0, J, -5, 5, -5, 5, -5, 5, 1000, BasisArea, BasisLA, RhoP_, RhoM_, a, SubTri, t, EdgeList);
+[Eyx, Ezx, Eyz, x, y, z, Exyx, Exzx, Eyzx, Exyy, Exzy, Eyzy, Exyz, Exzz, Eyzz] = ArbitraryAntenna.EField(Center, w, k, mu0, J, -5, 5, -5, 5, -5, 5, 100, BasisArea, BasisLA, RhoP_, RhoM_, a, SubTri, t, EdgeList);
 toc;
 
 Exyx = Exyx/max(max(Exyx));
@@ -216,7 +216,7 @@ ylabel('y');
 title('xzz plane');
 
 figure(15)
-pcolor(z, y, abs(Eyzx+Eyzy+Eyzz).')
+pcolor(z, y, sqrt(abs(Eyzx).^2+abs(Eyzy).^2+abs(Eyzz).^2).')
 shading interp
 colorbar
 caxis([0 0.1])
