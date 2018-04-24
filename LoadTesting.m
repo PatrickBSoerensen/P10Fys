@@ -1,7 +1,8 @@
 %% load STL file into matlab
 % stl = stlread('AntBinMesh.stl');
 % stl = stlread('Dipole10cm.stl');
-stl = stlread('Dipole10cmT1104.stl');
+stl = stlread('Dipole10cmT580.stl');
+% stl = stlread('Dipole10cmT1104.stl');
 % stl = stlread('AntBinMesh2556.stl');
 % stl = stlread('BinMeshHigh.stl');
 % stl = stlread('HalfAntMany.stl');
@@ -19,14 +20,14 @@ toc;
 minp = min(p);
 maxp = max(p);
 [maxmaxp, maxaxis] = max(max(p));
-radius = abs(min(min(p))+min(min(p)));
+radius = abs(minp(1)+minp(3));
 Length = (maxmaxp-minp(maxaxis));
 %% constants
 eps0=8.854187817*10^-12; %F/m
 mu0=4*pi*10^-7; %N/A^2
 c=1/sqrt(eps0*mu0); %m/s
 %2/5, 2/3, 2 
-lambda=2/3*Length;
+lambda=2*Length;
 f=c/lambda;
 w=2*pi*f;
 k=w/c;
@@ -70,49 +71,55 @@ pJ = (p(EdgeList(:,1),:)-p(EdgeList(:,2),:))/2;
 tic;
 fprintf('\n')
 disp('MoM')
-[ZN,aN, bN ] = ArbitraryAntenna.MoMLoopCut(p, t, EdgeList, BasisNumber, BasisLA, BasisArea, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k, w, mu0, eps0, SubTri, 0, 1, 0);
+% [ZN,aN, bN ] = ArbitraryAntenna.MoMLoopCut(p, t, EdgeList, BasisNumber, BasisLA, BasisArea, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k, w, mu0, eps0, SubTri, 0, 1, 0);
+% toc;
+[Z, b, a] = ArbitraryAntenna.MoM(p, t, EdgeList, BasisNumber, BasisLA, BasisArea, RhoP, RhoM, RhoP_, RhoM_, I2, Center, pJ, k,  SubTri, 0, 1, 0);
 toc;
-[Z, b, J, a] = ArbitraryAntenna.MoM(p, t, EdgeList, BasisNumber, BasisLA, BasisArea, RhoP, RhoM, RhoP_, RhoM_, I2, Center, pJ, k,  SubTri, 0, 1, 0);
-toc;
-sum(sum(ZN==Z))
+% sum(sum(ZN==Z))
 %% Current calc in center Triangle
-Jface = 1:length(t);
+Jface = zeros(size(t));
+PlusEdge = [];
+MinusEdge = [];
 for n=1:length(t)
-      Edge(1,:) = t(n,1:2);
-      Edge(2,:) = t(n,2:3);
-      Edge(3,1) = t(n,1);
-      Edge(3,2) = t(n,3);
+    Edge(1,:) = t(n,1:2);
+    Edge(2,:) = t(n,2:3);
+    Edge(3,1) = t(n,1);
+    Edge(3,2) = t(n,3);
       
-      EdgeNumber = ArbitraryAntenna.EdgeNumbering(EdgeList, Edge);
+    EdgeNumber = ArbitraryAntenna.EdgeNumbering(EdgeList, Edge);
     for y=1:3
         FaceEdge(1:2) = EdgeList(EdgeNumber(y),1:2);
         FaceEdgeP = [FaceEdge EdgeList(EdgeNumber(y),3)];
         FaceEdgeP = sort(FaceEdgeP);
         FaceEdgeM = [FaceEdge EdgeList(EdgeNumber(y),4)];
         FaceEdgeM = sort(FaceEdgeM);
-        PlusEdge = find(sum(t==FaceEdgeP,2)==3);
-        MinusEdge = find(sum(t==FaceEdgeM,2)==3);
-        
-        Jface(n) = a(PlusEdge)*BasisLA(PlusEdge,1)*RhoP(PlusEdge)...
-            +a(MinusEdge)*BasisLA(MinusEdge,1)*RhoM(MinusEdge) + Jface(n);
+        PlusEdge = find(sum(t(n,:)==FaceEdgeP,2)==3);
+        MinusEdge = find(sum(t(n,:)==FaceEdgeM,2)==3);
+        if isempty(MinusEdge)
+        Jface(n,:) = a(PlusEdge)*BasisLA(PlusEdge,1)*RhoP(PlusEdge,:) + Jface(n,:);
+        else
+        Jface(n,:) = a(MinusEdge)*BasisLA(MinusEdge,1)*RhoM(MinusEdge,:) + Jface(n,:);
+        end
     end
 end
 %% Surf plot Current
+JfaceSize = sqrt(sum(Jface.^2,2));
 [TrianglePlus, TriangleMinus] = ArbitraryAntenna.PMTri(t, EdgeList);
+xthree = zeros(size(t)); ythree = zeros(size(t)); zthree = zeros(size(t));
 
-Jmax=max(Jface);
+Jmax=max(Jface(:,2));
 MaxCurrent=strcat(num2str(Jmax),'[A/m]')
-CurrentNorm1=Jface/max(Jface);
+CurrentNorm1=Jface(:,2)/max(Jface(:,2));
 for m=1:length(t)
     N=t(m,1:3);
     xthree(m,1:3) = p(N,1);
     ythree(m,1:3) = p(N,2);
     zthree(m,1:3) = p(N,3);
 end
-C=repmat(CurrentNorm1,3,1);
+C=repmat(CurrentNorm1,1,3);
 
-figure(5)
-h=fill3(xthree', ythree', zthree', C); %linear scale
+figure(7)
+h=fill3(xthree', ythree', zthree', C'); %linear scale
 colormap gray;
 colorbar;
 axis('equal');
@@ -125,7 +132,7 @@ PlotComp = 0;
 tic;
 fprintf('\n')
 disp('Calculating E-field')
-[Eyx, Ezx, Eyz, x, y, z, Exyx, Exzx, Eyzx, Exyy, Exzy, Eyzy, Exyz, Exzz, Eyzz] = ArbitraryAntenna.EField(Center, w, k, mu0, J, -5, 5, -5, 5, -5, 5, 100, BasisArea, BasisLA, RhoP_, RhoM_, a, SubTri, t, EdgeList);
+[Eyx, Ezx, Eyz, x, y, z, Exyx, Exzx, Eyzx, Exyy, Exzy, Eyzy, Exyz, Exzz, Eyzz] = ArbitraryAntenna.EField(Center, w, k, mu0, J, -5, 5, -5, 5, -5, 5, 200, BasisArea, BasisLA, RhoP_, RhoM_, a, SubTri, t, EdgeList);
 toc;
 if normalize
 Exyx = Exyx/max(max(Exyx));
@@ -170,8 +177,8 @@ ylabel('y');
 title('xy plane - z comp');
 end
 
-figure(7)
-pcolor(x, y, sqrt(abs(Exyx).^2+abs(Exyy).^2+abs(Exyz).^2).')
+figure(8)
+pcolor(x, y, sqrt(abs(Exyx).^2+abs(Exyy).^2+abs(Exyz).^2))
 shading interp
 colorbar
 caxis([0 0.1])
@@ -209,7 +216,7 @@ title('xz plane - z comp');
 end
 
 figure(11)
-pcolor(x, z, sqrt(abs(Exzx).^2+abs(Exzy).^2+abs(Exzz).^2).')
+pcolor(x, z, sqrt(abs(Exzx).^2+abs(Exzy).^2+abs(Exzz).^2))
 shading interp
 colorbar
 caxis([0 0.1])
@@ -247,7 +254,7 @@ title('xzz plane');
 end
 
 figure(15)
-pcolor(z, y, sqrt(abs(Eyzx).^2+abs(Eyzy).^2+abs(Eyzz).^2).')
+pcolor(z, y, sqrt(abs(Eyzx).^2+abs(Eyzy).^2+abs(Eyzz).^2))
 shading interp
 colorbar
 caxis([0 0.1])

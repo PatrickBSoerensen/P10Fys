@@ -362,7 +362,7 @@ classdef ArbitraryAntenna
             end
         end
         
-        function [Z, b, J, a] = MoM(p, t, EdgeList, BasisNumber, BasisLA, A, RhoP, RhoM, RhoP_, RhoM_, I2, Center, jP, k, SubTri, x, y, z)
+        function [Z, b, a] = MoM(p, t, EdgeList, BasisNumber, BasisLA, A, RhoP, RhoM, RhoP_, RhoM_, I2, Center, jP, k, SubTri, x, y, z)
             % alocating space
             Z = zeros(BasisNumber,BasisNumber)+1i*zeros(BasisNumber,BasisNumber);
 %             Ei = zeros(size(t));
@@ -565,7 +565,6 @@ classdef ArbitraryAntenna
             end
             % Z\b is a newer faster version of inv(Z)*b
             a = Z\b;
-            J = a.*(BasisLA(:,1).*RhoP+BasisLA(:,3).*RhoM);
         end
         
         function [PlusTri, MinusTri] = PMTri(t, EdgeList)
@@ -735,17 +734,15 @@ classdef ArbitraryAntenna
                         MinusEdge = find(sum(t==FaceEdgeM,2)==3);
                 
                         if j == 1
-                            %Plus
+                            %% Plus
                             rhat(:,1) = rx(PlusEdge,:).';
                             rhat(:,2) = ry(PlusEdge,:).';
                             rhat(:,3) = rz(PlusEdge,:).';
                             rhat = rhat./sqrt(sum(rhat.^2));
                             r = sqrt((rz(PlusEdge,:)).^2+(ry(PlusEdge,:).').^2+(rx(PlusEdge,:)).^2);
                             
-                            
                             g = B.*exp(1i.*k.*r)./(r);
-%                             temp = sum(1/9 * RhoP_(:,:,PlusEdge).* ...
-%                             exp(1i.*k.*sqrt(sum(reshape(SubTri(:,:,PlusEdge),[9,3]).^2,2))));
+                            
                             tempsup = reshape(SubTri(:,:,PlusEdge),[9,3]);
                             for fu = 1:9
                             temp(fu,:) = sum(1/9 * RhoP_(fu,:,PlusEdge).* ...
@@ -757,8 +754,7 @@ classdef ArbitraryAntenna
                             Exyy = Exyy + g .* a(PlusEdge) .* LA(PlusEdge,1) * temp(2) / (2*Area(PlusEdge));
                             Exyz = Exyz + g .* a(PlusEdge) .* LA(PlusEdge,1) * temp(3) / (2*Area(PlusEdge));          
                        
-                            %Minus
-                            
+                            %% Minus
                             rhat(:,1) = rx(PlusEdge,:).';
                             rhat(:,2) = ry(PlusEdge,:).';
                             rhat(:,3) = rz(PlusEdge,:).';
@@ -766,12 +762,11 @@ classdef ArbitraryAntenna
                             r = sqrt((rz(MinusEdge,:)).^2+(ry(MinusEdge,:).').^2+(rx(MinusEdge,:)).^2);
                
                             g = B.*exp(1i.*k.*r)./(r);
-%                             temp = sum( 1/9 *RhoM_(:,:,MinusEdge) .* ...
-%                             exp(1i.*k.*sqrt(sum(reshape(SubTri(:,:,MinusEdge),[9,3]).^2,2))));
+                            
                             tempsup = reshape(SubTri(:,:,MinusEdge),[9,3]);
                             for fu = 1:9
-                            temp(fu,:) = sum(1/9 * RhoM_(fu,:,MinusEdge).* ...
-                            exp(1i.*k.*sqrt(sum((tempsup(fu,:).*rhat).^2,2))));
+                                temp(fu,:) = sum(1/9 * RhoM_(fu,:,MinusEdge).* ...
+                                exp(1i.*k.*sqrt(sum((tempsup(fu,:).*rhat).^2,2))));
                             end
                             temp = sum(temp);                        
                             
@@ -783,7 +778,7 @@ classdef ArbitraryAntenna
                             .* temp(3) / (2*Area(MinusEdge));
                        
                         elseif j==2
-                            
+                            %% PLus
                             rhat(:,1) = rx(PlusEdge,:).';
                             rhat(:,2) = ry(PlusEdge,:).';
                             rhat(:,3) = rz(PlusEdge,:).';
@@ -791,12 +786,11 @@ classdef ArbitraryAntenna
                             r = sqrt((rz(PlusEdge,:).').^2+(ry(PlusEdge,:)).^2+(rx(PlusEdge,:)).^2);
                 
                             g = B.*exp(1i.*k.*r)./(r);
-%                              temp = sum(1/9 * RhoP_(:,:,PlusEdge).* ...
-%                             exp(1i.*k.*sqrt(sum(reshape(SubTri(:,:,PlusEdge),[9,3]).^2,2))));
-                        tempsup = reshape(SubTri(:,:,PlusEdge),[9,3]);
+                            
+                            tempsup = reshape(SubTri(:,:,PlusEdge),[9,3]);
                             for fu = 1:9
-                            temp(fu,:) = sum(1/9 * RhoP_(fu,:,PlusEdge).* ...
-                            exp(1i.*k.*sqrt(sum((tempsup(fu,:).*rhat).^2,2))));
+                                temp(fu,:) = sum(1/9 * RhoP_(fu,:,PlusEdge).* ...
+                                exp(1i.*k.*sqrt(sum((tempsup(fu,:).*rhat).^2,2))));
                             end
                             temp = sum(temp);
                             
@@ -807,8 +801,7 @@ classdef ArbitraryAntenna
                             Exzz = Exzz +   g .* a(PlusEdge) .* LA(PlusEdge,1) ...
                             .* temp(3) / (2*Area(PlusEdge));
                       
-                            %Minus
-                            
+                            %% Minus
                             rhat(:,1) = rx(PlusEdge,:).';
                             rhat(:,2) = ry(PlusEdge,:).';
                             rhat(:,3) = rz(PlusEdge,:).';
@@ -816,26 +809,23 @@ classdef ArbitraryAntenna
                             r = sqrt((rz(MinusEdge,:).').^2+(ry(MinusEdge,:)).^2+(rx(MinusEdge,:)).^2);
                
                             g = B.*exp(1i.*k.*r)./(r);
-%                             temp = sum( 1/9 * RhoM_(:,:,MinusEdge).* ...
-%                             exp(1i.*k.*sqrt(sum(reshape(SubTri(:,:,MinusEdge),[9,3]).^2,2))));
-                              tempsup = reshape(SubTri(:,:,MinusEdge),[9,3]);
+                            
+                            tempsup = reshape(SubTri(:,:,MinusEdge),[9,3]);
                             for fu = 1:9
-                            temp(fu,:) = sum(1/9 * RhoM_(fu,:,MinusEdge).* ...
-                            exp(1i.*k.*sqrt(sum((tempsup(fu,:).*rhat).^2,2))));
+                                temp(fu,:) = sum(1/9 * RhoM_(fu,:,MinusEdge).* ...
+                                exp(1i.*k.*sqrt(sum((tempsup(fu,:).*rhat).^2,2))));
                             end
                             temp = sum(temp);            
                             
                             Exzx = Exzx + g .* a(MinusEdge) .* LA(MinusEdge,1) ...
                             .* temp(1) / (2*Area(MinusEdge));
-                        
                             Exzy = Exzy + g .* a(MinusEdge) .* LA(MinusEdge,1) ...
                             .* temp(2) / (2*Area(MinusEdge));
-                        
                             Exzz = Exzz + g .* a(MinusEdge) .* LA(MinusEdge,1) ...
                             .* temp(3) / (2*Area(MinusEdge));
                        
                         else
-                            
+                            %% Plus
                             rhat(:,1) = rx(PlusEdge,:).';
                             rhat(:,2) = ry(PlusEdge,:).';
                             rhat(:,3) = rz(PlusEdge,:).';
@@ -843,14 +833,14 @@ classdef ArbitraryAntenna
                             r = sqrt((rz(PlusEdge,:)).^2+(ry(PlusEdge,:).').^2+(rx(PlusEdge,:)).^2);
                
                             g = B.*exp(1i.*k.*r)./(r);
-%                             temp = sum(1/9 *RhoP_(:,:,PlusEdge).* ...
-%                             exp(1i.*k.*sqrt(sum(reshape(SubTri(:,:,PlusEdge),[9,3]).^2,2))));
+                            
                             tempsup = reshape(SubTri(:,:,PlusEdge),[9,3]);
                             for fu = 1:9
-                            temp(fu,:) = sum(1/9 * RhoP_(fu,:,PlusEdge).* ...
-                            exp(1i.*k.*sqrt(sum((tempsup(fu,:).*rhat).^2,2))));
+                                temp(fu,:) = sum(1/9 * RhoP_(fu,:,PlusEdge).* ...
+                                exp(1i.*k.*sqrt(sum((tempsup(fu,:).*rhat).^2,2))));
                             end
                             temp = sum(temp);
+                            
                             Eyzx = Eyzx +  g .* a(PlusEdge) .* LA(PlusEdge,1) ...
                             .* temp(1) / (2*Area(PlusEdge));
                             Eyzy = Eyzy +  g .* a(PlusEdge) .* LA(PlusEdge,1) ...
@@ -858,8 +848,7 @@ classdef ArbitraryAntenna
                             Eyzz = Eyzz +  g .* a(PlusEdge) .* LA(PlusEdge,1) ...
                             .* temp(3) / (2*Area(PlusEdge));
                         
-                            %Minus
-                            
+                            %% Minus
                             rhat(:,1) = rx(PlusEdge,:).';
                             rhat(:,2) = ry(PlusEdge,:).';
                             rhat(:,3) = rz(PlusEdge,:).';
@@ -868,12 +857,10 @@ classdef ArbitraryAntenna
                
                             g = B.*exp(1i.*k.*r)./(r);
                             
-%                             temp = sum(1/9 * RhoM_(:,:,MinusEdge) .* ...
-%                             exp(1i.*k.*sqrt(sum(reshape(SubTri(:,:,MinusEdge),[9,3]).^2,2))));
-                             tempsup = reshape(SubTri(:,:,MinusEdge),[9,3]);
+                            tempsup = reshape(SubTri(:,:,MinusEdge),[9,3]);
                             for fu = 1:9
-                            temp(fu,:) = sum(1/9 * RhoM_(fu,:,MinusEdge).* ...
-                            exp(1i.*k.*sqrt(sum((tempsup(fu,:).*rhat).^2,2))));
+                                temp(fu,:) = sum(1/9 * RhoM_(fu,:,MinusEdge).* ...
+                                exp(1i.*k.*sqrt(sum((tempsup(fu,:).*rhat).^2,2))));
                             end
                             temp = sum(temp);            
                             
