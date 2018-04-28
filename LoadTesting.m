@@ -4,7 +4,6 @@ stl = stlread('Dipole10cm.stl');
 % stl = stlread('Dipole10cmT580.stl');
 % stl = stlread('Dipole10cmT1104.stl');
 % stl = stlread('AntBinMesh2556.stl');
-% stl = stlread('BinMeshHigh.stl');
 % stl = stlread('HalfAntMany.stl');
 %% faces and unique vertices
 tic;
@@ -71,25 +70,24 @@ pJ = (p(EdgeList(:,1),:)-p(EdgeList(:,2),:))/2;
 tic;
 fprintf('\n')
 disp('MoM')
-[ZN,aN, bN ] = ArbitraryAntenna.MoMLoopCut(p, t, EdgeList, BasisNumber, BasisLA, BasisArea, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k, w, mu0, eps0, SubTri, 0, 1, 0);
+[ZN,aN, bN ] = ArbitraryAntenna.MoMLoopCut(t, EdgeList, BasisNumber, BasisLA, Area, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k, SubTri, 0, 1, 0);
 toc;
 [Z, b, a] = ArbitraryAntenna.MoM(p, t, EdgeList, BasisNumber, BasisLA, Area, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k,  SubTri, 0, 1, 0);
 toc;
-sum(sum(ZN==Z))
 %% Current calc in center Triangle
 % Last parameter is a bool informing on whether to compute current from
 % center basis value or sub triangle basis values
-sub = 1;
+sub = 0;
+Dipole = 1;
 tic;
 fprintf('\n')
 disp('Calculating Current')
-[Jface] = ArbitraryAntenna.CurrentCalc(t, p, EdgeList, w, mu0, a, BasisLA, RhoP, RhoM, RhoP_, RhoM_, sub);
+[Jface] = ArbitraryAntenna.CurrentCalc(t, p, EdgeList, w, mu0, aN, BasisLA, RhoP, RhoM, RhoP_, RhoM_, sub, Dipole);
 toc;
 %% Surf plot Current
 JfaceSize = sqrt(sum(Jface.^2,2));
 xthree = zeros(size(t)); ythree = zeros(size(t)); zthree = zeros(size(t));
 Jmax=max(JfaceSize);
-MaxCurrent=strcat(num2str(Jmax),'[A/m]')
 CurrentNorm1=JfaceSize/max(JfaceSize);    
 for m=1:length(t)
     N=t(m,1:3);
@@ -113,7 +111,7 @@ tic;
 fprintf('\n')
 disp('Calculating E-field')
 [Exy, Exz, Ezy, x, y, z, Exyx, Exzx, Eyzx, Exyy, Exzy, Eyzy, Exyz, Exzz, Eyzz] = ...
-    ArbitraryAntenna.EField(Center, w, k, mu0, Jface, -5, 5, -5, 5, -5, 5, 100, Area);
+    ArbitraryAntenna.EField(Center, w, k, mu0, Jface, -10, 10, -10, 10, -10, 10, 100, Area);
 toc;
 
 if normalize
