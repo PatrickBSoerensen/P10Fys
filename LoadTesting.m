@@ -1,8 +1,8 @@
 %% load STL file into matlab
 % stl = stlread('AntBinMesh.stl');
-% stl = stlread('Dipole10cm.stl');
+stl = stlread('Dipole10cm.stl');
 % stl = stlread('Dipole10cmT580.stl');
-stl = stlread('Dipole10cmT1104.stl');
+% stl = stlread('Dipole10cmT1104.stl');
 % stl = stlread('AntBinMesh2556.stl');
 % stl = stlread('BinMeshHigh.stl');
 % stl = stlread('HalfAntMany.stl');
@@ -71,20 +71,19 @@ pJ = (p(EdgeList(:,1),:)-p(EdgeList(:,2),:))/2;
 tic;
 fprintf('\n')
 disp('MoM')
-% [ZN,aN, bN ] = ArbitraryAntenna.MoMLoopCut(p, t, EdgeList, BasisNumber, BasisLA, BasisArea, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k, w, mu0, eps0, SubTri, 0, 1, 0);
-% toc;
-[Z, b, J, a] = ArbitraryAntenna.MoM(p, t, EdgeList, BasisNumber, BasisLA, BasisArea, RhoP, RhoM, RhoP_, RhoM_, I2, Center, pJ, k,  SubTri, 0, 1, 0);
+[ZN,aN, bN ] = ArbitraryAntenna.MoMLoopCut(p, t, EdgeList, BasisNumber, BasisLA, BasisArea, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k, w, mu0, eps0, SubTri, 0, 1, 0);
 toc;
-% sum(sum(ZN==Z))
+[Z, b, a] = ArbitraryAntenna.MoM(p, t, EdgeList, BasisNumber, BasisLA, Area, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k,  SubTri, 0, 1, 0);
+toc;
+sum(sum(ZN==Z))
 %% Current calc in center Triangle
 % Last parameter is a bool informing on whether to compute current from
 % center basis value or sub triangle basis values
+sub = 1;
 tic;
 fprintf('\n')
 disp('Calculating Current')
-[Jface] = ArbitraryAntenna.CurrentCalc(t, p, EdgeList, w, mu0, a, BasisLA, RhoP, RhoM, RhoP_, RhoM_, 0);
-
-[Jface] = ArbitraryAntenna.CurrentCalc(t, p, EdgeList, w, mu0, a, BasisLA, RhoP, RhoM, RhoP_, RhoM_, 1);
+[Jface] = ArbitraryAntenna.CurrentCalc(t, p, EdgeList, w, mu0, a, BasisLA, RhoP, RhoM, RhoP_, RhoM_, sub);
 toc;
 %% Surf plot Current
 JfaceSize = sqrt(sum(Jface.^2,2));

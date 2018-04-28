@@ -361,110 +361,110 @@ classdef ArbitraryAntenna
             end
         end
         
-        function [Z, b, J, a] = MoM(p, t, EdgeList, BasisNumber, BasisLA, A, RhoP, RhoM, RhoP_, RhoM_, I2, Center, jP, k, SubTri, x, y, z)
+        function [Z, b, a] = MoM(p, t, EdgeList, BasisNumber, BasisLA, Area, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k, SubTri, x, y, z)
             % alocating space
             Z = zeros(BasisNumber,BasisNumber)+1i*zeros(BasisNumber,BasisNumber);
 %             Ei = zeros(size(t));
-            Ei(:,1) = x.*exp(-1i*k.*(jP(:,2)));
-            Ei(:,2) = y.*exp(-1i*k.*(jP(:,1)));
-            Ei(:,3) = z.*exp(-1i*k.*(jP(:,1)));
+            Ei(:,1) = x.*exp(-1i*k.*(Center(:,1)));
+            Ei(:,2) = y.*exp(-1i*k.*(Center(:,1)));
+            Ei(:,3) = z.*exp(-1i*k.*(Center(:,1)));
 
             % Outer loop over triangles
             for y=1:length(t)
                 % Outer triangle edges
-                OuterEdge(1,:) = t(y,1:2);
-                OuterEdge(2,:) = t(y,2:3);
-                OuterEdge(3,1) = t(y,1);
-                OuterEdge(3,2) = t(y,3);
+                BasisEdge(1,:) = t(y,1:2);
+                BasisEdge(2,:) = t(y,2:3);
+                BasisEdge(3,1) = t(y,1);
+                BasisEdge(3,2) = t(y,3);
                 
                 % Locating points that complete triangles for basis
                 % functions
-                EdgeNumberOuter = ArbitraryAntenna.EdgeNumbering(EdgeList, OuterEdge);
+                EdgeNumberBasis = ArbitraryAntenna.EdgeNumbering(EdgeList, BasisEdge);
                 
                 % Inner triangle loop
                 for h=1:length(t)
                     % Finding Inner triangle edges
-                    InnerEdge(1,:) = t(h,1:2);
-                    InnerEdge(2,:) = t(h,2:3);
-                    InnerEdge(3,1) = t(h,1);
-                    InnerEdge(3,2) = t(h,3);
+                    TestEdge(1,:) = t(h,1:2);
+                    TestEdge(2,:) = t(h,2:3);
+                    TestEdge(3,1) = t(h,1);
+                    TestEdge(3,2) = t(h,3);
         
                     % Locating points that complete triangles for basis
                     % functions
-                    EdgeNumberInner = ArbitraryAntenna.EdgeNumbering(EdgeList, InnerEdge);
+                    EdgeNumberTest = ArbitraryAntenna.EdgeNumbering(EdgeList, TestEdge);
                     
                     %Loop over outer triangles basis functions
                     for i = 1:3
                         % outer(1,:) and outer(2,:) are edge points
                         % outer(3,:) are the plus triangle point
                         % outer(4,:) are the minus triangle point
-                        outer(1,:) =  p(EdgeList(EdgeNumberOuter(i),1),:);
-                        outer(2,:) =  p(EdgeList(EdgeNumberOuter(i),2),:);
-                        outer(3,:) =  p(EdgeList(EdgeNumberOuter(i),3),:);
-                        outer(4,:) =  p(EdgeList(EdgeNumberOuter(i),4),:);
+                        Basis(1,:) =  p(EdgeList(EdgeNumberBasis(i),1),:);
+                        Basis(2,:) =  p(EdgeList(EdgeNumberBasis(i),2),:);
+                        Basis(3,:) =  p(EdgeList(EdgeNumberBasis(i),3),:);
+                        Basis(4,:) =  p(EdgeList(EdgeNumberBasis(i),4),:);
                         
                         %Finding all the points of the plus and minus
                         %triangle
-                        FaceEdgeOuter(1:2) = EdgeList(EdgeNumberOuter(i),1:2);
-                        FaceEdgeOuterP = [FaceEdgeOuter EdgeList(EdgeNumberOuter(i),3)];
-                        FaceEdgeOuterP = sort(FaceEdgeOuterP);
-                        FaceEdgeOuterM = [FaceEdgeOuter EdgeList(EdgeNumberOuter(i),4)];
-                        FaceEdgeOuterM = sort(FaceEdgeOuterM);
+                        FaceEdgeBasis(1:2) = EdgeList(EdgeNumberBasis(i),1:2);
+                        FaceEdgeBasisP = [FaceEdgeBasis EdgeList(EdgeNumberBasis(i),3)];
+                        FaceEdgeBasisP = sort(FaceEdgeBasisP);
+                        FaceEdgeBasisM = [FaceEdgeBasis EdgeList(EdgeNumberBasis(i),4)];
+                        FaceEdgeBasisM = sort(FaceEdgeBasisM);
                         % Finding the index of plus and minus triangles for
                         % the current basis for the outer
-                        PlusOuter = find(sum(t==FaceEdgeOuterP,2)==3);
-                        MinusOuter = find(sum(t==FaceEdgeOuterM,2)==3);
+                        PlusBasisTriangle = find(sum(t==FaceEdgeBasisP,2)==3);
+                        MinusBasisTriangle = find(sum(t==FaceEdgeBasisM,2)==3);
                         
                         % Intermediate loading of plus and minus functions
                         % evaluated in center points
-                        zMP = A(PlusOuter,1).*(RhoP(EdgeNumberOuter(i),:));
-                        zMM = A(MinusOuter,2).*(RhoM(EdgeNumberOuter(i),:));
+                        zMP = Area(PlusBasisTriangle).*(RhoP(EdgeNumberBasis(i),:));
+                        zMM = Area(MinusBasisTriangle).*(RhoM(EdgeNumberBasis(i),:));
                             
                         % Subtriangles for the inner triangles basis
                         % functions
-                        SPO = reshape(SubTri(:,:,PlusOuter),[9,3]);
-                        SMO = reshape(SubTri(:,:,MinusOuter),[9,3]);
+                        SPO = reshape(SubTri(:,:,PlusBasisTriangle),[9,3]);
+                        SMO = reshape(SubTri(:,:,MinusBasisTriangle),[9,3]);
                             
                         %Inner triangle basis functions loop
                         for j = 1:3
                             % inner(1,:) and inner(2,:) are edge points
                             % inner(3,:) are the plus triangle point
                             % inner(4,:) are the minus triangle point
-                            inner(1,:) =  p(EdgeList(EdgeNumberInner(j),1),:);
-                            inner(2,:) =  p(EdgeList(EdgeNumberInner(j),2),:);
-                            inner(3,:) =  p(EdgeList(EdgeNumberInner(j),3),:);
-                            inner(4,:) =  p(EdgeList(EdgeNumberInner(j),4),:);
+                            Test(1,:) =  p(EdgeList(EdgeNumberTest(j),1),:);
+                            Test(2,:) =  p(EdgeList(EdgeNumberTest(j),2),:);
+                            Test(3,:) =  p(EdgeList(EdgeNumberTest(j),3),:);
+                            Test(4,:) =  p(EdgeList(EdgeNumberTest(j),4),:);
                            
                             %Finding all the points of the plus and minus
                             %triangle
-                            FaceEdgeInner(1:2) = EdgeList(EdgeNumberInner(j),1:2);
-                            FaceEdgeInnerP = [FaceEdgeInner EdgeList(EdgeNumberInner(j), 3)];
-                            FaceEdgeInnerP = sort(FaceEdgeInnerP);
-                            FaceEdgeInnerM = [FaceEdgeInner EdgeList(EdgeNumberInner(j), 4)];
-                            FaceEdgeInnerM = sort(FaceEdgeInnerM);
-                            PlusInner = find(sum(t==FaceEdgeInnerP,2)==3);
-                            MinusInner = find(sum(t==FaceEdgeInnerM,2)==3);
+                            FaceEdgeTest(1:2) = EdgeList(EdgeNumberTest(j),1:2);
+                            FaceEdgeTestP = [FaceEdgeTest EdgeList(EdgeNumberTest(j), 3)];
+                            FaceEdgeTestP = sort(FaceEdgeTestP);
+                            FaceEdgeTestM = [FaceEdgeTest EdgeList(EdgeNumberTest(j), 4)];
+                            FaceEdgeTestM = sort(FaceEdgeTestM);
+                            PlusTestTriangle = find(sum(t==FaceEdgeTestP,2)==3);
+                            MinusTestTriangle = find(sum(t==FaceEdgeTestM,2)==3);
                         
                             % Intermediate loading of plus and minus functions
                             % evaluated in center points
-                            zNP = A(PlusInner,1).*(RhoP(EdgeNumberInner(j),:));
-                            zNM = A(MinusInner,2).*(RhoM(EdgeNumberInner(j),:));
+                            zNP = Area(PlusTestTriangle).*(RhoP(EdgeNumberTest(j),:));
+                            zNM = Area(MinusTestTriangle).*(RhoM(EdgeNumberTest(j),:));
                             
                             % Subtriangles for the inner triangles basis
                             % functions
-                            SPI = reshape(SubTri(:,:,PlusInner),[9,3]);
-                            SMI = reshape(SubTri(:,:,MinusInner),[9,3]);
+                            SPI = reshape(SubTri(:,:,PlusTestTriangle),[9,3]);
+                            SMI = reshape(SubTri(:,:,MinusTestTriangle),[9,3]);
                                                         
                             % Intermediate calculations
-                            ppo = sqrt(sum((Center(PlusOuter,:)-SPI).^2,2));
-                            mpo = sqrt(sum((Center(MinusOuter,:)-SPI).^2,2));
-                            pmo = sqrt(sum((Center(PlusOuter,:)-SMI).^2,2));
-                            mmo = sqrt(sum((Center(MinusOuter,:)-SMI).^2,2));
+                            ppo = sqrt(sum((Center(PlusBasisTriangle,:)-SPI).^2,2));
+                            mpo = sqrt(sum((Center(MinusBasisTriangle,:)-SPI).^2,2));
+                            pmo = sqrt(sum((Center(PlusBasisTriangle,:)-SMI).^2,2));
+                            mmo = sqrt(sum((Center(MinusBasisTriangle,:)-SMI).^2,2));
                             
-                            ppi = sqrt(sum((Center(PlusInner,:)-SPO).^2,2));
-                            mpi = sqrt(sum((Center(MinusInner,:)-SPO).^2,2));
-                            pmi = sqrt(sum((Center(PlusInner,:)-SMO).^2,2));
-                            mmi = sqrt(sum((Center(MinusInner,:)-SMO).^2,2));
+                            ppi = sqrt(sum((Center(PlusTestTriangle,:)-SPO).^2,2));
+                            mpi = sqrt(sum((Center(MinusTestTriangle,:)-SPO).^2,2));
+                            pmi = sqrt(sum((Center(PlusTestTriangle,:)-SMO).^2,2));
+                            mmi = sqrt(sum((Center(MinusTestTriangle,:)-SMO).^2,2));
                             
                             % greens for different couplings
                             gPPo = exp(1i.*k.*ppo)./ppo;
@@ -477,98 +477,96 @@ classdef ArbitraryAntenna
                             gPMi = exp(1i.*k.*pmi)./pmi;
                             gMMi = exp(1i.*k.*mmi)./mmi;
                         
-                            if PlusOuter==PlusInner
+                            if PlusBasisTriangle==PlusTestTriangle
                                 % greens for the self term
-                                g = I2(PlusOuter);
-                                Z(EdgeNumberOuter(i), EdgeNumberInner(j)) = ...
-                                (BasisLA(EdgeNumberOuter(i),2)*BasisLA(EdgeNumberInner(j),2))/(4*pi)...
+                                g = I2(PlusBasisTriangle);
+                                Z(EdgeNumberBasis(i), EdgeNumberTest(j)) = ...
+                                (BasisLA(EdgeNumberBasis(i),2)*BasisLA(EdgeNumberTest(j),2))/(4*pi)...
                                 *((dot(zMP, zNP)/4-1/k^2) * g)...
-                                + Z(EdgeNumberOuter(i), EdgeNumberInner(j));
+                                + Z(EdgeNumberBasis(i), EdgeNumberTest(j));
                             else
-                                Z(EdgeNumberOuter(i), EdgeNumberInner(j)) = ...
-                                (BasisLA(EdgeNumberOuter(i),2)*BasisLA(EdgeNumberInner(j),2))/(4*pi)...
-                                *sum(1/9*(dot(zMP, zNP)/4-1/k^2) * gPPo)...
-                                + Z(EdgeNumberOuter(i), EdgeNumberInner(j));
+                                Z(EdgeNumberBasis(i), EdgeNumberTest(j)) = ...
+                                (BasisLA(EdgeNumberBasis(i),2)*BasisLA(EdgeNumberTest(j),2))/(4*pi)...
+                                *sum((dot(zMP, zNP)/36-1/k^2) * gPPo)...
+                                + Z(EdgeNumberBasis(i), EdgeNumberTest(j));
                             
-                                Z(EdgeNumberOuter(i), EdgeNumberInner(j)) = ...
-                                (BasisLA(EdgeNumberOuter(i),2)*BasisLA(EdgeNumberInner(j),2))/(4*pi)...
-                                *sum(1/9*(dot(zMP, zNP)/4-1/k^2) * gPPi)...
-                                + Z(EdgeNumberOuter(i), EdgeNumberInner(j));
+                                Z(EdgeNumberBasis(i), EdgeNumberTest(j)) = ...
+                                (BasisLA(EdgeNumberBasis(i),2)*BasisLA(EdgeNumberTest(j),2))/(4*pi)...
+                                *sum((dot(zMP, zNP)/36-1/k^2) * gPPi)...
+                                + Z(EdgeNumberBasis(i), EdgeNumberTest(j));
                             end
-                            if PlusOuter==MinusInner
+                            if PlusBasisTriangle==MinusTestTriangle
                                 % greens for the self term
-                                g = I2(PlusOuter);
+                                g = I2(PlusBasisTriangle);
                                 
-                                Z(EdgeNumberOuter(i), EdgeNumberInner(j)) = ...
-                                (BasisLA(EdgeNumberOuter(i),2)*BasisLA(EdgeNumberInner(j),2))/(4*pi)...
+                                Z(EdgeNumberBasis(i), EdgeNumberTest(j)) = ...
+                                (BasisLA(EdgeNumberBasis(i),2)*BasisLA(EdgeNumberTest(j),2))/(4*pi)...
                                 *((dot(zMP, zNM)/4-1/k^2) * g)...
-                                + Z(EdgeNumberOuter(i), EdgeNumberInner(j));
+                                + Z(EdgeNumberBasis(i), EdgeNumberTest(j));
                             else
-                                Z(EdgeNumberOuter(i), EdgeNumberInner(j)) = ...
-                                (BasisLA(EdgeNumberOuter(i),2)*BasisLA(EdgeNumberInner(j),2))/(4*pi)...
-                                *sum(1/9*(dot(zMP, zNM)/4+1/k^2) * gPMo )...
-                                + Z(EdgeNumberOuter(i), EdgeNumberInner(j));
+                                Z(EdgeNumberBasis(i), EdgeNumberTest(j)) = ...
+                                (BasisLA(EdgeNumberBasis(i),2)*BasisLA(EdgeNumberTest(j),2))/(4*pi)...
+                                *sum((dot(zMP, zNM)/36+1/k^2) * gPMo )...
+                                + Z(EdgeNumberBasis(i), EdgeNumberTest(j));
                                 
-                                Z(EdgeNumberOuter(i), EdgeNumberInner(j)) = ...
-                                (BasisLA(EdgeNumberOuter(i),2)*BasisLA(EdgeNumberInner(j),2))/(4*pi)...
-                                *sum(1/9*(dot(zMP, zNM)/4+1/k^2) * gPMi )...
-                                + Z(EdgeNumberOuter(i), EdgeNumberInner(j));
+                                Z(EdgeNumberBasis(i), EdgeNumberTest(j)) = ...
+                                (BasisLA(EdgeNumberBasis(i),2)*BasisLA(EdgeNumberTest(j),2))/(4*pi)...
+                                *sum((dot(zMP, zNM)/36+1/k^2) * gPMi )...
+                                + Z(EdgeNumberBasis(i), EdgeNumberTest(j));
                             end
-                            if MinusOuter==PlusInner        
+                            if MinusBasisTriangle==PlusTestTriangle        
                                 % greens for the self term
-                                g = I2(MinusOuter);
+                                g = I2(MinusBasisTriangle);
                                 
-                                Z(EdgeNumberOuter(i), EdgeNumberInner(j)) = ...
-                                (BasisLA(EdgeNumberOuter(i),2)*BasisLA(EdgeNumberInner(j),2))/(4*pi)...
+                                Z(EdgeNumberBasis(i), EdgeNumberTest(j)) = ...
+                                (BasisLA(EdgeNumberBasis(i),2)*BasisLA(EdgeNumberTest(j),2))/(4*pi)...
                                 *((dot(zMM, zNP)/4-1/k^2) * g)...
-                                + Z(EdgeNumberOuter(i), EdgeNumberInner(j));
+                                + Z(EdgeNumberBasis(i), EdgeNumberTest(j));
                             else
-                                Z(EdgeNumberOuter(i), EdgeNumberInner(j)) = ...
-                                (BasisLA(EdgeNumberOuter(i),2)*BasisLA(EdgeNumberInner(j),2))/(4*pi)...
-                                *sum(1/9*(dot(zMM, zNP)/4+1/k^2) * gMPo)...
-                                + Z(EdgeNumberOuter(i), EdgeNumberInner(j));
+                                Z(EdgeNumberBasis(i), EdgeNumberTest(j)) = ...
+                                (BasisLA(EdgeNumberBasis(i),2)*BasisLA(EdgeNumberTest(j),2))/(4*pi)...
+                                *sum((dot(zMM, zNP)/36+1/k^2) * gMPo)...
+                                + Z(EdgeNumberBasis(i), EdgeNumberTest(j));
                             
-                                Z(EdgeNumberOuter(i), EdgeNumberInner(j)) = ...
-                                (BasisLA(EdgeNumberOuter(i),2)*BasisLA(EdgeNumberInner(j),2))/(4*pi)...
-                                *sum(1/9*(dot(zMM, zNP)/4+1/k^2) * gMPi)...
-                                + Z(EdgeNumberOuter(i), EdgeNumberInner(j));
+                                Z(EdgeNumberBasis(i), EdgeNumberTest(j)) = ...
+                                (BasisLA(EdgeNumberBasis(i),2)*BasisLA(EdgeNumberTest(j),2))/(4*pi)...
+                                *sum((dot(zMM, zNP)/36+1/k^2) * gMPi)...
+                                + Z(EdgeNumberBasis(i), EdgeNumberTest(j));
                             end
-                            if MinusOuter==MinusInner
+                            if MinusBasisTriangle==MinusTestTriangle
                                 % greens for the self term
-                                g = I2(MinusOuter);
+                                g = I2(MinusBasisTriangle);
                                 
-                                Z(EdgeNumberOuter(i), EdgeNumberInner(j)) = ...
-                                (BasisLA(EdgeNumberOuter(i),2)*BasisLA(EdgeNumberInner(j),2))/(4*pi)...
+                                Z(EdgeNumberBasis(i), EdgeNumberTest(j)) = ...
+                                (BasisLA(EdgeNumberBasis(i),2)*BasisLA(EdgeNumberTest(j),2))/(4*pi)...
                                 *((dot(zMM, zNM)/4-1/k^2) * g)...
-                                + Z(EdgeNumberOuter(i), EdgeNumberInner(j));
+                                + Z(EdgeNumberBasis(i), EdgeNumberTest(j));
                             else
-                                Z(EdgeNumberOuter(i), EdgeNumberInner(j)) = ...
-                                (BasisLA(EdgeNumberOuter(i),2)*BasisLA(EdgeNumberInner(j),2))/(4*pi)...
-                                *sum(1/9*(dot(zMM, zNM)/4-1/k^2) * gMMo)...
-                                + Z(EdgeNumberOuter(i), EdgeNumberInner(j));
+                                Z(EdgeNumberBasis(i), EdgeNumberTest(j)) = ...
+                                (BasisLA(EdgeNumberBasis(i),2)*BasisLA(EdgeNumberTest(j),2))/(4*pi)...
+                                *sum((dot(zMM, zNM)/36-1/k^2) * gMMo)...
+                                + Z(EdgeNumberBasis(i), EdgeNumberTest(j));
                             
-                                Z(EdgeNumberOuter(i), EdgeNumberInner(j)) = ...
-                                (BasisLA(EdgeNumberOuter(i),2)*BasisLA(EdgeNumberInner(j),2))/(4*pi)...
-                                *sum(1/9*(dot(zMM, zNM)/4-1/k^2) * gMMi)...
-                                + Z(EdgeNumberOuter(i), EdgeNumberInner(j));
+                                Z(EdgeNumberBasis(i), EdgeNumberTest(j)) = ...
+                                (BasisLA(EdgeNumberBasis(i),2)*BasisLA(EdgeNumberTest(j),2))/(4*pi)...
+                                *sum((dot(zMM, zNM)/36-1/k^2) * gMMi)...
+                                + Z(EdgeNumberBasis(i), EdgeNumberTest(j));
                             end
                         end
                         % Intermediate variables for b calculation
-                        b1 = RhoP_(:,:,EdgeNumberOuter(i));
-                        b2 = RhoM_(:,:,EdgeNumberOuter(i));
-                        b3 = BasisLA(EdgeNumberOuter(i),2)/2;
+                        b1 = RhoP_(:,:,EdgeNumberBasis(i));
+                        b2 = RhoM_(:,:,EdgeNumberBasis(i));
+                        b3 = BasisLA(EdgeNumberBasis(i),2)/2;
                         
-                        b(EdgeNumberOuter(i),:) = sum(sum(b1.*Ei(EdgeNumberOuter(i),:)/9,2)+sum(b2.*Ei(EdgeNumberOuter(i),:)/9,2).*b3);
+                        b(EdgeNumberBasis(i),:) = sum(sum(b1.*Ei(y,:)/9,2)+sum(b2.*Ei(y,:)/9,2).*b3);
                     end    
                 end
             end
             % Z\b is a newer faster version of inv(Z)*b
             a = Z\b;
-            J = a.*(BasisLA(:,1).*RhoP+BasisLA(:,3).*RhoM);
         end
         
         function [PlusTri, MinusTri] = PMTri(t, EdgeList)
-     
             for y=1:length(EdgeList)
                 %Finding the points of the plus and minus triangle
                 FaceEdge(1:2) = EdgeList(y,1:2);
