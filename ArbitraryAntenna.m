@@ -311,7 +311,6 @@ classdef ArbitraryAntenna
                 Edge(2,:) = t(m,2:3);
                 Edge(3,1) = t(m,1);
                 Edge(3,2) = t(m,3);
-                
                 % Identifying Edge numbering
                 BasisNumber = ArbitraryAntenna.EdgeNumbering(EdgeList, Edge);
                 
@@ -336,7 +335,7 @@ classdef ArbitraryAntenna
                     % Evaluating the basis function in centres of
                     % subtriangles
                     SubP = SubTri(1,:,TP);
-                    SubP = reshape(SubP, [9,3]);
+                    SubP = reshape(SubP, [3,9]).';
                     RhoP_(:,:,BasisNumber(i)) = BasisP(SubP);
                     % Getting the minus Basis function that correspond to the
                     % edge
@@ -355,7 +354,7 @@ classdef ArbitraryAntenna
                     % Evaluating the basis function in centres of
                     % subtriangles
                     SubM = SubTri(1,:,TM);
-                    SubM = reshape(SubM, [9,3]);
+                    SubM = reshape(SubM, [3,9]).';
                     RhoM_(:,:,BasisNumber(i)) = BasisM(SubM);
                 end        
             end
@@ -376,7 +375,6 @@ classdef ArbitraryAntenna
                 BasisEdge(2,:) = t(y,2:3);
                 BasisEdge(3,1) = t(y,1);
                 BasisEdge(3,2) = t(y,3);
-                
                 % Locating points that complete triangles for basis
                 % functions
                 EdgeNumberBasis = ArbitraryAntenna.EdgeNumbering(EdgeList, BasisEdge);
@@ -388,7 +386,6 @@ classdef ArbitraryAntenna
                     TestEdge(2,:) = t(h,2:3);
                     TestEdge(3,1) = t(h,1);
                     TestEdge(3,2) = t(h,3);
-        
                     % Locating points that complete triangles for basis
                     % functions
                     EdgeNumberTest = ArbitraryAntenna.EdgeNumbering(EdgeList, TestEdge);
@@ -416,14 +413,17 @@ classdef ArbitraryAntenna
                         MinusBasisTriangle = find(sum(t==FaceEdgeBasisM,2)==3);
                         
                         % Intermediate loading of plus and minus functions
-                        % evaluated in center points
+                        % evaluated in center points, _ denotes sub
+                            % triangle
                         zMP = (RhoP(EdgeNumberBasis(i),:));
                         zMM = (RhoM(EdgeNumberBasis(i),:));
+                        zMP_ = (RhoP_(:,:,EdgeNumberBasis(i)));
+                        zMM_ = (RhoM_(:,:,EdgeNumberBasis(i)));
                             
                         % Subtriangles for the inner triangles basis
                         % functions
-                        SPO = reshape(SubTri(:,:,PlusBasisTriangle),[9,3]);
-                        SMO = reshape(SubTri(:,:,MinusBasisTriangle),[9,3]);
+                        SPO = reshape(SubTri(:,:,PlusBasisTriangle),[3,9]).';
+                        SMO = reshape(SubTri(:,:,MinusBasisTriangle),[3,9]).';
                             
                         %Inner triangle basis functions loop
                         for j = 1:3
@@ -446,14 +446,17 @@ classdef ArbitraryAntenna
                             MinusTestTriangle = find(sum(t==FaceEdgeTestM,2)==3);
                         
                             % Intermediate loading of plus and minus functions
-                            % evaluated in center points
+                            % evaluated in center points, _ denotes sub
+                            % triangle
                             zNP = (RhoP(EdgeNumberTest(j),:));
                             zNM = (RhoM(EdgeNumberTest(j),:));
+                            zNP_ = (RhoP_(:,:,EdgeNumberTest(j)));
+                            zNM_ = (RhoM_(:,:,EdgeNumberTest(j)));
                             
                             % Subtriangles for the inner triangles basis
                             % functions
-                            SPI = reshape(SubTri(:,:,PlusTestTriangle),[9,3]);
-                            SMI = reshape(SubTri(:,:,MinusTestTriangle),[9,3]);
+                            SPI = reshape(SubTri(:,:,PlusTestTriangle),[3,9]).';
+                            SMI = reshape(SubTri(:,:,MinusTestTriangle),[3,9]).';
                                                         
                             % Intermediate calculations
                             ppo = sqrt(sum((Center(PlusBasisTriangle,:)-SPI).^2,2));
@@ -487,12 +490,12 @@ classdef ArbitraryAntenna
                             else
                                 Z(EdgeNumberBasis(i), EdgeNumberTest(j)) = ...
                                 (BasisLA(EdgeNumberBasis(i),2)*BasisLA(EdgeNumberTest(j),2))/(4*pi)...
-                                *sum((dot(zMP, zNP)/4-1/k^2) * gPPo/9)...
+                                *sum((dot(repmat(zMP,[9,1]), zNP_,2)/4-1/k^2) .* gPPo/9)...
                                 + Z(EdgeNumberBasis(i), EdgeNumberTest(j));
                             
                                 Z(EdgeNumberBasis(i), EdgeNumberTest(j)) = ...
                                 (BasisLA(EdgeNumberBasis(i),2)*BasisLA(EdgeNumberTest(j),2))/(4*pi)...
-                                *sum((dot(zMP, zNP)/4-1/k^2) * gPPi/9)...
+                                *sum((dot(zMP_, repmat(zNP,[9,1]),2)/4-1/k^2) .* gPPi/9)...
                                 + Z(EdgeNumberBasis(i), EdgeNumberTest(j));
                             end
                             if PlusBasisTriangle==MinusTestTriangle
@@ -506,12 +509,12 @@ classdef ArbitraryAntenna
                             else
                                 Z(EdgeNumberBasis(i), EdgeNumberTest(j)) = ...
                                 (BasisLA(EdgeNumberBasis(i),2)*BasisLA(EdgeNumberTest(j),2))/(4*pi)...
-                                *sum((dot(zMP, zNM)/4+1/k^2) * gPMo/9)...
+                                *sum((dot(repmat(zMP,[9,1]), zNM_ ,2)/4+1/k^2) .* gPMo/9)...
                                 + Z(EdgeNumberBasis(i), EdgeNumberTest(j));
                                 
                                 Z(EdgeNumberBasis(i), EdgeNumberTest(j)) = ...
                                 (BasisLA(EdgeNumberBasis(i),2)*BasisLA(EdgeNumberTest(j),2))/(4*pi)...
-                                *sum((dot(zMP, zNM)/4+1/k^2) * gPMi/9)...
+                                *sum((dot(zMP_, repmat(zNM,[9,1]),2)/4+1/k^2) .* gPMi/9)...
                                 + Z(EdgeNumberBasis(i), EdgeNumberTest(j));
                             end
                             if MinusBasisTriangle==PlusTestTriangle        
@@ -525,12 +528,12 @@ classdef ArbitraryAntenna
                             else
                                 Z(EdgeNumberBasis(i), EdgeNumberTest(j)) = ...
                                 (BasisLA(EdgeNumberBasis(i),2)*BasisLA(EdgeNumberTest(j),2))/(4*pi)...
-                                *sum((dot(zMM, zNP)/4+1/k^2) * gMPo/9)...
+                                *sum((dot(repmat(zMM,[9,1]), zNP_,2)/4+1/k^2) .* gMPo/9)...
                                 + Z(EdgeNumberBasis(i), EdgeNumberTest(j));
                             
                                 Z(EdgeNumberBasis(i), EdgeNumberTest(j)) = ...
                                 (BasisLA(EdgeNumberBasis(i),2)*BasisLA(EdgeNumberTest(j),2))/(4*pi)...
-                                *sum((dot(zMM, zNP)/4+1/k^2) * gMPi/9)...
+                                *sum((dot(zMM_, repmat(zNP,[9,1]),2)/4+1/k^2) .* gMPi/9)...
                                 + Z(EdgeNumberBasis(i), EdgeNumberTest(j));
                             end
                             if MinusBasisTriangle==MinusTestTriangle
@@ -544,12 +547,12 @@ classdef ArbitraryAntenna
                             else
                                 Z(EdgeNumberBasis(i), EdgeNumberTest(j)) = ...
                                 (BasisLA(EdgeNumberBasis(i),2)*BasisLA(EdgeNumberTest(j),2))/(4*pi)...
-                                *sum((dot(zMM, zNM)/4-1/k^2) * gMMo/9)...
+                                *sum((dot(repmat(zMM,[9,1]), zNM_,2)/4-1/k^2) .* gMMo/9)...
                                 + Z(EdgeNumberBasis(i), EdgeNumberTest(j));
                             
                                 Z(EdgeNumberBasis(i), EdgeNumberTest(j)) = ...
                                 (BasisLA(EdgeNumberBasis(i),2)*BasisLA(EdgeNumberTest(j),2))/(4*pi)...
-                                *sum((dot(zMM, zNM)/4-1/k^2) * gMMi/9)...
+                                *sum((dot(zMM_, repmat(zNM,[9,1]),2)/4-1/k^2) .* gMMi/9)...
                                 + Z(EdgeNumberBasis(i), EdgeNumberTest(j));
                             end
                         end
@@ -582,11 +585,11 @@ classdef ArbitraryAntenna
             end
         end
         
-          function [Z, a, b] = MoMLoopCut(t, EdgeList, BasisNumber, BasisLA, Area, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k, SubTri, x, y, z)
+          function [Z, a, b] = MoMLoopCut(t, EdgeList, BasisNumber, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k, SubTri, x, y, z)
             % alocating space
             Z = zeros(BasisNumber,BasisNumber)+1i*zeros(BasisNumber,BasisNumber);
             TotTri = length(t);
-            SubTri = reshape(SubTri,[9, 3, TotTri]);
+            SubTri = reshape(SubTri,[3, 9, TotTri]);
             Ei = zeros(size(t));
             Ei(:,1) = x.*exp(-1i*k.*(Center(:,1)));
             Ei(:,2) = y.*exp(-1i*k.*(Center(:,1)));
@@ -601,24 +604,23 @@ classdef ArbitraryAntenna
             [PlusTri, MinusTri] = ArbitraryAntenna.PMTri(t, EdgeList);
 
             for y=1:TotTri
-    
                 Plus     =find(PlusTri-y==0);
                 Minus    =find(MinusTri-y==0);
     
-                D=SubTri-reshape(repmat(Center(y,:),[1 9 TotTri]),[9, 3, TotTri]); %[9 3 TrianglesTotal]
-                R=sqrt(sum(D.*D,2));                               %[9 1 TrianglesTotal]
+                D=SubTri-reshape(repmat(Center(y,:),[1 9 TotTri]),[3, 9, TotTri]); %[9 3 TrianglesTotal]
+                R=sqrt(sum(D.*D));                               %[9 1 TrianglesTotal]
       
-                D1=SubTri(:,:,y)-reshape(Center,[1, 3, TotTri]); %[9 3 TrianglesTotal]
+                D1=SubTri(:,:,y).'-reshape(Center,[1, 3, TotTri]); %[9 3 TrianglesTotal]
                 R1=sqrt(sum(D1.*D1,2));                               %[9 1 TrianglesTotal]
                 
                 %Block for self-coupling terms
                 Index=1:TotTri;
                 Index(y)=[];
                 g(:,:,Index) = exp(1i*k*R(:,:,Index))./R(:,:,Index);
-                g(:,:,y)     = I2(y);
+                g(:,:,y)     = I2(y)/2;
                 
-                g1(:,:,Index) = exp(1i*k*R(:,:,Index))./R(:,:,Index);
-                g1(:,:,y)     = I2(y);
+                g1(:,:,Index) = exp(1i*k*R1(:,:,Index))./R1(:,:,Index);
+                g1(:,:,y)     = I2(y)/2;
            
                 gP=g(:,:,PlusTri);                         %[9 1 EdgesTotal]
                 gM=g(:,:,MinusTri);                        %[9 1 EdgesTotal]
@@ -628,25 +630,26 @@ classdef ArbitraryAntenna
         
                 for i=1:length(Plus)
                     n=Plus(i);
-                    L = Area(PlusTri).*BasisLA(n,2).*BasisLA(:,2)/(4*pi);
-                    pp = sum(sum((RhoPRep(:,:,n).*RhoP_/4-1/(k^2)).*gP/9));
-                    pm = sum(sum((RhoPRep(:,:,n).*RhoM_/4+1/(k^2)).*gM/9));
+                    L = BasisLA(n,2).*BasisLA(:,2)/(4*pi);
+                    pp = sum(sum(RhoPRep(:,:,n).*RhoP_/4-1/(k^2),2).*permute(gP,[2 1 3])/9);
+                    pm = sum(sum(RhoPRep(:,:,n).*RhoM_/4+1/(k^2),2).*permute(gM,[2 1 3])/9);
                     Z(:,n)=Z(:,n)+L.*reshape(pp+pm,EdgesTotal,1);
                     
-                    pp = sum(sum((RhoPRep.*RhoP_(:,:,n)/4-1/(k^2)).*gP1/9));
-                    pm = sum(sum((RhoPRep.*RhoM_(:,:,n)/4+1/(k^2)).*gM1/9));
-                    Z(n,:)=Z(n,:)+(L.*reshape(pp+pm,EdgesTotal,1)).';
+                    pp = sum(sum((RhoPRep.*RhoP_(:,:,n)/4-1/(k^2)),2).*gP1/9);
+                    pm = sum(sum((RhoMRep.*RhoP_(:,:,n)/4+1/(k^2)),2).*gM1/9);
+                    Z(:,n)=Z(:,n)+(L.*reshape(pp+pm,EdgesTotal,1));
                 end
                 for i=1:length(Minus)
                     n=Minus(i);
-                    L = Area(MinusTri).*BasisLA(n,2).*BasisLA(:,2)/(4*pi);
-                    mp = sum(sum((RhoMRep(:,:,n).*RhoP_/4-1/(k^2)).*gP/9));
-                    mm = sum(sum((RhoMRep(:,:,n).*RhoM_/4+1/(k^2)).*gM/9));
+                    L = BasisLA(n,2).*BasisLA(:,2)/(4*pi);
+                    mp = sum(sum((RhoMRep(:,:,n).*RhoP_/4+1/(k^2)),2).*permute(gP,[2 1 3])/9);
+                    mm = sum(sum((RhoMRep(:,:,n).*RhoM_/4-1/(k^2)),2).*permute(gM,[2 1 3])/9);
                     Z(:,n)=Z(:,n)+L.*reshape(mp+mm,EdgesTotal,1);
                     
-                    mp = sum(sum((RhoMRep.*RhoP_(:,:,n)/4-1/(k^2)).*gP1/9));
-                    mm = sum(sum((RhoMRep.*RhoM_(:,:,n)/4+1/(k^2)).*gM1/9));
-                    Z(n,:)=Z(n,:)+(L.*reshape(mp+mm,EdgesTotal,1)).';
+                    mp = sum(sum((RhoPRep.*RhoM_(:,:,n)/4+1/(k^2)),2).*gP1/9);
+                    mm = sum(sum((RhoMRep.*RhoM_(:,:,n)/4-1/(k^2)),2).*gM1/9);
+                    Z(:,n)=Z(:,n)+(L.*reshape(mp+mm,EdgesTotal,1));
+%                     Z(n,:)=Z(n,:)
                 end
             end
 
