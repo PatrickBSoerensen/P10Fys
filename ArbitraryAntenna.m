@@ -589,11 +589,11 @@ classdef ArbitraryAntenna
             % alocating space
             Z = zeros(BasisNumber,BasisNumber)+1i*zeros(BasisNumber,BasisNumber);
             TotTri = length(t);
-            SubTri = permute(reshape(SubTri,[9, 3, TotTri]),[2 1 3]);
+            SubTri = permute(reshape(SubTri,[3, 9, TotTri]),[2 1 3]);
             Ei = zeros(size(t));
-            Ei(:,1) = x.*exp(-1i*k.*(Center(:,1)));
-            Ei(:,2) = y.*exp(-1i*k.*(Center(:,1)));
-            Ei(:,3) = z.*exp(-1i*k.*(Center(:,1)));
+            Ei(:,1) = x%.*exp(-1i*k.*(Center(:,1)));
+            Ei(:,2) = y%.*exp(-1i*k.*(Center(:,1)));
+            Ei(:,3) = z%.*exp(-1i*k.*(Center(:,1)));
             EdgesTotal = length(EdgeList);
                             
             for m=1:EdgesTotal
@@ -607,50 +607,50 @@ classdef ArbitraryAntenna
                 Plus     =find(PlusTri-y==0);
                 Minus    =find(MinusTri-y==0);
     
-                D=SubTri-reshape(repmat(Center(y,:),[1 9 TotTri]),[3, 9, TotTri]); %[9 3 TrianglesTotal]
-                R=sqrt(sum(D.*D));                               %[9 1 TrianglesTotal]
+                D=SubTri-permute(reshape(repmat(Center(y,:),[1 9 TotTri]),[3, 9, TotTri]),[2 1 3]); %[9 3 TrianglesTotal]
+                R=sqrt(sum(D.*D,2));                               %[9 1 TrianglesTotal]
       
-                D1=SubTri(:,:,y).'-reshape(Center,[1, 3, TotTri]); %[9 3 TrianglesTotal]
+                D1=SubTri(:,:,y)-reshape(Center,[1, 3, TotTri]); %[9 3 TrianglesTotal]
                 R1=sqrt(sum(D1.*D1,2));                               %[9 1 TrianglesTotal]
                 
                 %Block for self-coupling terms
                 Index=1:TotTri;
                 Index(y)=[];
                 g(:,:,Index) = exp(1i*k*R(:,:,Index))./R(:,:,Index);
-                g(:,:,y)     = I2(y)/2;
+                g(:,:,y)     = I2(y);
                 
                 g1(:,:,Index) = exp(1i*k*R1(:,:,Index))./R1(:,:,Index);
-                g1(:,:,y)     = I2(y)/2;
+                g1(:,:,y)     = I2(y);
            
-                gP=g(:,:,PlusTri);                         %[9 1 EdgesTotal]
-                gM=g(:,:,MinusTri);                        %[9 1 EdgesTotal]
+                gP=g(:,:,PlusTri);           %[9 1 EdgesTotal]
+                gM=g(:,:,MinusTri);          %[9 1 EdgesTotal]
                 
-                gP1=g1(:,:,PlusTri);                         %[9 1 EdgesTotal]
-                gM1=g1(:,:,MinusTri);                        %[9 1 EdgesTotal]
+                gP1=g1(:,:,PlusTri);         %[9 1 EdgesTotal]
+                gM1=g1(:,:,MinusTri);        %[9 1 EdgesTotal]
         
                 for i=1:length(Plus)
                     n=Plus(i);
                     L = BasisLA(n,2).*BasisLA(:,2)/(4*pi);
-                    pp = sum(sum(RhoPRep(:,:,n).*RhoP_/4-1/(k^2),2).*permute(gP,[2 1 3])/9);
-                    pm = sum(sum(RhoPRep(:,:,n).*RhoM_/4+1/(k^2),2).*permute(gM,[2 1 3])/9);
+                    pp = sum(sum(RhoPRep(:,:,n).*RhoP_/4-1/(k^2).*gP/9));
+                    pm = sum(sum(RhoPRep(:,:,n).*RhoM_/4+1/(k^2).*gM/9));
                     Z(:,n)=Z(:,n)+L.*reshape(pp+pm,EdgesTotal,1);
                     
-                    pp = sum(sum((RhoPRep.*RhoP_(:,:,n)/4-1/(k^2)),2).*gP1/9);
-                    pm = sum(sum((RhoMRep.*RhoP_(:,:,n)/4+1/(k^2)),2).*gM1/9);
+                    pp = sum(sum((RhoPRep.*RhoP_(:,:,n)/4-1/(k^2)).*gP1/9));
+                    pm = sum(sum((RhoMRep.*RhoP_(:,:,n)/4+1/(k^2)).*gM1/9));
                     Z(:,n)=Z(:,n)+(L.*reshape(pp+pm,EdgesTotal,1));
                 end
                 for i=1:length(Minus)
                     n=Minus(i);
                     L = BasisLA(n,2).*BasisLA(:,2)/(4*pi);
-                    mp = sum(sum((RhoMRep(:,:,n).*RhoP_/4+1/(k^2)),2).*permute(gP,[2 1 3])/9);
-                    mm = sum(sum((RhoMRep(:,:,n).*RhoM_/4-1/(k^2)),2).*permute(gM,[2 1 3])/9);
+                    mp = sum(sum((RhoMRep(:,:,n).*RhoP_/4+1/(k^2)).*gP/9));
+                    mm = sum(sum((RhoMRep(:,:,n).*RhoM_/4-1/(k^2)).*gM/9));
                     Z(:,n)=Z(:,n)+L.*reshape(mp+mm,EdgesTotal,1);
                     
-                    mp = sum(sum((RhoPRep.*RhoM_(:,:,n)/4+1/(k^2)),2).*gP1/9);
-                    mm = sum(sum((RhoMRep.*RhoM_(:,:,n)/4-1/(k^2)),2).*gM1/9);
+                    mp = sum(sum((RhoPRep.*RhoM_(:,:,n)/4+1/(k^2)).*gP1/9));
+                    mm = sum(sum((RhoMRep.*RhoM_(:,:,n)/4-1/(k^2)).*gM1/9));
                     Z(:,n)=Z(:,n)+(L.*reshape(mp+mm,EdgesTotal,1));
-%                     Z(n,:)=Z(n,:)
-                end
+%                     Z(n,:)=Z(n,:) Z(:,n)=Z(:,n)
+                end 
             end
 
             for m=1:EdgesTotal
@@ -665,35 +665,26 @@ classdef ArbitraryAntenna
           
         function [Jface] = CurrentCalc(t, p, EdgeList, w, mu0, a, BasisLA, RhoP, RhoM, RhoP_, RhoM_, sub, Dipole)
             Jface = zeros(size(t));
+            
+            [PlusTri, MinusTri] = ArbitraryAntenna.PMTri(t, EdgeList);
             for n=1:length(t)
-                Edge(1,:) = t(n,1:2);
-                Edge(2,:) = t(n,2:3);
-                Edge(3,1) = t(n,1);
-                Edge(3,2) = t(n,3);
-                EdgeNumber = ArbitraryAntenna.EdgeNumbering(EdgeList, Edge);
+                Plus     =find(PlusTri-n==0);
+                Minus    =find(MinusTri-n==0);
     
-                for y=1:3
-                    FaceEdge(1:2) = EdgeList(EdgeNumber(y),1:2);
-                    FaceEdgeP = [FaceEdge EdgeList(EdgeNumber(y),3)];
-                    FaceEdgeP = sort(FaceEdgeP);
-                    FaceEdgeM = [FaceEdge EdgeList(EdgeNumber(y),4)];
-                    FaceEdgeM = sort(FaceEdgeM);
-                    PlusEdge = find(sum(t(n,:)==FaceEdgeP,2)==3);
-                    MinusEdge = find(sum(t(n,:)==FaceEdgeM,2)==3);
-                    if isempty(MinusEdge)
-                        if sub
-                            Jface(n,:) = sum(1i.*w.*mu0*a(PlusEdge)*BasisLA(PlusEdge,2)*RhoP_(:,:,PlusEdge)/18) + Jface(n,:);
-                        else
-                            Jface(n,:) = 1i.*w.*mu0*a(PlusEdge)*BasisLA(PlusEdge,1)*RhoP(PlusEdge,:)/2 + Jface(n,:);
-                        end
-                    else
-                        if sub
-                            Jface(n,:) = sum(1i.*w.*mu0*a(MinusEdge)*BasisLA(MinusEdge,2)*RhoM_(:,:,MinusEdge)/18) + Jface(n,:);
-                        else
-                            Jface(n,:) = 1i.*w.*mu0*a(MinusEdge)*BasisLA(MinusEdge,3)*RhoM(MinusEdge,:)/2 + Jface(n,:);
-                        end
+                for y=1:length(Plus)
+                    if sub
+                        Jface(n,:) = sum(1i.*w.*mu0*a(Plus(y))*BasisLA(Plus(y),2)*RhoP_(:,:,Plus(y))/18) + Jface(n,:);
+                    else 
+                        Jface(n,:) = 1i.*w.*mu0*a(Plus(y))*BasisLA(Plus(y),1)*RhoP(Plus(y),:)/2 + Jface(n,:);    
                     end
                 end
+                for y=1:length(Minus)
+                    if sub
+                        Jface(n,:) = sum(1i.*w.*mu0*a(Minus(y))*BasisLA(Minus(y),2)*RhoM_(:,:,Minus(y))/18) + Jface(n,:);
+                    else
+                        Jface(n,:) = 1i.*w.*mu0*a(Minus(y))*BasisLA(Minus(y),3)*RhoM(Minus(y),:)/2 + Jface(n,:);    
+                    end
+                end    
             end
             if Dipole
                 minp = min(p);
@@ -709,7 +700,7 @@ classdef ArbitraryAntenna
                 Jface(TrianglesOnEnds,:) = 0;
             end
         end
-          
+        
         function [Exy, Exz, Ezy, xrange, yrange, zrange, Exyx, Exzx, Eyzx, Exyy, Exzy, Eyzy, Exyz, Exzz, Eyzz] = EField(Center, w, k, mu, J,...
                 xmin, xmax, zmin, zmax, ymin, ymax, steps, Area)
        
@@ -717,11 +708,11 @@ classdef ArbitraryAntenna
             yrange = linspace(ymin, ymax, steps);
             zrange = linspace(zmin, zmax, steps);
             
-            Exy = zeros(steps, steps); % x is rows, y is columns
+            Exy = zeros(steps, steps); 
             Exyx = Exy; Exyy = Exy; Exyz = Exy;
-            Exz = zeros(steps,steps); % x is rows, z is columns
+            Exz = zeros(steps,steps);
             Exzx = Exz; Exzy = Exz; Exzz = Exz;
-            Eyz = zeros(steps,steps); % z is rows, y is columns
+            Eyz = zeros(steps,steps); 
             Eyzx = Eyz; Eyzy = Eyz; Eyzz = Eyz;
                         
             for j=1:3
@@ -738,13 +729,13 @@ classdef ArbitraryAntenna
                     ry = (yrange-Center(:,2));
                     rz = (zrange-Center(:,3));
                 end
-                I = eye(steps,steps);
+                
                 for i=1:length(Center)
                         if j == 1
                             %xy
-                            Rx = repmat(rx(i,:)',1,steps);%-Center(i,1);
-                            Ry = repmat(ry(i,:),steps,1);%-Center(i,2);
-                            Rz = repmat(rz(i),steps,steps);%-Center(i,3);
+                            Rx = repmat(rx(i,:)',1,steps);
+                            Ry = repmat(ry(i,:),steps,1);
+                            Rz = repmat(rz(i),steps,steps);
                             r = sqrt(Rx.^2+Ry.^2+Rz.^2);
                                                         
                             g = exp(1i.*k.*r)./(4*pi*r);
@@ -786,7 +777,7 @@ classdef ArbitraryAntenna
                             G2 = (1+3i./(k*r)-3./(k*r).^2);
                             
                             RR = Rx.*Rx;
-                            Gxx = (I*G1-(RR./r.^2).*G2).*g;
+                            Gxx = (G1-(RR./r.^2).*G2).*g;
                             RR = Rx.*Ry;
                             Gxy = (-(RR./r.^2).*G2).*g;
                             RR = Rx.*Rz;
@@ -796,7 +787,7 @@ classdef ArbitraryAntenna
                             RR = Ry.*Rx;
                             Gyx = (-(RR./r.^2).*G2).*g;
                             RR = Ry.*Ry;
-                            Gyy = (I*G1-(RR./r.^2).*G2).*g;
+                            Gyy = (G1-(RR./r.^2).*G2).*g;
                             RR = Ry.*Rz;
                             Gyz = (-(RR./r.^2).*G2).*g;
                             Exzy = Exzy + (Gyx .* J(i,1) + Gyy .* J(i,2) + Gyz .* J(i,3)).*Area(i);
@@ -806,7 +797,7 @@ classdef ArbitraryAntenna
                             RR = Rz.*Ry;
                             Gzy = (-(RR./r.^2).*G2).*g;
                             RR = Rz.*Rz;
-                            Gzz = (I*G1-(RR./r.^2).*G2).*g;
+                            Gzz = (G1-(RR./r.^2).*G2).*g;
                             Exzz = Exzz + (Gzx .* J(i,1) + Gzy .* J(i,2) + Gzz .* J(i,3)).*Area(i);
                         else
                             %yz
@@ -820,7 +811,7 @@ classdef ArbitraryAntenna
                             G2 = (1+3i./(k*r)-3./(k*r).^2);
                             
                             RR = Rx.*Rx;
-                            Gxx = (I*G1-(RR./r.^2).*G2).*g;
+                            Gxx = (G1-(RR./r.^2).*G2).*g;
                             RR = Rx.*Ry;
                             Gxy = (-(RR./r.^2).*G2).*g;
                             RR = Rx.*Rz;
@@ -830,7 +821,7 @@ classdef ArbitraryAntenna
                             RR = Ry.*Rx;
                             Gyx = (-(RR./r.^2).*G2).*g;
                             RR = Ry.*Ry;
-                            Gyy = (I*G1-(RR./r.^2).*G2).*g;
+                            Gyy = (G1-(RR./r.^2).*G2).*g;
                             RR = Ry.*Rz;
                             Gyz = (-(RR./r.^2).*G2).*g;
                             Eyzy = Eyzy + (Gyx .* J(i,1) + Gyy .* J(i,2) + Gyz .* J(i,3)).*Area(i);
@@ -840,7 +831,7 @@ classdef ArbitraryAntenna
                             RR = Rz.*Ry;
                             Gzy = (-(RR./r.^2).*G2).*g;
                             RR = Rz.*Rz;
-                            Gzz = (I*G1-(RR./r.^2).*G2).*g;
+                            Gzz = (G1-(RR./r.^2).*G2).*g;
                             Eyzz = Eyzz + (Gzx .* J(i,1) + Gzy .* J(i,2) + Gzz .* J(i,3)).*Area(i);
                         end
                 end 

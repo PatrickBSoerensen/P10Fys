@@ -1,8 +1,8 @@
 %% load STL file into matlab
 % stl = stlread('AntBinMesh.stl');
 % stl = stlread('Dipole10cm.stl');
-% stl = stlread('Dipole10cmT580.stl');
-stl = stlread('Dipole10cmT1104.stl');
+stl = stlread('Dipole10cmT580.stl');
+% stl = stlread('Dipole10cmT1104.stl');
 % stl = stlread('AntBinMesh2556.stl');
 % stl = stlread('HalfAntMany.stl');
 %% faces and unique vertices
@@ -66,31 +66,29 @@ disp('Pre-Calculating self-coupling terms')
 I2 = ArbitraryAntenna.SelfTerm(p, t);
 toc;
 %% MoM
-pJ = (p(EdgeList(:,1),:)-p(EdgeList(:,2),:))/2;
 tic;
 fprintf('\n')
 disp('MoM')
-[ZN,aN, bN ] = ArbitraryAntenna.MoMLoopCut(t, EdgeList, BasisNumber, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k, SubTri, 0, 1, 0);
+[ZN, aN, bN ] = ArbitraryAntenna.MoMLoopCut(t, EdgeList, BasisNumber, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k, SubTri, 0, 1, 0);
 toc;
 %%
 % [Z, b, a] = ArbitraryAntenna.MoM(p, t, EdgeList, BasisNumber, BasisLA, Area, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k,  SubTri, 0, 1, 0);
-% toc;
-%% Current calc in center Triangle
-
-sub = 0;
-Dipole = 0;
+toc;
+%% Current calc in Triangle
+sub = 1;
+Dipole =0;
 tic;
 fprintf('\n')
 disp('Calculating Current')
 % [Jface] = ArbitraryAntenna.CurrentCalc(t, p, EdgeList, w, mu0, a, BasisLA, RhoP, RhoM, RhoP_, RhoM_, sub, Dipole);
-
 [Jface] = ArbitraryAntenna.CurrentCalc(t, p, EdgeList, w, mu0, aN, BasisLA, RhoP, RhoM, RhoP_, RhoM_, sub, Dipole);
+
 toc;
 %% Surf plot Current
 JfaceSize = sqrt(sum(Jface.^2,2));
 xthree = zeros(size(t)); ythree = zeros(size(t)); zthree = zeros(size(t));
 Jmax=max(JfaceSize);
-CurrentNorm1=JfaceSize/max(JfaceSize);
+CurrentNorm1=JfaceSize;%/max(JfaceSize);
 for m=1:length(t)
     N=t(m,1:3);
     xthree(m,1:3) = p(N,1);
@@ -99,7 +97,7 @@ for m=1:length(t)
 end
 C=repmat(CurrentNorm1,1,3);
 figure(3)
-h=fill3(xthree', ythree', zthree', Jface(:,3)'); %linear scale
+h=fill3(xthree', ythree', zthree', C'); %linear scale
 colormap gray;
 colorbar;
 axis('equal');
