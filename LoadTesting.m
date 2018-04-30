@@ -77,8 +77,8 @@ toc;
 % toc;
 %% Current calc in center Triangle
 
-sub = 1;
-Dipole = 1;
+sub = 0;
+Dipole = 0;
 tic;
 fprintf('\n')
 disp('Calculating Current')
@@ -99,7 +99,7 @@ for m=1:length(t)
 end
 C=repmat(CurrentNorm1,1,3);
 figure(3)
-h=fill3(xthree', ythree', zthree', C'); %linear scale
+h=fill3(xthree', ythree', zthree', Jface(:,3)'); %linear scale
 colormap gray;
 colorbar;
 axis('equal');
@@ -108,12 +108,12 @@ rotate3d
 %% Calculating E
 %x-min/max, z-min/max, y-min/max
 normalize = 1;
-PlotComp = 0;
+PlotComp = 1;
 tic;
 fprintf('\n')
 disp('Calculating E-field')
 [Exy, Exz, Ezy, x, y, z, Exyx, Exzx, Eyzx, Exyy, Exzy, Eyzy, Exyz, Exzz, Eyzz] = ...
-    ArbitraryAntenna.EField(Center, w, k, mu0, Jface, -10, 10, -10, 10, -10, 10, 100, Area);
+    ArbitraryAntenna.EField(Center, w, k, mu0, Jface, -2, 2, -2, 2, -2, 2, 100, Area);
 toc;
 
 if normalize
@@ -136,7 +136,7 @@ end
 %% Plotting E
 if PlotComp
 figure(4)
-pcolor(x, y, real(Exyx))
+pcolor(x, y, real(Exyx).')
 shading interp
 colorbar
 if normalize
@@ -147,7 +147,7 @@ ylabel('y');
 title('xy plane- x comp');
 
 figure(5)
-pcolor(x, y, real(Exyy))
+pcolor(x, y, real(Exyy).')
 shading interp
 colorbar
 if normalize
@@ -158,7 +158,7 @@ ylabel('y');
 title('xy plane - y comp');
 
 figure(6)
-pcolor(x, y, real(Exyz))
+pcolor(x, y, real(Exyz).')
 shading interp
 colorbar
 if normalize
@@ -170,7 +170,7 @@ title('xy plane - z comp');
 end
 
 figure(7)
-pcolor(x, y, abs(Exy))
+pcolor(x, y, abs(Exy)')
 shading interp
 colorbar
 if normalize
@@ -182,7 +182,7 @@ title('xy plane E-size');
 %%
 if PlotComp
 figure(8)
-pcolor(x, z, real(Exzx))
+pcolor(x, z, real(Exzx).')
 shading interp
 colorbar
 if normalize
@@ -193,7 +193,7 @@ ylabel('z');
 title('xz plane - x comp');
 
 figure(9)
-pcolor(x, z, real(Exzy))
+pcolor(x, z, real(Exzy).')
 shading interp
 colorbar
 if normalize
@@ -204,7 +204,7 @@ ylabel('z');
 title('xz plane - y comp');
 
 figure(10)
-pcolor(x, z, real(Exzz))
+pcolor(x, z, real(Exzz).')
 shading interp
 colorbar
 if normalize
@@ -216,7 +216,7 @@ title('xz plane - z comp');
 end
 
 figure(11)
-pcolor(x, z, abs(Exz))
+pcolor(x, z, abs(Exz).')
 shading interp
 colorbar
 if normalize
@@ -228,7 +228,7 @@ title('xz  plane E-size');
 %% yz
 if PlotComp
 figure(12)
-pcolor(z, y, real(Eyzx))
+pcolor(z, y, real(Eyzx).')
 shading interp
 colorbar
 if normalize
@@ -239,7 +239,7 @@ ylabel('y');
 title('yz plane x-comp');
 
 figure(13)
-pcolor(z, y, real(Eyzy))
+pcolor(z, y, real(Eyzy).')
 shading interp
 colorbar
 if normalize
@@ -250,7 +250,7 @@ ylabel('y');
 title('yz plane y-comp');
 
 figure(14)
-pcolor(z, y, real(Eyzz))
+pcolor(z, y, real(Eyzz).')
 shading interp
 colorbar
 if normalize
@@ -262,7 +262,7 @@ title('yz plane z-comp');
 end
 
 figure(15)
-pcolor(z, y, abs(Ezy))
+pcolor(z, y, abs(Ezy)')
 shading interp
 colorbar
 if normalize

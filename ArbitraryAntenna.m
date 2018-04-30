@@ -589,7 +589,7 @@ classdef ArbitraryAntenna
             % alocating space
             Z = zeros(BasisNumber,BasisNumber)+1i*zeros(BasisNumber,BasisNumber);
             TotTri = length(t);
-            SubTri = reshape(SubTri,[3, 9, TotTri]);
+            SubTri = permute(reshape(SubTri,[9, 3, TotTri]),[2 1 3]);
             Ei = zeros(size(t));
             Ei(:,1) = x.*exp(-1i*k.*(Center(:,1)));
             Ei(:,2) = y.*exp(-1i*k.*(Center(:,1)));
@@ -682,13 +682,13 @@ classdef ArbitraryAntenna
                     MinusEdge = find(sum(t(n,:)==FaceEdgeM,2)==3);
                     if isempty(MinusEdge)
                         if sub
-                            Jface(n,:) = sum(1i.*w.*mu0*a(PlusEdge)*BasisLA(PlusEdge,1)*RhoP_(:,:,PlusEdge)/18) + Jface(n,:);
+                            Jface(n,:) = sum(1i.*w.*mu0*a(PlusEdge)*BasisLA(PlusEdge,2)*RhoP_(:,:,PlusEdge)/18) + Jface(n,:);
                         else
                             Jface(n,:) = 1i.*w.*mu0*a(PlusEdge)*BasisLA(PlusEdge,1)*RhoP(PlusEdge,:)/2 + Jface(n,:);
                         end
                     else
                         if sub
-                            Jface(n,:) = sum(1i.*w.*mu0*a(MinusEdge)*BasisLA(MinusEdge,3)*RhoM_(:,:,MinusEdge)/18) + Jface(n,:);
+                            Jface(n,:) = sum(1i.*w.*mu0*a(MinusEdge)*BasisLA(MinusEdge,2)*RhoM_(:,:,MinusEdge)/18) + Jface(n,:);
                         else
                             Jface(n,:) = 1i.*w.*mu0*a(MinusEdge)*BasisLA(MinusEdge,3)*RhoM(MinusEdge,:)/2 + Jface(n,:);
                         end
@@ -742,42 +742,42 @@ classdef ArbitraryAntenna
                 for i=1:length(Center)
                         if j == 1
                             %xy
-                            Rx = repmat(rx(i,:)',1,steps);
-                            Ry = repmat(ry(i,:),steps,1);
-                            Rz = repmat(rz(i),1,steps);
+                            Rx = repmat(rx(i,:)',1,steps);%-Center(i,1);
+                            Ry = repmat(ry(i,:),steps,1);%-Center(i,2);
+                            Rz = repmat(rz(i),steps,steps);%-Center(i,3);
                             r = sqrt(Rx.^2+Ry.^2+Rz.^2);
-                            
+                                                        
                             g = exp(1i.*k.*r)./(4*pi*r);
                             G1 = (1+1i./(k*r)-1./(k*r).^2);
                             G2 = (1+3i./(k*r)-3./(k*r).^2);
                             
                             RR = Rx.*Rx;
-                            Gxx = (I*G1-(RR./r.^2)*G2).*g;
+                            Gxx = (G1-(RR./r.^2).*G2).*g;
                             RR = Ry.*Rx;
-                            Gxy = (-(RR./r.^2)*G2).*g;
+                            Gxy = (-(RR./r.^2).*G2).*g;
                             RR = Rz.*Rx;
-                            Gxz = (-(RR./r.^2)*G2).*g;
+                            Gxz = (-(RR./r.^2).*G2).*g;
                             Exyx = Exyx + (Gxx .* J(i,1) + Gxy .* J(i,2) + Gxz .* J(i,3)).*Area(i);
                             
                             RR = Ry.*Rx;
-                            Gyx = (-(RR./r.^2)*G2).*g;
+                            Gyx = (-(RR./r.^2).*G2).*g;
                             RR = Ry.*Ry;
-                            Gyy = (I*G1-(RR./r.^2)*G2).*g;
+                            Gyy = (G1-(RR./r.^2).*G2).*g;
                             RR = Ry.*Rz;
-                            Gyz = (-(RR./r.^2)*G2).*g;
+                            Gyz = (-(RR./r.^2).*G2).*g;
                             Exyy = Exyy + (Gyx .* J(i,1) + Gyy .* J(i,2) + Gyz .* J(i,3)).*Area(i);
                             
                             RR = Rz.*Rx;
-                            Gzx = (-(RR./r.^2)*G2).*g;
+                            Gzx = (-(RR./r.^2).*G2).*g;
                             RR = Rz.*Ry;
-                            Gzy = (-(RR./r.^2)*G2).*g;
+                            Gzy = (-(RR./r.^2).*G2).*g;
                             RR = Rz.*Rz;
-                            Gzz = (I*G1-(RR./r.^2)*G2).*g;
+                            Gzz = (G1-(RR./r.^2).*G2).*g;
                             Exyz = Exyz + (Gzx .* J(i,1) + Gzy .* J(i,2) + Gzz .* J(i,3)).*Area(i);
                         elseif j==2
                             %xz
                             Rx = repmat(rx(i,:)',1,steps);
-                            Ry = repmat(ry(i,:),1,steps);
+                            Ry = repmat(ry(i,:),steps,steps);
                             Rz = repmat(rz(i,:),steps,1);
                             r = sqrt(Rx.^2+Ry.^2+Rz.^2);
                             
@@ -786,31 +786,31 @@ classdef ArbitraryAntenna
                             G2 = (1+3i./(k*r)-3./(k*r).^2);
                             
                             RR = Rx.*Rx;
-                            Gxx = (I*G1-(RR./r.^2)*G2).*g;
+                            Gxx = (I*G1-(RR./r.^2).*G2).*g;
                             RR = Rx.*Ry;
-                            Gxy = (-(RR./r.^2)*G2).*g;
+                            Gxy = (-(RR./r.^2).*G2).*g;
                             RR = Rx.*Rz;
-                            Gxz = (-(RR./r.^2)*G2).*g;
+                            Gxz = (-(RR./r.^2).*G2).*g;
                             Exzx = Exzx + (Gxx .* J(i,1) + Gxy .* J(i,2) + Gxz .* J(i,3)).*Area(i);
                             
                             RR = Ry.*Rx;
-                            Gyx = (-(RR./r.^2)*G2).*g;
+                            Gyx = (-(RR./r.^2).*G2).*g;
                             RR = Ry.*Ry;
-                            Gyy = (I*G1-(RR./r.^2)*G2).*g;
+                            Gyy = (I*G1-(RR./r.^2).*G2).*g;
                             RR = Ry.*Rz;
-                            Gyz = (-(RR./r.^2)*G2).*g;
+                            Gyz = (-(RR./r.^2).*G2).*g;
                             Exzy = Exzy + (Gyx .* J(i,1) + Gyy .* J(i,2) + Gyz .* J(i,3)).*Area(i);
                             
                             RR = Rz.*Rx;
-                            Gzx = (-(RR./r.^2)*G2).*g;
+                            Gzx = (-(RR./r.^2).*G2).*g;
                             RR = Rz.*Ry;
-                            Gzy = (-(RR./r.^2)*G2).*g;
+                            Gzy = (-(RR./r.^2).*G2).*g;
                             RR = Rz.*Rz;
-                            Gzz = (I*G1-(RR./r.^2)*G2).*g;
+                            Gzz = (I*G1-(RR./r.^2).*G2).*g;
                             Exzz = Exzz + (Gzx .* J(i,1) + Gzy .* J(i,2) + Gzz .* J(i,3)).*Area(i);
                         else
                             %yz
-                            Rx = repmat(rx(i,:),1,steps);
+                            Rx = repmat(rx(i,:),steps,steps);
                             Ry = repmat(ry(i,:),steps,1);
                             Rz = repmat(rz(i,:)',1,steps);
                             r = sqrt(Rx.^2+Ry.^2+Rz.^2);
@@ -820,27 +820,27 @@ classdef ArbitraryAntenna
                             G2 = (1+3i./(k*r)-3./(k*r).^2);
                             
                             RR = Rx.*Rx;
-                            Gxx = (I*G1-(RR./r.^2)*G2).*g;
+                            Gxx = (I*G1-(RR./r.^2).*G2).*g;
                             RR = Rx.*Ry;
-                            Gxy = (-(RR./r.^2)*G2).*g;
+                            Gxy = (-(RR./r.^2).*G2).*g;
                             RR = Rx.*Rz;
-                            Gxz = (-(RR./r.^2)*G2).*g;
+                            Gxz = (-(RR./r.^2).*G2).*g;
                             Eyzx = Eyzx + (Gxx .* J(i,1) + Gxy .* J(i,2) + Gxz .* J(i,3)).*Area(i);
                             
                             RR = Ry.*Rx;
-                            Gyx = (-(RR./r.^2)*G2).*g;
+                            Gyx = (-(RR./r.^2).*G2).*g;
                             RR = Ry.*Ry;
-                            Gyy = (I*G1-(RR./r.^2)*G2).*g;
+                            Gyy = (I*G1-(RR./r.^2).*G2).*g;
                             RR = Ry.*Rz;
-                            Gyz = (-(RR./r.^2)*G2).*g;
+                            Gyz = (-(RR./r.^2).*G2).*g;
                             Eyzy = Eyzy + (Gyx .* J(i,1) + Gyy .* J(i,2) + Gyz .* J(i,3)).*Area(i);
                             
                             RR = Rz.*Rx;
-                            Gzx = (-(RR./r.^2)*G2).*g;
+                            Gzx = (-(RR./r.^2).*G2).*g;
                             RR = Rz.*Ry;
-                            Gzy = (-(RR./r.^2)*G2).*g;
+                            Gzy = (-(RR./r.^2).*G2).*g;
                             RR = Rz.*Rz;
-                            Gzz = (I*G1-(RR./r.^2)*G2).*g;
+                            Gzz = (I*G1-(RR./r.^2).*G2).*g;
                             Eyzz = Eyzz + (Gzx .* J(i,1) + Gzy .* J(i,2) + Gzz .* J(i,3)).*Area(i);
                         end
                 end 
@@ -848,6 +848,10 @@ classdef ArbitraryAntenna
             Exy = sqrt(Exyx.^2+Exyy.^2+Exyz.^2);
             Exz = sqrt(Exzx.^2+Exzy.^2+Exzz.^2);
             Ezy = sqrt(Eyzx.^2+Eyzy.^2+Eyzz.^2);
+            
+%             Exy = Exyx+Exyy+Exyz;
+%             Exz = Exzx+Exzy+Exzz;
+%             Ezy = Eyzx+Eyzy+Eyzz;
         end
     end    
 end
