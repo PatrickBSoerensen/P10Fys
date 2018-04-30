@@ -363,11 +363,10 @@ classdef ArbitraryAntenna
         function [Z, b, a] = MoM(p, t, EdgeList, BasisNumber, BasisLA, Area, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k, SubTri, x, y, z)
             % alocating space
             Z = zeros(BasisNumber,BasisNumber)+1i*zeros(BasisNumber,BasisNumber);
-%             Ei = zeros(size(t));
             Ei(:,1) = x.*exp(-1i*k.*(Center(:,1)));
             Ei(:,2) = y.*exp(-1i*k.*(Center(:,1)));
             Ei(:,3) = z.*exp(-1i*k.*(Center(:,1)));
-
+            
             % Outer loop over triangles
             for y=1:length(t)
                 % Outer triangle edges
@@ -561,7 +560,7 @@ classdef ArbitraryAntenna
                         b2 = RhoM_(:,:,EdgeNumberBasis(i));
                         b3 = BasisLA(EdgeNumberBasis(i),2)/2;
                         
-                        b(EdgeNumberBasis(i),:) = sum(sum(b1.*Ei(PlusBasisTriangle,:),2)/9+sum(b2.*Ei(MinusBasisTriangle,:),2)/9).*b3;
+                        b(EdgeNumberBasis(i),:) = (sum(sum(b1.*Ei(PlusBasisTriangle,:),2)/9)+sum(sum(b2.*Ei(MinusBasisTriangle,:),2)/9)).*b3;
                     end    
                 end
             end
@@ -580,20 +579,168 @@ classdef ArbitraryAntenna
                 % Finding the index of plus and minus triangles for
                 % the current basis for the outer
                 PlusTri(y) = find(sum(abs(t-FaceEdgeP),2)==0);
-                MinusTri(y) = find(sum(abs(t-FaceEdgeM),2)==0);
-               
+                MinusTri(y) = find(sum(abs(t-FaceEdgeM),2)==0); 
             end
         end
         
+        function [Z, b, a] = MoMfastslow(p, t, EdgeList, BasisNumber, BasisLA, Area, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k, SubTri, x, y, z)
+            % alocating space
+            Z = zeros(BasisNumber,BasisNumber)+1i*zeros(BasisNumber,BasisNumber);
+            Ei(:,1) = x.*exp(-1i*k.*(Center(:,1)));
+            Ei(:,2) = y.*exp(-1i*k.*(Center(:,1)));
+            Ei(:,3) = z.*exp(-1i*k.*(Center(:,1)));
+            
+            [PlusTri, MinusTri] = ArbitraryAntenna.PMTri(t, EdgeList);
+            
+            % Outer loop over triangles
+            for y=1:length(t)
+                PO = find(PlusTri - y ==0);
+                MO = find(MinusTri - y ==0);
+                % Inner triangle loop
+                SPO = reshape(SubTri(:,:,y),[3,9]).';
+                SMO = reshape(SubTri(:,:,y),[3,9]).';
+                for h=1:length(t)
+                    PI = find(PlusTri - h ==0);
+                    MI = find(MinusTri - h ==0);
+                    SPI = reshape(SubTri(:,:,h),[3,9]).';
+                    SMI = reshape(SubTri(:,:,h),[3,9]).';
+                               
+                    ppo = sqrt(sum((Center(y,:)-SPI).^2,2));
+                    mpo = sqrt(sum((Center(y,:)-SPI).^2,2));
+                    pmo = sqrt(sum((Center(y,:)-SMI).^2,2));
+                    mmo = sqrt(sum((Center(y,:)-SMI).^2,2));
+                           
+                    ppi = sqrt(sum((Center(h,:)-SPO).^2,2));
+                    mpi = sqrt(sum((Center(h,:)-SPO).^2,2));
+                    pmi = sqrt(sum((Center(h,:)-SMO).^2,2));
+                    mmi = sqrt(sum((Center(h,:)-SMO).^2,2));
+                    %Loop over outer triangles basis functions
+                    for i = 1:length(PO)
+                        % Intermediate loading of plus and minus functions
+                        % evaluated in center points, _ denotes sub
+                        % triangle
+                        zMP = (RhoP(PO(i),:));
+                        zMP_ = (RhoP_(:,:,PO(i)));
+                        % Subtriangles for the inner triangles basis
+                        % functions
+                        for j = 1:length(PI)
+                            % Intermediate loading of plus and minus functions
+                            % evaluated in center points, _ denotes sub
+                            % triangle
+                            zNP = (RhoP(PI(j),:));
+                            zNP_ = (RhoP_(:,:,PI(j)));                   
+                            if PO(i)==PI(j)
+                                g = I2(y);
+                                Z(PO(i), PI(j)) = ...
+                                (BasisLA(PO(i),2)*BasisLA(PI(j),2))/(4*pi)...
+                                *((dot(zMP, zNP)/4-1/k^2) * g)...
+                                + Z(PO(i), PI(j));
+                            else                                
+                                gPPo = exp(1i.*k.*ppo)./ppo;
+                                gPPi = exp(1i.*k.*ppi)./ppi;
+                                
+                                Z(PO(i), PI(j)) = ...
+                                (BasisLA(PO(i),2)*BasisLA(PI(j),2))/(4*pi)...
+                                *sum((dot(repmat(zMP,[9,1]), zNP_,2)/4-1/k^2) .* gPPo/9)...
+                                + Z(PO(i), PI(j));
+                            
+                                Z(PO(i), PI(j)) = ...
+                                (BasisLA(PO(i),2)*BasisLA(PI(j),2))/(4*pi)...
+                                *sum((dot(zMP_, repmat(zNP,[9,1]),2)/4-1/k^2) .* gPPi/9)...
+                                + Z(PO(i), PI(j));
+                            end
+                        end
+                        for j=1:length(MI)
+                            zNM = (RhoM(MI(j),:));
+                            zNM_ = (RhoM_(:,:,MI(j)));                             
+                            if PO(i)==MI(j)
+                                g = I2(y);
+                                Z(PO(i), MI(j)) = ...
+                                (BasisLA(PO(i),2)*BasisLA(MI(j),2))/(4*pi)...
+                                *((dot(zMP, zNM)/4-1/k^2) * g)...
+                                + Z(PO(i), MI(j));
+                            else   
+                                gPMo = exp(1i.*k.*pmo)./pmo;
+                                gMPi = exp(1i.*k.*mpi)./mpi;
+                                
+                                Z(PO(i), MI(j)) = ...
+                                (BasisLA(PO(i),2)*BasisLA(MI(j),2))/(4*pi)...
+                                *sum((dot(repmat(zMP,[9,1]), zNM_ ,2)/4+1/k^2) .* gPMo/9)...
+                                + Z(PO(i), MI(j));
+                                
+                                Z(PO(i), MI(j)) = ...
+                                (BasisLA(PO(i),2)*BasisLA(MI(j),2))/(4*pi)...
+                                *sum((dot(zMP_, repmat(zNM,[9,1]),2)/4+1/k^2) .* gMPi/9)...
+                                + Z(PO(i), MI(j));
+                            end    
+                        end  
+                        b1(PO(i),:) = sum(sum(Ei(y,:).*RhoP_(:,:,PO(i)).*BasisLA(PO(i),2)/2,2)/9);
+                    end
+                    for i=1:length(MO)
+                        zMM = (RhoM(MO(i),:));
+                        zMM_ = (RhoM_(:,:,MO(i)));
+                        for j=1:length(PI)
+                            if MO(i)==PI(j)
+                                g = I2(y); 
+                                Z(MO(i), PI(j)) = ...
+                                (BasisLA(MO(i),2)*BasisLA(PI(j),2))/(4*pi)...
+                                *((dot(zMM, zNP)/4-1/k^2) * g)...
+                                + Z(MO(i), PI(j));   
+                            else
+                                gPMi = exp(1i.*k.*pmi)./pmi;
+                                gMPo = exp(1i.*k.*mpo)./mpo;
+                                   
+                                Z(MO(i), PI(j)) = ...
+                                (BasisLA(MO(i),2)*BasisLA(PI(j),2))/(4*pi)...
+                                *sum((dot(repmat(zMM,[9,1]), zNP_,2)/4+1/k^2) .* gMPo/9)...
+                                + Z(MO(i), PI(j));
+                            
+                                Z(MO(i), PI(j)) = ...
+                                (BasisLA(MO(i),2)*BasisLA(PI(j),2))/(4*pi)...
+                                *sum((dot(zMM_, repmat(zNP,[9,1]),2)/4+1/k^2) .* gPMi/9)...
+                                + Z(MO(i), PI(j));  
+                            end 
+                        end
+                        for j=1:length(MI)
+                            if MO(i)==MI(j)
+                                g = I2(y);
+                                Z(MO(i), MI(j)) = ...
+                                (BasisLA(MO(i),2)*BasisLA(MI(j),2))/(4*pi)...
+                                *((dot(zMM, zNM)/4-1/k^2) * g)...
+                                + Z(MO(i), MI(j));        
+                            else
+                                gMMo = exp(1i.*k.*mmo)./mmo;
+                                gMMi = exp(1i.*k.*mmi)./mmi;
+                                    
+                                Z(MO(i), MI(j)) = ...
+                                (BasisLA(MO(i),2)*BasisLA(MI(j),2))/(4*pi)...
+                                *sum((dot(repmat(zMM,[9,1]), zNM_,2)/4-1/k^2) .* gMMo/9)...
+                                + Z(MO(i), MI(j));
+                            
+                                Z(MO(i), MI(j)) = ...
+                                (BasisLA(MO(i),2)*BasisLA(MI(j),2))/(4*pi)...
+                                *sum((dot(zMM_, repmat(zNM,[9,1]),2)/4-1/k^2) .* gMMi/9)...
+                                + Z(MO(i), MI(j));
+                            end 
+                        end    
+                        b2(MO(i),:) = sum(sum(Ei(y,:).*RhoM_(:,:,MO(i)).*BasisLA(MO(i),2)/2,2)/9);
+                    end      
+                end       
+            end
+            b = b1+b2;
+            % Z\b is a newer faster version of inv(Z)*b
+            a = Z\b;
+        end
+      
           function [Z, a, b] = MoMLoopCut(t, EdgeList, BasisNumber, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k, SubTri, x, y, z)
             % alocating space
             Z = zeros(BasisNumber,BasisNumber)+1i*zeros(BasisNumber,BasisNumber);
             TotTri = length(t);
             SubTri = permute(reshape(SubTri,[3, 9, TotTri]),[2 1 3]);
             Ei = zeros(size(t));
-            Ei(:,1) = x%.*exp(-1i*k.*(Center(:,1)));
-            Ei(:,2) = y%.*exp(-1i*k.*(Center(:,1)));
-            Ei(:,3) = z%.*exp(-1i*k.*(Center(:,1)));
+            Ei(:,1) = x.*exp(-1i*k.*(Center(:,1)));
+            Ei(:,2) = y.*exp(-1i*k.*(Center(:,1)));
+            Ei(:,3) = z.*exp(-1i*k.*(Center(:,1)));
             EdgesTotal = length(EdgeList);
                             
             for m=1:EdgesTotal

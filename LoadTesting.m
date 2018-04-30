@@ -72,16 +72,25 @@ disp('MoM')
 [ZN, aN, bN ] = ArbitraryAntenna.MoMLoopCut(t, EdgeList, BasisNumber, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k, SubTri, 0, 1, 0);
 toc;
 %%
-% [Z, b, a] = ArbitraryAntenna.MoM(p, t, EdgeList, BasisNumber, BasisLA, Area, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k,  SubTri, 0, 1, 0);
+tic;
+fprintf('\n')
+disp('MoM')
+ [ZO, bO, aO] = ArbitraryAntenna.MoM(p, t, EdgeList, BasisNumber, BasisLA, Area, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k,  SubTri, 0, 1, 0);
+toc;
+%%
+tic;
+fprintf('\n')
+disp('MoM')
+ [Z, b, a] = ArbitraryAntenna.MoMfastslow(p, t, EdgeList, BasisNumber, BasisLA, Area, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k,  SubTri, 0, 1, 0);
 toc;
 %% Current calc in Triangle
 sub = 1;
-Dipole =0;
+Dipole =1;
 tic;
 fprintf('\n')
 disp('Calculating Current')
 % [Jface] = ArbitraryAntenna.CurrentCalc(t, p, EdgeList, w, mu0, a, BasisLA, RhoP, RhoM, RhoP_, RhoM_, sub, Dipole);
-[Jface] = ArbitraryAntenna.CurrentCalc(t, p, EdgeList, w, mu0, aN, BasisLA, RhoP, RhoM, RhoP_, RhoM_, sub, Dipole);
+[Jface] = ArbitraryAntenna.CurrentCalc(t, p, EdgeList, w, mu0, a, BasisLA, RhoP, RhoM, RhoP_, RhoM_, sub, Dipole);
 
 toc;
 %% Surf plot Current
@@ -106,7 +115,7 @@ rotate3d
 %% Calculating E
 %x-min/max, z-min/max, y-min/max
 normalize = 1;
-PlotComp = 1;
+PlotComp = 0;
 tic;
 fprintf('\n')
 disp('Calculating E-field')
