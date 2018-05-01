@@ -2,8 +2,8 @@
 % stl = stlread('antennas/AntBinMesh.stl');
 % stl = stlread('antennas/Dipole10cm.stl');
 % stl = stlread('antennas/Dipole10cmT580.stl');
-% stl = stlread('antennas/Dipole10cmT1104.stl');
-stl = stlread('antennas/AntBinMesh2556.stl');
+stl = stlread('antennas/Dipole10cmT1104.stl');
+% stl = stlread('antennas/AntBinMesh2556.stl');
 % stl = stlread('antennas/HalfAntMany.stl');
 %% faces and unique vertices
 tic;
@@ -47,7 +47,7 @@ SubSubTri = 0;
 tic;
 fprintf('\n')
 disp('Calculating areals for subtriangles')
-[SubTri, SubTriArea] = ArbitraryAntenna.SubTriangles(p, t, Center, SubSubTri);
+[SubTri] = ArbitraryAntenna.SubTriangles(p, t, Center, SubSubTri);
 toc;
 %% Basis Function setup
 tic;
@@ -81,7 +81,7 @@ disp('MoM')
 [Z, b, a] = ArbitraryAntenna.MoM(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k,  SubTri, 0, 1, 0);
 toc;
 %% Current calc in Triangle
-sub = 1;
+sub = 0;
 Dipole =0;
 tic;
 fprintf('\n')
@@ -92,7 +92,7 @@ toc;
 JfaceSize = sqrt(sum(Jface.^2,2));
 xthree = zeros(size(t)); ythree = zeros(size(t)); zthree = zeros(size(t));
 Jmax=max(JfaceSize);
-CurrentNorm1=JfaceSize;%/max(JfaceSize);
+CurrentNorm1=JfaceSize/max(JfaceSize);
 for m=1:length(t)
     N=t(m,1:3);
     xthree(m,1:3) = p(N,1);

@@ -100,21 +100,18 @@ classdef ArbitraryAntenna
             Atot = sqrt(sum((cross(L1,L2)).^2,2))/2;
         end
         
-        function [SubTri, SubTriArea] = SubTriangles(p, t, Center, itt)
+        function [SubTri] = SubTriangles(p, t, Center, itt)
             % Method for creating subtriangles
             TotTri = length(t);
             
             for i=1:TotTri
-                % Triangle points index
-                n1 = t(i,1);
-                n2 = t(i,2);
-                n3 = t(i,3);
+                
                 % Center of triangle
                 M = Center(i,:);
                 % Coordinates to triangle points
-                r1 = p(n1,:);
-                r2 = p(n2,:);
-                r3 = p(n3,:);
+                r1 = p(t(i,1),:);
+                r2 = p(t(i,2),:);
+                r3 = p(t(i,3),:);
                 % Edges coordinates
                 r12=r2-r1;
                 r23=r3-r2;
@@ -138,56 +135,27 @@ classdef ArbitraryAntenna
                 a9=1/3*(C4+C6+r3);
                 % Saving subtriangles centerpoints
                 if itt
-                    [aa1, AA1] = ArbitraryAntenna.SubTrianglesIttMet(r1, C1, C5, a1);
-                    [aa2, AA2] = ArbitraryAntenna.SubTrianglesIttMet(C1,C2,M, a2);           
-                    [aa3, AA3] = ArbitraryAntenna.SubTrianglesIttMet(C2,C3,r2, a3); 
-                    [aa4, AA4] = ArbitraryAntenna.SubTrianglesIttMet(C2,C3,M, a4);                    
-                    [aa5, AA5] = ArbitraryAntenna.SubTrianglesIttMet(C3,C4,M, a5); 
-                    [aa6, AA6] = ArbitraryAntenna.SubTrianglesIttMet(C1,C5,M, a6);
-                    [aa7, AA7] = ArbitraryAntenna.SubTrianglesIttMet(C5,C6,M, a7); 
-                    [aa8, AA8] = ArbitraryAntenna.SubTrianglesIttMet(C4,C6,M, a8);
-                    [aa9, AA9] = ArbitraryAntenna.SubTrianglesIttMet(C4,C6,r3, a9); 
+                    [aa1] = ArbitraryAntenna.SubTrianglesIttMet(C1,C5,r1, a1);
+                    [aa2] = ArbitraryAntenna.SubTrianglesIttMet(C1,C2,M, a2);           
+                    [aa3] = ArbitraryAntenna.SubTrianglesIttMet(C2,C3,r2, a3); 
+                    [aa4] = ArbitraryAntenna.SubTrianglesIttMet(C2,C3,M, a4);                    
+                    [aa5] = ArbitraryAntenna.SubTrianglesIttMet(C3,C4,M, a5); 
+                    [aa6] = ArbitraryAntenna.SubTrianglesIttMet(C1,C5,M, a6);
+                    [aa7] = ArbitraryAntenna.SubTrianglesIttMet(C5,C6,M, a7); 
+                    [aa8] = ArbitraryAntenna.SubTrianglesIttMet(C4,C6,M, a8);
+                    [aa9] = ArbitraryAntenna.SubTrianglesIttMet(C4,C6,r3, a9); 
                     
                     SubTri(:,:,i)=...
                     [aa1 aa2 aa3 aa4 aa5 aa6 aa7 aa8 aa9];
-                
-                    SubTriArea(:,:,i)=...
-                    [AA1 AA2 AA3 AA4 AA5 AA6 AA7 AA8 AA9];
                 else
                     SubTri(:,:,i)=...
                     [a1 a2 a3 a4 a5 a6 a7 a8 a9];
-                
-                    % SubTriangles areas
-                    L1 = r1-C1;
-                    L2 = C5-C1;
-                    L3 = M-C1;
-                    L4 = C2-M;
-                    L5 = C2-C3;
-                    L6 = r2-C2;
-                    L7 = M-C3;
-                    L8 = M-C4;
-                    L9 = C6-M;
-                    L10 = M-C5;
-                    L11 = C6-r3;
-                
-                    A1 = sqrt(sum((cross(L1,L2)).^2,2))/2;
-                    A2 = sqrt(sum((cross(L3,L4)).^2,2))/2;
-                    A3 = sqrt(sum((cross(L5,L6)).^2,2))/2;
-                    A4 = sqrt(sum((cross(L4,L5)).^2,2))/2;
-                    A5 = sqrt(sum((cross(L7,L8)).^2,2))/2;
-                    A6 = sqrt(sum((cross(L2,L3)).^2,2))/2;
-                    A7 = sqrt(sum((cross(L9,L10)).^2,2))/2;
-                    A8 = sqrt(sum((cross(L8,L9)).^2,2))/2;
-                    A9 = sqrt(sum((cross(L9,L11)).^2,2))/2;
-                
-                    SubTriArea(:,:,i)=...
-                    [A1 A2 A3 A4 A5 A6 A7 A8 A9];
                 end
                 
             end
         end
         
-        function [SubTri, SubTriArea] = SubTrianglesIttMet(r1,r2,r3, Center)             
+        function [SubTri, SubTriArea] = SubTrianglesIttMet(r1,r2,r3, Center)       
                 % Center of triangle
                 M = Center;
                 % Edges coordinates
@@ -214,31 +182,6 @@ classdef ArbitraryAntenna
                 % Saving subtriangles centerpoints
                 SubTri(:,:)=...
                     [a1 a2 a3 a4 a5 a6 a7 a8 a9];
-                % SubTriangles areas
-                L1 = r1-C1;
-                L2 = C5-C1;
-                L3 = M-C1;
-                L4 = C2-M;
-                L5 = C2-C3;
-                L6 = r2-C2;
-                L7 = M-C3;
-                L8 = M-C4;
-                L9 = C6-M;
-                L10 = M-C5;
-                L11 = C6-r3;
-                
-                A1 = sqrt(sum((cross(L1,L2)).^2,2))/2;
-                A2 = sqrt(sum((cross(L3,L4)).^2,2))/2;
-                A3 = sqrt(sum((cross(L5,L6)).^2,2))/2;
-                A4 = sqrt(sum((cross(L4,L5)).^2,2))/2;
-                A5 = sqrt(sum((cross(L7,L8)).^2,2))/2;
-                A6 = sqrt(sum((cross(L2,L3)).^2,2))/2;
-                A7 = sqrt(sum((cross(L9,L10)).^2,2))/2;
-                A8 = sqrt(sum((cross(L8,L9)).^2,2))/2;
-                A9 = sqrt(sum((cross(L9,L11)).^2,2))/2;
-                
-                SubTriArea(:,:)=...
-                    [A1 A2 A3 A4 A5 A6 A7 A8 A9];
         end
         
         function I2 = SelfTerm(p, t)
@@ -366,7 +309,7 @@ classdef ArbitraryAntenna
                     RhoP(TP,:) = BasisP(Center(m,:));
                     % Evaluating the basis function in centres of
                     % subtriangles
-                    SubP = SubTri(1,:,m);
+                    SubP = SubTri(:,:,m);
                     SubP = reshape(SubP, 3, []).';
                     RhoP_(:,:,TP) = BasisP(SubP);
                 end
@@ -378,8 +321,8 @@ classdef ArbitraryAntenna
                     RhoM(TM,:) = BasisM(Center(m,:));
                     % Evaluating the basis function in centres of
                     % subtriangles
-                    SubM = SubTri(1,:,m);
-                    SubM = reshape(SubM, 3,[]).';
+                    SubM = SubTri(:,:,m);
+                    SubM = reshape(SubM, 3, []).';
                     RhoM_(:,:,TM) = BasisM(SubM);
                 end        
             end
@@ -641,31 +584,18 @@ classdef ArbitraryAntenna
                 Quad = Quad(1);
                 for y=1:length(Plus)
                     if sub
-                        Jface(n,:) = sum(1i.*w.*mu0*a(Plus(y))*BasisLA(Plus(y),2)*RhoP_(:,:,Plus(y))/2)/Quad + Jface(n,:);
+                        Jface(n,:) = sum(1i.*w.*mu0*a(Plus(y))*BasisLA(Plus(y),2)*RhoP_(:,:,Plus(y))/(2*Quad)) + Jface(n,:);
                     else 
                         Jface(n,:) = 1i.*w.*mu0*a(Plus(y))*BasisLA(Plus(y),1)*RhoP(Plus(y),:)/2 + Jface(n,:);    
                     end
                 end
                 for y=1:length(Minus)
                     if sub
-                        Jface(n,:) = sum(1i.*w.*mu0*a(Minus(y))*BasisLA(Minus(y),2)*RhoM_(:,:,Minus(y))/2)/Quad + Jface(n,:);
+                        Jface(n,:) = sum(1i.*w.*mu0*a(Minus(y))*BasisLA(Minus(y),2)*RhoM_(:,:,Minus(y))/(2*Quad)) + Jface(n,:);
                     else
                         Jface(n,:) = 1i.*w.*mu0*a(Minus(y))*BasisLA(Minus(y),3)*RhoM(Minus(y),:)/2 + Jface(n,:);    
                     end
                 end    
-            end
-            if Dipole
-                minp = min(p);
-                maxp = max(p);
-                [maxmaxp, maxaxis]= max(maxp);
-                Ends(1) = maxmaxp;
-                Ends(2) = minp(maxaxis);
-                TopEndIndex = find(p(:,maxaxis)==Ends(1));
-                BotEndIndex = find(p(:,maxaxis)==Ends(2));
-                TrianglesOnEnds = find(sum(t==TopEndIndex,2)==1);
-                Jface(TrianglesOnEnds,:) = 0;
-                TrianglesOnEnds = find(sum(t==BotEndIndex,2)==1);
-                Jface(TrianglesOnEnds,:) = 0;
             end
         end
         

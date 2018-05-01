@@ -2,8 +2,8 @@
 % stl = stlread('antennas/AntBinMesh.stl');
 % stl = stlread('antennas/Dipole10cm.stl');
 % stl = stlread('antennas/Dipole10cmT580.stl');
-stl = stlread('antennas/Dipole10cmT1104.stl');
-% stl = stlread('antennas/AntBinMesh2556.stl');
+% stl = stlread('antennas/Dipole10cmT1104.stl');
+stl = stlread('antennas/AntBinMesh2556.stl');
 % stl = stlread('antennas/HalfAntMany.stl');
 %% faces and unique vertices
 tic;
