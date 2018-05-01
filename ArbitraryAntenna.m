@@ -100,6 +100,148 @@ classdef ArbitraryAntenna
             Atot = sqrt(sum((cross(L1,L2)).^2,2))/2;
         end
         
+        function [SubTri, SubTriArea] = SubTrianglesTest(p, t, Center, itt)
+            % Method for creating subtriangles
+            TotTri = length(t);
+            
+            for i=1:TotTri
+                % Triangle points index
+                n1 = t(i,1);
+                n2 = t(i,2);
+                n3 = t(i,3);
+                % Center of triangle
+                M = Center(i,:);
+                % Coordinates to triangle points
+                r1 = p(n1,:);
+                r2 = p(n2,:);
+                r3 = p(n3,:);
+                % Edges coordinates
+                r12=r2-r1;
+                r23=r3-r2;
+                r13=r3-r1; 
+                % Points on triangle edges
+                C1=r1+(1/3)*r12;
+                C2=r1+(2/3)*r12;
+                C3=r2+(1/3)*r23;
+                C4=r2+(2/3)*r23;
+                C5=r1+(1/3)*r13;
+                C6=r1+(2/3)*r13;
+                % Subtriangles centers
+                a1=1/3*(C1+C5+r1);
+                a2=1/3*(C1+C2+M);
+                a3=1/3*(C2+C3+r2);
+                a4=1/3*(C2+C3+M);
+                a5=1/3*(C3+C4+M);
+                a6=1/3*(C1+C5+M);
+                a7=1/3*(C5+C6+M);
+                a8=1/3*(C4+C6+M);
+                a9=1/3*(C4+C6+r3);
+                % Saving subtriangles centerpoints
+                if itt
+                    [aa1, AA1] = ArbitraryAntenna.SubTrianglesIttMet(r1, C1, C5, a1);
+                    [aa2, AA2] = ArbitraryAntenna.SubTrianglesIttMet(C1,C2,M, a2);           
+                    [aa3, AA3] = ArbitraryAntenna.SubTrianglesIttMet(C2,C3,r2, a3); 
+                    [aa4, AA4] = ArbitraryAntenna.SubTrianglesIttMet(C2,C3,M, a4);                    
+                    [aa5, AA5] = ArbitraryAntenna.SubTrianglesIttMet(C3,C4,M, a5); 
+                    [aa6, AA6] = ArbitraryAntenna.SubTrianglesIttMet(C1,C5,M, a6);
+                    [aa7, AA7] = ArbitraryAntenna.SubTrianglesIttMet(C5,C6,M, a7); 
+                    [aa8, AA8] = ArbitraryAntenna.SubTrianglesIttMet(C4,C6,M, a8);
+                    [aa9, AA9] = ArbitraryAntenna.SubTrianglesIttMet(C4,C6,r3, a9); 
+                    
+                    SubTri(:,:,i)=...
+                    [aa1 aa2 aa3 aa4 aa5 aa6 aa7 aa8 aa9];
+                
+                    SubTriArea(:,:,i)=...
+                    [AA1 AA2 AA3 AA4 AA5 AA6 AA7 AA8 AA9];
+                else
+                    SubTri(:,:,i)=...
+                    [a1 a2 a3 a4 a5 a6 a7 a8 a9];
+                
+                    % SubTriangles areas
+                    L1 = r1-C1;
+                    L2 = C5-C1;
+                    L3 = M-C1;
+                    L4 = C2-M;
+                    L5 = C2-C3;
+                    L6 = r2-C2;
+                    L7 = M-C3;
+                    L8 = M-C4;
+                    L9 = C6-M;
+                    L10 = M-C5;
+                    L11 = C6-r3;
+                
+                    A1 = sqrt(sum((cross(L1,L2)).^2,2))/2;
+                    A2 = sqrt(sum((cross(L3,L4)).^2,2))/2;
+                    A3 = sqrt(sum((cross(L5,L6)).^2,2))/2;
+                    A4 = sqrt(sum((cross(L4,L5)).^2,2))/2;
+                    A5 = sqrt(sum((cross(L7,L8)).^2,2))/2;
+                    A6 = sqrt(sum((cross(L2,L3)).^2,2))/2;
+                    A7 = sqrt(sum((cross(L9,L10)).^2,2))/2;
+                    A8 = sqrt(sum((cross(L8,L9)).^2,2))/2;
+                    A9 = sqrt(sum((cross(L9,L11)).^2,2))/2;
+                
+                    SubTriArea(:,:,i)=...
+                    [A1 A2 A3 A4 A5 A6 A7 A8 A9];
+                end
+                
+            end
+        end
+        
+        function [SubTri, SubTriArea] = SubTrianglesIttMet(r1,r2,r3, Center)
+                        
+                % Center of triangle
+                M = Center;
+                % Edges coordinates
+                r12=r2-r1;
+                r23=r3-r2;
+                r13=r3-r1;
+                % Subtriangle points on edges
+                C1=r1+(1/3)*r12;
+                C2=r1+(2/3)*r12;
+                C3=r2+(1/3)*r23;
+                C4=r2+(2/3)*r23;
+                C5=r1+(1/3)*r13;
+                C6=r1+(2/3)*r13;
+                % Subtriangles centers
+                a1=1/3*(C1+C5+r1);
+                a2=1/3*(C1+C2+M);
+                a3=1/3*(C2+C3+r2);
+                a4=1/3*(C2+C3+M);
+                a5=1/3*(C3+C4+M);
+                a6=1/3*(C1+C5+M);
+                a7=1/3*(C5+C6+M);
+                a8=1/3*(C4+C6+M);
+                a9=1/3*(C4+C6+r3);
+                % Saving subtriangles centerpoints
+                SubTri(:,:)=...
+                    [a1 a2 a3 a4 a5 a6 a7 a8 a9];
+                % SubTriangles areas
+                L1 = r1-C1;
+                L2 = C5-C1;
+                L3 = M-C1;
+                L4 = C2-M;
+                L5 = C2-C3;
+                L6 = r2-C2;
+                L7 = M-C3;
+                L8 = M-C4;
+                L9 = C6-M;
+                L10 = M-C5;
+                L11 = C6-r3;
+                
+                A1 = sqrt(sum((cross(L1,L2)).^2,2))/2;
+                A2 = sqrt(sum((cross(L3,L4)).^2,2))/2;
+                A3 = sqrt(sum((cross(L5,L6)).^2,2))/2;
+                A4 = sqrt(sum((cross(L4,L5)).^2,2))/2;
+                A5 = sqrt(sum((cross(L7,L8)).^2,2))/2;
+                A6 = sqrt(sum((cross(L2,L3)).^2,2))/2;
+                A7 = sqrt(sum((cross(L9,L10)).^2,2))/2;
+                A8 = sqrt(sum((cross(L8,L9)).^2,2))/2;
+                A9 = sqrt(sum((cross(L9,L11)).^2,2))/2;
+                
+                SubTriArea(:,:)=...
+                    [A1 A2 A3 A4 A5 A6 A7 A8 A9];
+        end
+        
         function [SubTri, SubTriArea] = SubTriangles(p, t, Center)
             % Method for creating subtriangles
             TotTri = length(t);
@@ -199,15 +341,14 @@ classdef ArbitraryAntenna
                 D3=(b-c+sqrt(c)*sqrt(d))*(-a+b+sqrt(a)*sqrt(d));
                     
                 I2(i) = 1/6*(1/sqrt(a)*log(N1/D1) + 1/sqrt(c)*log(N2/D2) + 1/sqrt(d)*log(N3/D3));
-                I2(i) = I2(i);
             end
         end
         
-        function [EdgeList, Basis, BasisLA, BasisDeriv, BasisNumber, BasisArea] = BasisFunc(p, t, ConnectCell)
+        function [EdgeList, Basis, BasisLA] = BasisFunc(p, t, ConnectCell)
             % Method for creating basis functions and saving other
             % information relevant to these
             BasisNumber = 1;
-
+            
             for i=1:length(p)
                 % temp holds a list of point indexes for the faces that the
                 % i'th point is a part of.
@@ -269,26 +410,17 @@ classdef ArbitraryAntenna
         
                     % Plus basis function
                     Basis{BasisNumber,1} = @(r) (p(NotEdgePoints(1),:) - r);
-                    % Frontterm for basis function
-                    BasisLA(BasisNumber,1) =  L./(2*AP);
-                    BasisLA(BasisNumber,2) =  L;
                     % Minus basis function
                     Basis{BasisNumber,2} = @(r) (r - p(NotEdgePoints(2),:));
-                    % Fronterm for basis function
-                    BasisLA(BasisNumber,3) = L./(2*AM);
-                    % Plus differentiated basis function
-                    BasisDeriv(BasisNumber,1) = -L./AP;
-                    % Minus differentiated basis function
-                    BasisDeriv(BasisNumber,2) = L./AM;
                     
-                    % Saving plus and minus triangle area
-                    BasisArea(BasisNumber,1) = AP;
-                    BasisArea(BasisNumber,2) = AM;
+                    % Fronterm for basis function
+                    BasisLA(BasisNumber,1) =  L./(2*AP);
+                    BasisLA(BasisNumber,2) =  L;
+                    BasisLA(BasisNumber,3) = L./(2*AM);
                 
                     BasisNumber = BasisNumber + 1; 
                 end
             end
-            BasisNumber = BasisNumber - 1;
         end
         
         function [BasisNumber] = EdgeNumbering(EdgeList, Edge)
@@ -305,269 +437,38 @@ classdef ArbitraryAntenna
         
         function [RhoP, RhoM, RhoP_, RhoM_] = BasisEvalCenter(t, EdgeList, Basis, Center, SubTri)
             % Looping through triangles
+            [PlusTri, MinusTri] = ArbitraryAntenna.PMTri(t, EdgeList);
             for m=1:length(t)
-                % Three edges of the triangle
-                Edge(1,:) = t(m,1:2);
-                Edge(2,:) = t(m,2:3);
-                Edge(3,1) = t(m,1);
-                Edge(3,2) = t(m,3);
-                % Identifying Edge numbering
-                BasisNumber = ArbitraryAntenna.EdgeNumbering(EdgeList, Edge);
-                
+                Plus     =find(PlusTri-m==0);
+                Minus    =find(MinusTri-m==0);
                 %Looping through the 3 edges for a triangle
-                for i=1:3
-                    % Part of triangle from edge
-                    T = EdgeList(BasisNumber(i),1:2);
-                    % Getting the plus Basis function that correspond to the
-                    % edge
-                    BasisP = Basis{BasisNumber(i), 1};
-                    % The plus triangle
-                    TP = [T EdgeList(BasisNumber(i),3)];
-                    TP = sort(TP);
-                    % Finding the index of the plus triangle in t
-                    t1 = t(:,1)==TP(1);
-                    t2 = t(:,2)==TP(2);
-                    t3 = t(:,3)==TP(3);
-                    TP = find(t1+t2+t3==3);
+                for i=1:length(Plus)
+                    TP = Plus(i);
+                    BasisP = Basis{TP,1};
                     % Evaluating the basis function in center of the
                     % triangle
-                    RhoP(BasisNumber(i),:) = BasisP(Center(TP,:));
+                    RhoP(TP,:) = BasisP(Center(m,:));
                     % Evaluating the basis function in centres of
                     % subtriangles
-                    SubP = SubTri(1,:,TP);
-                    SubP = reshape(SubP, [3,9]).';
-                    RhoP_(:,:,BasisNumber(i)) = BasisP(SubP);
-                    % Getting the minus Basis function that correspond to the
-                    % edge
-                    BasisM = Basis{BasisNumber(i), 2};
-                    % The minus triangle
-                    TM = [T EdgeList(BasisNumber(i),4)];
-                    % Finding the index of the minus triangle in t
-                    TM = sort(TM);
-                    t1 = t(:,1)==TM(1);
-                    t2 = t(:,2)==TM(2);
-                    t3 = t(:,3)==TM(3);
-                    TM = find(t1+t2+t3==3);
+                    SubP = SubTri(1,:,m);
+                    SubP = reshape(SubP, 3, []).';
+                    RhoP_(:,:,TP) = BasisP(SubP);
+                end
+                for i=1:length(Minus)
+                    TM = Minus(i);
+                    BasisM = Basis{TM,2};
                     % Evaluating the basis function in center of the
                     % triangle
-                    RhoM(BasisNumber(i),:) = BasisM(Center(TM,:));
+                    RhoM(TM,:) = BasisM(Center(m,:));
                     % Evaluating the basis function in centres of
                     % subtriangles
-                    SubM = SubTri(1,:,TM);
-                    SubM = reshape(SubM, [3,9]).';
-                    RhoM_(:,:,BasisNumber(i)) = BasisM(SubM);
+                    SubM = SubTri(1,:,m);
+                    SubM = reshape(SubM, 3,[]).';
+                    RhoM_(:,:,TM) = BasisM(SubM);
                 end        
             end
         end
-        
-        function [Z, b, a] = MoM(p, t, EdgeList, BasisNumber, BasisLA, Area, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k, SubTri, x, y, z)
-            % alocating space
-            Z = zeros(BasisNumber,BasisNumber)+1i*zeros(BasisNumber,BasisNumber);
-            Ei(:,1) = x.*exp(-1i*k.*(Center(:,1)));
-            Ei(:,2) = y.*exp(-1i*k.*(Center(:,1)));
-            Ei(:,3) = z.*exp(-1i*k.*(Center(:,1)));
-            
-            % Outer loop over triangles
-            for y=1:length(t)
-                % Outer triangle edges
-                BasisEdge(1,:) = t(y,1:2);
-                BasisEdge(2,:) = t(y,2:3);
-                BasisEdge(3,1) = t(y,1);
-                BasisEdge(3,2) = t(y,3);
-                % Locating points that complete triangles for basis
-                % functions
-                EdgeNumberBasis = ArbitraryAntenna.EdgeNumbering(EdgeList, BasisEdge);
-                
-                % Inner triangle loop
-                for h=1:length(t)
-                    % Finding Inner triangle edges
-                    TestEdge(1,:) = t(h,1:2);
-                    TestEdge(2,:) = t(h,2:3);
-                    TestEdge(3,1) = t(h,1);
-                    TestEdge(3,2) = t(h,3);
-                    % Locating points that complete triangles for basis
-                    % functions
-                    EdgeNumberTest = ArbitraryAntenna.EdgeNumbering(EdgeList, TestEdge);
-                    
-                    %Loop over outer triangles basis functions
-                    for i = 1:3
-                        % outer(1,:) and outer(2,:) are edge points
-                        % outer(3,:) are the plus triangle point
-                        % outer(4,:) are the minus triangle point
-                        Basis(1,:) =  p(EdgeList(EdgeNumberBasis(i),1),:);
-                        Basis(2,:) =  p(EdgeList(EdgeNumberBasis(i),2),:);
-                        Basis(3,:) =  p(EdgeList(EdgeNumberBasis(i),3),:);
-                        Basis(4,:) =  p(EdgeList(EdgeNumberBasis(i),4),:);
-                        
-                        %Finding all the points of the plus and minus
-                        %triangle
-                        FaceEdgeBasis(1:2) = EdgeList(EdgeNumberBasis(i),1:2);
-                        FaceEdgeBasisP = [FaceEdgeBasis EdgeList(EdgeNumberBasis(i),3)];
-                        FaceEdgeBasisP = sort(FaceEdgeBasisP);
-                        FaceEdgeBasisM = [FaceEdgeBasis EdgeList(EdgeNumberBasis(i),4)];
-                        FaceEdgeBasisM = sort(FaceEdgeBasisM);
-                        % Finding the index of plus and minus triangles for
-                        % the current basis for the outer
-                        PlusBasisTriangle = find(sum(t==FaceEdgeBasisP,2)==3);
-                        MinusBasisTriangle = find(sum(t==FaceEdgeBasisM,2)==3);
-                        
-                        % Intermediate loading of plus and minus functions
-                        % evaluated in center points, _ denotes sub
-                            % triangle
-                        zMP = (RhoP(EdgeNumberBasis(i),:));
-                        zMM = (RhoM(EdgeNumberBasis(i),:));
-                        zMP_ = (RhoP_(:,:,EdgeNumberBasis(i)));
-                        zMM_ = (RhoM_(:,:,EdgeNumberBasis(i)));
-                            
-                        % Subtriangles for the inner triangles basis
-                        % functions
-                        SPO = reshape(SubTri(:,:,PlusBasisTriangle),[3,9]).';
-                        SMO = reshape(SubTri(:,:,MinusBasisTriangle),[3,9]).';
-                            
-                        %Inner triangle basis functions loop
-                        for j = 1:3
-                            % inner(1,:) and inner(2,:) are edge points
-                            % inner(3,:) are the plus triangle point
-                            % inner(4,:) are the minus triangle point
-                            Test(1,:) =  p(EdgeList(EdgeNumberTest(j),1),:);
-                            Test(2,:) =  p(EdgeList(EdgeNumberTest(j),2),:);
-                            Test(3,:) =  p(EdgeList(EdgeNumberTest(j),3),:);
-                            Test(4,:) =  p(EdgeList(EdgeNumberTest(j),4),:);
-                           
-                            %Finding all the points of the plus and minus
-                            %triangle
-                            FaceEdgeTest(1:2) = EdgeList(EdgeNumberTest(j),1:2);
-                            FaceEdgeTestP = [FaceEdgeTest EdgeList(EdgeNumberTest(j), 3)];
-                            FaceEdgeTestP = sort(FaceEdgeTestP);
-                            FaceEdgeTestM = [FaceEdgeTest EdgeList(EdgeNumberTest(j), 4)];
-                            FaceEdgeTestM = sort(FaceEdgeTestM);
-                            PlusTestTriangle = find(sum(t==FaceEdgeTestP,2)==3);
-                            MinusTestTriangle = find(sum(t==FaceEdgeTestM,2)==3);
-                        
-                            % Intermediate loading of plus and minus functions
-                            % evaluated in center points, _ denotes sub
-                            % triangle
-                            zNP = (RhoP(EdgeNumberTest(j),:));
-                            zNM = (RhoM(EdgeNumberTest(j),:));
-                            zNP_ = (RhoP_(:,:,EdgeNumberTest(j)));
-                            zNM_ = (RhoM_(:,:,EdgeNumberTest(j)));
-                            
-                            % Subtriangles for the inner triangles basis
-                            % functions
-                            SPI = reshape(SubTri(:,:,PlusTestTriangle),[3,9]).';
-                            SMI = reshape(SubTri(:,:,MinusTestTriangle),[3,9]).';
-                                                        
-                            % Intermediate calculations
-                            ppo = sqrt(sum((Center(PlusBasisTriangle,:)-SPI).^2,2));
-                            mpo = sqrt(sum((Center(MinusBasisTriangle,:)-SPI).^2,2));
-                            pmo = sqrt(sum((Center(PlusBasisTriangle,:)-SMI).^2,2));
-                            mmo = sqrt(sum((Center(MinusBasisTriangle,:)-SMI).^2,2));
-                            
-                            ppi = sqrt(sum((Center(PlusTestTriangle,:)-SPO).^2,2));
-                            mpi = sqrt(sum((Center(MinusTestTriangle,:)-SPO).^2,2));
-                            pmi = sqrt(sum((Center(PlusTestTriangle,:)-SMO).^2,2));
-                            mmi = sqrt(sum((Center(MinusTestTriangle,:)-SMO).^2,2));
-                            
-                            % greens for different couplings
-                            gPPo = exp(1i.*k.*ppo)./ppo;
-                            gMPo = exp(1i.*k.*mpo)./mpo;
-                            gPMo = exp(1i.*k.*pmo)./pmo;
-                            gMMo = exp(1i.*k.*mmo)./mmo;
-                        
-                            gPPi = exp(1i.*k.*ppi)./ppi;
-                            gMPi = exp(1i.*k.*mpi)./mpi;
-                            gPMi = exp(1i.*k.*pmi)./pmi;
-                            gMMi = exp(1i.*k.*mmi)./mmi;
-                        
-                            if PlusBasisTriangle==PlusTestTriangle
-                                % greens for the self term
-                                g = I2(PlusBasisTriangle);
-                                Z(EdgeNumberBasis(i), EdgeNumberTest(j)) = ...
-                                (BasisLA(EdgeNumberBasis(i),2)*BasisLA(EdgeNumberTest(j),2))/(4*pi)...
-                                *((dot(zMP, zNP)/4-1/k^2) * g)...
-                                + Z(EdgeNumberBasis(i), EdgeNumberTest(j));
-                            else
-                                Z(EdgeNumberBasis(i), EdgeNumberTest(j)) = ...
-                                (BasisLA(EdgeNumberBasis(i),2)*BasisLA(EdgeNumberTest(j),2))/(4*pi)...
-                                *sum((dot(repmat(zMP,[9,1]), zNP_,2)/4-1/k^2) .* gPPo/9)...
-                                + Z(EdgeNumberBasis(i), EdgeNumberTest(j));
-                            
-                                Z(EdgeNumberBasis(i), EdgeNumberTest(j)) = ...
-                                (BasisLA(EdgeNumberBasis(i),2)*BasisLA(EdgeNumberTest(j),2))/(4*pi)...
-                                *sum((dot(zMP_, repmat(zNP,[9,1]),2)/4-1/k^2) .* gPPi/9)...
-                                + Z(EdgeNumberBasis(i), EdgeNumberTest(j));
-                            end
-                            if PlusBasisTriangle==MinusTestTriangle
-                                % greens for the self term
-                                g = I2(PlusBasisTriangle);
-                                
-                                Z(EdgeNumberBasis(i), EdgeNumberTest(j)) = ...
-                                (BasisLA(EdgeNumberBasis(i),2)*BasisLA(EdgeNumberTest(j),2))/(4*pi)...
-                                *((dot(zMP, zNM)/4-1/k^2) * g)...
-                                + Z(EdgeNumberBasis(i), EdgeNumberTest(j));
-                            else
-                                Z(EdgeNumberBasis(i), EdgeNumberTest(j)) = ...
-                                (BasisLA(EdgeNumberBasis(i),2)*BasisLA(EdgeNumberTest(j),2))/(4*pi)...
-                                *sum((dot(repmat(zMP,[9,1]), zNM_ ,2)/4+1/k^2) .* gPMo/9)...
-                                + Z(EdgeNumberBasis(i), EdgeNumberTest(j));
-                                
-                                Z(EdgeNumberBasis(i), EdgeNumberTest(j)) = ...
-                                (BasisLA(EdgeNumberBasis(i),2)*BasisLA(EdgeNumberTest(j),2))/(4*pi)...
-                                *sum((dot(zMP_, repmat(zNM,[9,1]),2)/4+1/k^2) .* gPMi/9)...
-                                + Z(EdgeNumberBasis(i), EdgeNumberTest(j));
-                            end
-                            if MinusBasisTriangle==PlusTestTriangle        
-                                % greens for the self term
-                                g = I2(MinusBasisTriangle);
-                                
-                                Z(EdgeNumberBasis(i), EdgeNumberTest(j)) = ...
-                                (BasisLA(EdgeNumberBasis(i),2)*BasisLA(EdgeNumberTest(j),2))/(4*pi)...
-                                *((dot(zMM, zNP)/4-1/k^2) * g)...
-                                + Z(EdgeNumberBasis(i), EdgeNumberTest(j));
-                            else
-                                Z(EdgeNumberBasis(i), EdgeNumberTest(j)) = ...
-                                (BasisLA(EdgeNumberBasis(i),2)*BasisLA(EdgeNumberTest(j),2))/(4*pi)...
-                                *sum((dot(repmat(zMM,[9,1]), zNP_,2)/4+1/k^2) .* gMPo/9)...
-                                + Z(EdgeNumberBasis(i), EdgeNumberTest(j));
-                            
-                                Z(EdgeNumberBasis(i), EdgeNumberTest(j)) = ...
-                                (BasisLA(EdgeNumberBasis(i),2)*BasisLA(EdgeNumberTest(j),2))/(4*pi)...
-                                *sum((dot(zMM_, repmat(zNP,[9,1]),2)/4+1/k^2) .* gMPi/9)...
-                                + Z(EdgeNumberBasis(i), EdgeNumberTest(j));
-                            end
-                            if MinusBasisTriangle==MinusTestTriangle
-                                % greens for the self term
-                                g = I2(MinusBasisTriangle);
-                                
-                                Z(EdgeNumberBasis(i), EdgeNumberTest(j)) = ...
-                                (BasisLA(EdgeNumberBasis(i),2)*BasisLA(EdgeNumberTest(j),2))/(4*pi)...
-                                *((dot(zMM, zNM)/4-1/k^2) * g)...
-                                + Z(EdgeNumberBasis(i), EdgeNumberTest(j));
-                            else
-                                Z(EdgeNumberBasis(i), EdgeNumberTest(j)) = ...
-                                (BasisLA(EdgeNumberBasis(i),2)*BasisLA(EdgeNumberTest(j),2))/(4*pi)...
-                                *sum((dot(repmat(zMM,[9,1]), zNM_,2)/4-1/k^2) .* gMMo/9)...
-                                + Z(EdgeNumberBasis(i), EdgeNumberTest(j));
-                            
-                                Z(EdgeNumberBasis(i), EdgeNumberTest(j)) = ...
-                                (BasisLA(EdgeNumberBasis(i),2)*BasisLA(EdgeNumberTest(j),2))/(4*pi)...
-                                *sum((dot(zMM_, repmat(zNM,[9,1]),2)/4-1/k^2) .* gMMi/9)...
-                                + Z(EdgeNumberBasis(i), EdgeNumberTest(j));
-                            end
-                        end
-                        % Intermediate variables for b calculation
-                        b1 = RhoP_(:,:,EdgeNumberBasis(i));
-                        b2 = RhoM_(:,:,EdgeNumberBasis(i));
-                        b3 = BasisLA(EdgeNumberBasis(i),2)/2;
-                        
-                        b(EdgeNumberBasis(i),:) = (sum(sum(b1.*Ei(PlusBasisTriangle,:),2)/9)+sum(sum(b2.*Ei(MinusBasisTriangle,:),2)/9)).*b3;
-                    end    
-                end
-            end
-            % Z\b is a newer faster version of inv(Z)*b
-            a = Z\b;
-        end
-        
+             
         function [PlusTri, MinusTri] = PMTri(t, EdgeList)
             for y=1:length(EdgeList)
                 %Finding the points of the plus and minus triangle
@@ -583,27 +484,29 @@ classdef ArbitraryAntenna
             end
         end
         
-        function [Z, b, a] = MoMfastslow(p, t, EdgeList, BasisNumber, BasisLA, Area, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k, SubTri, x, y, z)
+        function [Z, b, a] = MoM(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k, SubTri, x, y, z)
             % alocating space
-            Z = zeros(BasisNumber,BasisNumber)+1i*zeros(BasisNumber,BasisNumber);
+            Z = zeros(length(EdgeList),length(EdgeList))+1i*zeros(length(EdgeList),length(EdgeList));
             Ei(:,1) = x.*exp(-1i*k.*(Center(:,1)));
             Ei(:,2) = y.*exp(-1i*k.*(Center(:,1)));
             Ei(:,3) = z.*exp(-1i*k.*(Center(:,1)));
             
             [PlusTri, MinusTri] = ArbitraryAntenna.PMTri(t, EdgeList);
             
+            SubAmount = size(SubTri);
+            Quad = SubAmount(2)/3;
             % Outer loop over triangles
             for y=1:length(t)
                 PO = find(PlusTri - y ==0);
                 MO = find(MinusTri - y ==0);
                 % Inner triangle loop
-                SPO = reshape(SubTri(:,:,y),[3,9]).';
-                SMO = reshape(SubTri(:,:,y),[3,9]).';
+                SPO = reshape(SubTri(:,:,y),3,[]).';
+                SMO = reshape(SubTri(:,:,y),3,[]).';
                 for h=1:length(t)
                     PI = find(PlusTri - h ==0);
                     MI = find(MinusTri - h ==0);
-                    SPI = reshape(SubTri(:,:,h),[3,9]).';
-                    SMI = reshape(SubTri(:,:,h),[3,9]).';
+                    SPI = reshape(SubTri(:,:,h),3,[]).';
+                    SMI = reshape(SubTri(:,:,h),3,[]).';
                                
                     ppo = sqrt(sum((Center(y,:)-SPI).^2,2));
                     mpo = sqrt(sum((Center(y,:)-SPI).^2,2));
@@ -641,12 +544,12 @@ classdef ArbitraryAntenna
                                 
                                 Z(PO(i), PI(j)) = ...
                                 (BasisLA(PO(i),2)*BasisLA(PI(j),2))/(4*pi)...
-                                *sum((dot(repmat(zMP,[9,1]), zNP_,2)/4-1/k^2) .* gPPo/9)...
+                                *sum((dot(repmat(zMP,[Quad,1]), zNP_,2)/4-1/k^2) .* gPPo/Quad)...
                                 + Z(PO(i), PI(j));
                             
                                 Z(PO(i), PI(j)) = ...
                                 (BasisLA(PO(i),2)*BasisLA(PI(j),2))/(4*pi)...
-                                *sum((dot(zMP_, repmat(zNP,[9,1]),2)/4-1/k^2) .* gPPi/9)...
+                                *sum((dot(zMP_, repmat(zNP,[Quad,1]),2)/4-1/k^2) .* gPPi/Quad)...
                                 + Z(PO(i), PI(j));
                             end
                         end
@@ -665,16 +568,16 @@ classdef ArbitraryAntenna
                                 
                                 Z(PO(i), MI(j)) = ...
                                 (BasisLA(PO(i),2)*BasisLA(MI(j),2))/(4*pi)...
-                                *sum((dot(repmat(zMP,[9,1]), zNM_ ,2)/4+1/k^2) .* gPMo/9)...
+                                *sum((dot(repmat(zMP,[Quad,1]), zNM_ ,2)/4+1/k^2) .* gPMo/Quad)...
                                 + Z(PO(i), MI(j));
                                 
                                 Z(PO(i), MI(j)) = ...
                                 (BasisLA(PO(i),2)*BasisLA(MI(j),2))/(4*pi)...
-                                *sum((dot(zMP_, repmat(zNM,[9,1]),2)/4+1/k^2) .* gMPi/9)...
+                                *sum((dot(zMP_, repmat(zNM,[Quad,1]),2)/4+1/k^2) .* gMPi/Quad)...
                                 + Z(PO(i), MI(j));
                             end    
                         end  
-                        b1(PO(i),:) = sum(sum(Ei(y,:).*RhoP_(:,:,PO(i)).*BasisLA(PO(i),2)/2,2)/9);
+                        b1(PO(i),:) = sum(sum(Ei(y,:).*RhoP_(:,:,PO(i)).*BasisLA(PO(i),2)/2,2)/Quad);
                     end
                     for i=1:length(MO)
                         zMM = (RhoM(MO(i),:));
@@ -692,12 +595,12 @@ classdef ArbitraryAntenna
                                    
                                 Z(MO(i), PI(j)) = ...
                                 (BasisLA(MO(i),2)*BasisLA(PI(j),2))/(4*pi)...
-                                *sum((dot(repmat(zMM,[9,1]), zNP_,2)/4+1/k^2) .* gMPo/9)...
+                                *sum((dot(repmat(zMM,[Quad,1]), zNP_,2)/4+1/k^2) .* gMPo/Quad)...
                                 + Z(MO(i), PI(j));
                             
                                 Z(MO(i), PI(j)) = ...
                                 (BasisLA(MO(i),2)*BasisLA(PI(j),2))/(4*pi)...
-                                *sum((dot(zMM_, repmat(zNP,[9,1]),2)/4+1/k^2) .* gPMi/9)...
+                                *sum((dot(zMM_, repmat(zNP,[Quad,1]),2)/4+1/k^2) .* gPMi/Quad)...
                                 + Z(MO(i), PI(j));  
                             end 
                         end
@@ -714,16 +617,16 @@ classdef ArbitraryAntenna
                                     
                                 Z(MO(i), MI(j)) = ...
                                 (BasisLA(MO(i),2)*BasisLA(MI(j),2))/(4*pi)...
-                                *sum((dot(repmat(zMM,[9,1]), zNM_,2)/4-1/k^2) .* gMMo/9)...
+                                *sum((dot(repmat(zMM,[Quad,1]), zNM_,2)/4-1/k^2) .* gMMo/Quad)...
                                 + Z(MO(i), MI(j));
                             
                                 Z(MO(i), MI(j)) = ...
                                 (BasisLA(MO(i),2)*BasisLA(MI(j),2))/(4*pi)...
-                                *sum((dot(zMM_, repmat(zNM,[9,1]),2)/4-1/k^2) .* gMMi/9)...
+                                *sum((dot(zMM_, repmat(zNM,[Quad,1]),2)/4-1/k^2) .* gMMi/Quad)...
                                 + Z(MO(i), MI(j));
                             end 
                         end    
-                        b2(MO(i),:) = sum(sum(Ei(y,:).*RhoM_(:,:,MO(i)).*BasisLA(MO(i),2)/2,2)/9);
+                        b2(MO(i),:) = sum(sum(Ei(y,:).*RhoM_(:,:,MO(i)).*BasisLA(MO(i),2)/2,2)/Quad);
                     end      
                 end       
             end
@@ -732,11 +635,12 @@ classdef ArbitraryAntenna
             a = Z\b;
         end
       
-          function [Z, a, b] = MoMLoopCut(t, EdgeList, BasisNumber, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k, SubTri, x, y, z)
+        function [Z, a, b] = MoMVectorized(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k, SubTri, x, y, z)
             % alocating space
-            Z = zeros(BasisNumber,BasisNumber)+1i*zeros(BasisNumber,BasisNumber);
+            Z = zeros(length(EdgeList),length(EdgeList))+1i*zeros(length(EdgeList),length(EdgeList));
             TotTri = length(t);
-            SubTri = permute(reshape(SubTri,[3, 9, TotTri]),[2 1 3]);
+            SubTri = permute(reshape(SubTri, 3, [], TotTri),[2 1 3]);
+            SubAmount = size(SubTri);
             Ei = zeros(size(t));
             Ei(:,1) = x.*exp(-1i*k.*(Center(:,1)));
             Ei(:,2) = y.*exp(-1i*k.*(Center(:,1)));
@@ -744,8 +648,8 @@ classdef ArbitraryAntenna
             EdgesTotal = length(EdgeList);
                             
             for m=1:EdgesTotal
-                RhoPRep(:,:,m)=repmat(RhoP(m,:),[9 1]);   %[3 9 EdgesTotal]
-                RhoMRep(:,:,m)=repmat(RhoM(m,:),[9 1]);  %[3 9 EdgesTotal]
+                RhoPRep(:,:,m)=repmat(RhoP(m,:),[SubAmount(1) 1]);   %[3 9 EdgesTotal]
+                RhoMRep(:,:,m)=repmat(RhoM(m,:),[SubAmount(1) 1]);  %[3 9 EdgesTotal]
             end
            
             [PlusTri, MinusTri] = ArbitraryAntenna.PMTri(t, EdgeList);
@@ -753,8 +657,8 @@ classdef ArbitraryAntenna
             for y=1:TotTri
                 Plus     =find(PlusTri-y==0);
                 Minus    =find(MinusTri-y==0);
-    
-                D=SubTri-permute(reshape(repmat(Center(y,:),[1 9 TotTri]),[3, 9, TotTri]),[2 1 3]); %[9 3 TrianglesTotal]
+                
+                D=SubTri-permute(reshape(repmat(Center(y,:),[1 SubAmount(1) TotTri]), 3, [], TotTri),[2 1 3]); %[9 3 TrianglesTotal]
                 R=sqrt(sum(D.*D,2));                               %[9 1 TrianglesTotal]
       
                 D1=SubTri(:,:,y)-reshape(Center,[1, 3, TotTri]); %[9 3 TrianglesTotal]
@@ -778,31 +682,30 @@ classdef ArbitraryAntenna
                 for i=1:length(Plus)
                     n=Plus(i);
                     L = BasisLA(n,2).*BasisLA(:,2)/(4*pi);
-                    pp = sum(sum(RhoPRep(:,:,n).*RhoP_/4-1/(k^2).*gP/9));
-                    pm = sum(sum(RhoPRep(:,:,n).*RhoM_/4+1/(k^2).*gM/9));
+                    pp = sum(sum(RhoPRep(:,:,n).*RhoP_/4-1/(k^2).*gP/SubAmount(1)));
+                    pm = sum(sum(RhoPRep(:,:,n).*RhoM_/4+1/(k^2).*gM/SubAmount(1)));
                     Z(:,n)=Z(:,n)+L.*reshape(pp+pm,EdgesTotal,1);
                     
-                    pp = sum(sum((RhoPRep.*RhoP_(:,:,n)/4-1/(k^2)).*gP1/9));
-                    pm = sum(sum((RhoMRep.*RhoP_(:,:,n)/4+1/(k^2)).*gM1/9));
+                    pp = sum(sum((RhoPRep.*RhoP_(:,:,n)/4-1/(k^2)).*gP1/SubAmount(1)));
+                    pm = sum(sum((RhoMRep.*RhoP_(:,:,n)/4+1/(k^2)).*gM1/SubAmount(1)));
                     Z(:,n)=Z(:,n)+(L.*reshape(pp+pm,EdgesTotal,1));
                 end
                 for i=1:length(Minus)
                     n=Minus(i);
                     L = BasisLA(n,2).*BasisLA(:,2)/(4*pi);
-                    mp = sum(sum((RhoMRep(:,:,n).*RhoP_/4+1/(k^2)).*gP/9));
-                    mm = sum(sum((RhoMRep(:,:,n).*RhoM_/4-1/(k^2)).*gM/9));
+                    mp = sum(sum((RhoMRep(:,:,n).*RhoP_/4+1/(k^2)).*gP/SubAmount(1)));
+                    mm = sum(sum((RhoMRep(:,:,n).*RhoM_/4-1/(k^2)).*gM/SubAmount(1)));
                     Z(:,n)=Z(:,n)+L.*reshape(mp+mm,EdgesTotal,1);
                     
-                    mp = sum(sum((RhoPRep.*RhoM_(:,:,n)/4+1/(k^2)).*gP1/9));
-                    mm = sum(sum((RhoMRep.*RhoM_(:,:,n)/4-1/(k^2)).*gM1/9));
+                    mp = sum(sum((RhoPRep.*RhoM_(:,:,n)/4+1/(k^2)).*gP1/SubAmount(1)));
+                    mm = sum(sum((RhoMRep.*RhoM_(:,:,n)/4-1/(k^2)).*gM1/SubAmount(1)));
                     Z(:,n)=Z(:,n)+(L.*reshape(mp+mm,EdgesTotal,1));
-%                     Z(n,:)=Z(n,:) Z(:,n)=Z(:,n)
                 end 
             end
 
             for m=1:EdgesTotal
-                b1 =sum(sum(Ei(PlusTri(m),:).*RhoP_(:,:,m),2)/9);
-                b2 =sum(sum(Ei(MinusTri(m),:).*RhoM_(:,:,m),2)/9);
+                b1 =sum(sum(Ei(PlusTri(m),:).*RhoP_(:,:,m),2)/SubAmount(1));
+                b2 =sum(sum(Ei(MinusTri(m),:).*RhoM_(:,:,m),2)/SubAmount(1));
                 b(m)=BasisLA(m,2)*(b1+b2)/2;
             end
             b = b.';
@@ -817,17 +720,18 @@ classdef ArbitraryAntenna
             for n=1:length(t)
                 Plus     =find(PlusTri-n==0);
                 Minus    =find(MinusTri-n==0);
-    
+                Quad = size(RhoP_);
+                Quad = Quad(1);
                 for y=1:length(Plus)
                     if sub
-                        Jface(n,:) = sum(1i.*w.*mu0*a(Plus(y))*BasisLA(Plus(y),2)*RhoP_(:,:,Plus(y))/18) + Jface(n,:);
+                        Jface(n,:) = sum(1i.*w.*mu0*a(Plus(y))*BasisLA(Plus(y),2)*RhoP_(:,:,Plus(y))/2)/Quad + Jface(n,:);
                     else 
                         Jface(n,:) = 1i.*w.*mu0*a(Plus(y))*BasisLA(Plus(y),1)*RhoP(Plus(y),:)/2 + Jface(n,:);    
                     end
                 end
                 for y=1:length(Minus)
                     if sub
-                        Jface(n,:) = sum(1i.*w.*mu0*a(Minus(y))*BasisLA(Minus(y),2)*RhoM_(:,:,Minus(y))/18) + Jface(n,:);
+                        Jface(n,:) = sum(1i.*w.*mu0*a(Minus(y))*BasisLA(Minus(y),2)*RhoM_(:,:,Minus(y))/2)/Quad + Jface(n,:);
                     else
                         Jface(n,:) = 1i.*w.*mu0*a(Minus(y))*BasisLA(Minus(y),3)*RhoM(Minus(y),:)/2 + Jface(n,:);    
                     end

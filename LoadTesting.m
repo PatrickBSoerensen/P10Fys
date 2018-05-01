@@ -45,14 +45,17 @@ toc;
 tic;
 fprintf('\n')
 disp('Calculating areals for subtriangles')
-[SubTri, SubTriArea] = ArbitraryAntenna.SubTriangles(p, t, Center);
+% [SubTri, SubTriArea] = ArbitraryAntenna.SubTriangles(p, t, Center);
+
+[SubTri, SubTriArea] = ArbitraryAntenna.SubTrianglesTest(p, t, Center, 1);
 toc;
 %% Basis Function setup
 tic;
 fprintf('\n')
 disp('Defining basis functions')
-[EdgeList, Basis, BasisLA, BasisDeriv, BasisNumber, BasisArea] = ArbitraryAntenna.BasisFunc(p, t, ConnectCell);
+[EdgeList, Basis, BasisLA] = ArbitraryAntenna.BasisFunc(p, t, ConnectCell);
 toc;
+%%
 tic;
 fprintf('\n')
 disp('Evaluating basis functions in center points')
@@ -69,29 +72,22 @@ toc;
 tic;
 fprintf('\n')
 disp('MoM')
-[ZN, aN, bN ] = ArbitraryAntenna.MoMLoopCut(t, EdgeList, BasisNumber, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k, SubTri, 0, 1, 0);
+[ZN, aN, bN ] = ArbitraryAntenna.MoMVectorized(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k, SubTri, 0, 1, 0);
 toc;
 %%
 tic;
 fprintf('\n')
 disp('MoM')
- [ZO, bO, aO] = ArbitraryAntenna.MoM(p, t, EdgeList, BasisNumber, BasisLA, Area, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k,  SubTri, 0, 1, 0);
-toc;
-%%
-tic;
-fprintf('\n')
-disp('MoM')
- [Z, b, a] = ArbitraryAntenna.MoMfastslow(p, t, EdgeList, BasisNumber, BasisLA, Area, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k,  SubTri, 0, 1, 0);
+[Z, b, a] = ArbitraryAntenna.MoM(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k,  SubTri, 0, 1, 0);
 toc;
 %% Current calc in Triangle
 sub = 1;
-Dipole =1;
+Dipole =0;
 tic;
 fprintf('\n')
 disp('Calculating Current')
 % [Jface] = ArbitraryAntenna.CurrentCalc(t, p, EdgeList, w, mu0, a, BasisLA, RhoP, RhoM, RhoP_, RhoM_, sub, Dipole);
 [Jface] = ArbitraryAntenna.CurrentCalc(t, p, EdgeList, w, mu0, a, BasisLA, RhoP, RhoM, RhoP_, RhoM_, sub, Dipole);
-
 toc;
 %% Surf plot Current
 JfaceSize = sqrt(sum(Jface.^2,2));
@@ -114,7 +110,7 @@ rotate3d
 
 %% Calculating E
 %x-min/max, z-min/max, y-min/max
-normalize = 1;
+normalize = 0;
 PlotComp = 0;
 tic;
 fprintf('\n')
