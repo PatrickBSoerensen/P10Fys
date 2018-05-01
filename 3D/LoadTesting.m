@@ -1,8 +1,8 @@
 %% load STL file into matlab
 % stl = stlread('antennas/AntBinMesh.stl');
 % stl = stlread('antennas/Dipole10cm.stl');
-stl = stlread('antennas/Dipole10cmT580.stl');
-% stl = stlread('antennas/Dipole10cmT1104.stl');
+% stl = stlread('antennas/Dipole10cmT580.stl');
+stl = stlread('antennas/Dipole10cmT1104.stl');
 % stl = stlread('antennas/AntBinMesh2556.stl');
 % stl = stlread('antennas/HalfAntMany.stl');
 %% faces and unique vertices
@@ -69,11 +69,11 @@ disp('Pre-Calculating self-coupling terms')
 I2 = ArbitraryAntenna.SelfTerm(p, t);
 toc;
 %% MoM
-tic;
-fprintf('\n')
-disp('MoM')
-[ZN, aN, bN ] = ArbitraryAntenna.MoMVectorized(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k, SubTri, 0, 1, 0);
-toc;
+% tic;
+% fprintf('\n')
+% disp('MoM')
+% [ZN, aN, bN ] = ArbitraryAntenna.MoMVectorized(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k, SubTri, 0, 1, 0);
+% toc;
 %%
 tic;
 fprintf('\n')
@@ -86,7 +86,6 @@ Dipole =0;
 tic;
 fprintf('\n')
 disp('Calculating Current')
-% [Jface] = ArbitraryAntenna.CurrentCalc(t, p, EdgeList, w, mu0, a, BasisLA, RhoP, RhoM, RhoP_, RhoM_, sub, Dipole);
 [Jface] = ArbitraryAntenna.CurrentCalc(t, p, EdgeList, w, mu0, a, BasisLA, RhoP, RhoM, RhoP_, RhoM_, sub, Dipole);
 toc;
 %% Surf plot Current
