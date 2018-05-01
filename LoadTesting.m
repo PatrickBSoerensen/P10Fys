@@ -1,10 +1,10 @@
 %% load STL file into matlab
-% stl = stlread('AntBinMesh.stl');
-% stl = stlread('Dipole10cm.stl');
-stl = stlread('Dipole10cmT580.stl');
-% stl = stlread('Dipole10cmT1104.stl');
-% stl = stlread('AntBinMesh2556.stl');
-% stl = stlread('HalfAntMany.stl');
+% stl = stlread('antennas/AntBinMesh.stl');
+% stl = stlread('antennas/Dipole10cm.stl');
+% stl = stlread('antennas/Dipole10cmT580.stl');
+stl = stlread('antennas/Dipole10cmT1104.stl');
+% stl = stlread('antennas/AntBinMesh2556.stl');
+% stl = stlread('antennas/HalfAntMany.stl');
 %% faces and unique vertices
 tic;
 fprintf('\n')
@@ -42,12 +42,12 @@ fprintf('\n')
 disp('Calculating areals for triangles')
 [Area, Center] = ArbitraryAntenna.TriangleAreas(p, t);
 toc;
+%%
+SubSubTri = 0;
 tic;
 fprintf('\n')
 disp('Calculating areals for subtriangles')
-% [SubTri, SubTriArea] = ArbitraryAntenna.SubTriangles(p, t, Center);
-
-[SubTri, SubTriArea] = ArbitraryAntenna.SubTrianglesTest(p, t, Center, 1);
+[SubTri, SubTriArea] = ArbitraryAntenna.SubTriangles(p, t, Center, SubSubTri);
 toc;
 %% Basis Function setup
 tic;
@@ -107,10 +107,9 @@ colormap gray;
 colorbar;
 axis('equal');
 rotate3d
-
 %% Calculating E
 %x-min/max, z-min/max, y-min/max
-normalize = 0;
+normalize = 1;
 PlotComp = 0;
 tic;
 fprintf('\n')
