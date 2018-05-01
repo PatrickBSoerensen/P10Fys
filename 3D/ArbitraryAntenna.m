@@ -187,8 +187,7 @@ classdef ArbitraryAntenna
             end
         end
         
-        function [SubTri, SubTriArea] = SubTrianglesIttMet(r1,r2,r3, Center)
-                        
+        function [SubTri, SubTriArea] = SubTrianglesIttMet(r1,r2,r3, Center)             
                 % Center of triangle
                 M = Center;
                 % Edges coordinates
@@ -242,21 +241,16 @@ classdef ArbitraryAntenna
                     [A1 A2 A3 A4 A5 A6 A7 A8 A9];
         end
         
-        
         function I2 = SelfTerm(p, t)
             % Method for calculating self coupling terms
             TotTri = length(t);
             I2 = 1:TotTri;
             % Looping through triangles
             for i=1:TotTri
-                % Point index
-                n1 = t(i,1);
-                n2 = t(i,2);
-                n3 = t(i,3);
                 % vertices coordinates
-                v1 = p(n1,:);
-                v2 = p(n2,:);
-                v3 = p(n3,:);
+                v1 = p(t(i,1),:);
+                v2 = p(t(i,2),:);
+                v3 = p(t(i,3),:);
                 % Intermediate calculations
                 a = dot((v1-v3),(v1-v3));
                 b = dot((v1-v3),(v1-v2));
@@ -353,18 +347,6 @@ classdef ArbitraryAntenna
                     BasisLA(BasisNumber,3) = L./(2*AM);
                 
                     BasisNumber = BasisNumber + 1; 
-                end
-            end
-        end
-        
-        function [BasisNumber] = EdgeNumbering(EdgeList, Edge)
-            for i=1:3
-                if isempty(find(sum(EdgeList(:,1:2)==Edge(i,:),2)==2,1))
-                    value = find(sum(fliplr(EdgeList(:,1:2))==Edge(i,:),2)==2);
-                    BasisNumber(i) = value;
-                else
-                    value = find(sum(EdgeList(:,1:2)==Edge(i,:),2)==2);
-                    BasisNumber(i) = value;
                 end
             end
         end
@@ -687,7 +669,7 @@ classdef ArbitraryAntenna
             end
         end
         
-        function [Exy, Exz, Ezy, xrange, yrange, zrange, Exyx, Exzx, Eyzx, Exyy, Exzy, Eyzy, Exyz, Exzz, Eyzz] = EField(Center, w, k, mu, J,...
+        function [Exy, Exz, Ezy, xrange, yrange, zrange, Exyx, Exzx, Eyzx, Exyy, Exzy, Eyzy, Exyz, Exzz, Eyzz] = EField(Center, k, J,...
                 xmin, xmax, zmin, zmax, ymin, ymax, steps, Area)
        
             xrange = linspace(xmin, xmax, steps);
@@ -829,6 +811,10 @@ classdef ArbitraryAntenna
 %             Exy = Exyx+Exyy+Exyz;
 %             Exz = Exzx+Exzy+Exzz;
 %             Ezy = Eyzx+Eyzy+Eyzz;
+        end
+        
+        function [] = PolarPlot()
+            
         end
     end    
 end

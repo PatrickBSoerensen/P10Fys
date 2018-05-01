@@ -2,8 +2,8 @@
 % stl = stlread('antennas/AntBinMesh.stl');
 % stl = stlread('antennas/Dipole10cm.stl');
 % stl = stlread('antennas/Dipole10cmT580.stl');
-stl = stlread('antennas/Dipole10cmT1104.stl');
-% stl = stlread('antennas/AntBinMesh2556.stl');
+% stl = stlread('antennas/Dipole10cmT1104.stl');
+stl = stlread('antennas/AntBinMesh2556.stl');
 % stl = stlread('antennas/HalfAntMany.stl');
 %% faces and unique vertices
 tic;
@@ -101,7 +101,7 @@ for m=1:length(t)
 end
 C=repmat(CurrentNorm1,1,3);
 figure(3)
-h=fill3(xthree', ythree', zthree', C'); %linear scale
+h=fill3(xthree', ythree', zthree', C', 'EdgeColor', 'none'); %linear scale
 colormap gray;
 colorbar;
 axis('equal');
@@ -114,7 +114,7 @@ tic;
 fprintf('\n')
 disp('Calculating E-field')
 [Exy, Exz, Ezy, x, y, z, Exyx, Exzx, Eyzx, Exyy, Exzy, Eyzy, Exyz, Exzz, Eyzz] = ...
-    ArbitraryAntenna.EField(Center, w, k, mu0, Jface, -2, 2, -2, 2, -2, 2, 100, Area);
+    ArbitraryAntenna.EField(Center, k, Jface, -2, 2, -2, 2, -2, 2, 100, Area);
 toc;
 
 if normalize
