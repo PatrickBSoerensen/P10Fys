@@ -573,7 +573,7 @@ classdef ArbitraryAntenna
             a=Z\b;
           end
           
-        function [Jface] = CurrentCalc(t, p, EdgeList, w, mu0, a, BasisLA, RhoP, RhoM, RhoP_, RhoM_, sub, Dipole)
+        function [Jface] = CurrentCalc(t, EdgeList, w, mu0, a, BasisLA, RhoP, RhoM, RhoP_, RhoM_, sub)
             Jface = zeros(size(t));
             
             [PlusTri, MinusTri] = ArbitraryAntenna.PMTri(t, EdgeList);
@@ -737,14 +737,21 @@ classdef ArbitraryAntenna
             Exy = sqrt(Exyx.^2+Exyy.^2+Exyz.^2);
             Exz = sqrt(Exzx.^2+Exzy.^2+Exzz.^2);
             Ezy = sqrt(Eyzx.^2+Eyzy.^2+Eyzz.^2);
-            
-%             Exy = Exyx+Exyy+Exyz;
-%             Exz = Exzx+Exzy+Exzz;
-%             Ezy = Eyzx+Eyzy+Eyzz;
         end
         
-        function [] = PolarPlot()
-            
+        function [] = PolarPlot(E, xmin, xmax,  ymin, ymax, steps, dist)
+            xrange = linspace(xmin, xmax, steps);
+            yrange = linspace(ymin, ymax, steps);
+            Rx = repmat(xrange',1,steps);
+            Ry = repmat(yrange,steps,1);
+            [theta,rho] = cart2pol(Rx,Ry);
+            angles = linspace(0, 2*pi, steps);
+            Look = angles*dist;
+            PlotScheme = find(round(sqrt(Rx.^2+Ry.^2)-Look)==0);
+            EPlot = E(PlotScheme);
+            angles = linspace(0, 2*pi, length(EPlot));
+            figure(2)
+            polarplot(angles,abs(EPlot));
         end
     end    
 end
