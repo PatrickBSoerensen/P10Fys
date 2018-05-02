@@ -1,12 +1,17 @@
 %% load STL file into matlab
-stl = stlread('antennas/AntBinMesh2.stl');
+% Don't use this this
+% stl = stlread('antennas/ShortAntMesh.stl');
+
 % stl = stlread('antennas/Dipole10cmT264.stl');
 % stl = stlread('antennas/Dipole10cmT580.stl');
 % stl = stlread('antennas/Dipole10cmT744.stl');
 % stl = stlread('antennas/Dipole10cmT904.stl');
+
 % stl = stlread('antennas/Dipole10cmT1104.stl');
+% stl = stlread('antennas/Dipole10cmT1104UniformT4732.stl');
+stl = stlread('antennas/Dipole10cmT1104AdaptiveT2208.stl');
 % stl = stlread('antennas/AntBinMesh2556.stl');
-% stl = stlread('antennas/HalfAntMany.stl');
+% stl = stlread('antennas/HalfAntT212.stl');
 %% faces and unique vertices
 tic;
 fprintf('\n')
@@ -22,7 +27,7 @@ minp = min(p);
 maxp = max(p);
 [maxmaxp, maxaxis] = max(max(p));
 radius = abs(min(min(p))+min(min(p)));
-Length = (maxmaxp-minp(maxaxis));
+Length = (maxmaxp-minp(maxaxis));%-2*radius;
 %% constants
 eps0=8.854187817*10^-12; %F/m
 mu0=4*pi*10^-7; %N/A^2
