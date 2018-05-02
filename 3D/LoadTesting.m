@@ -1,8 +1,8 @@
 %% load STL file into matlab
-% stl = stlread('antennas/AntBinMesh.stl');
-% stl = stlread('antennas/Dipole10cm.stl');
+stl = stlread('antennas/AntBinMesh2.stl');
+% stl = stlread('antennas/Dipole10cmT264.stl');
 % stl = stlread('antennas/Dipole10cmT580.stl');
-stl = stlread('antennas/Dipole10cmT744.stl');
+% stl = stlread('antennas/Dipole10cmT744.stl');
 % stl = stlread('antennas/Dipole10cmT904.stl');
 % stl = stlread('antennas/Dipole10cmT1104.stl');
 % stl = stlread('antennas/AntBinMesh2556.stl');
