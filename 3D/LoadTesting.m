@@ -2,14 +2,16 @@
 % Don't use this this
 % stl = stlread('antennas/ShortAntMesh.stl');
 
-% stl = stlread('antennas/Dipole10cmT264.stl');
+stl = stlread('antennas/Dipole10cmT264.stl');
 % stl = stlread('antennas/Dipole10cmT580.stl');
 % stl = stlread('antennas/Dipole10cmT744.stl');
+
+% stl = stlread('antennas/Dipole10cmT722.stl');
 % stl = stlread('antennas/Dipole10cmT904.stl');
 
 % stl = stlread('antennas/Dipole10cmT1104.stl');
 % stl = stlread('antennas/Dipole10cmT1104UniformT4732.stl');
-stl = stlread('antennas/Dipole10cmT1104AdaptiveT2208.stl');
+% stl = stlread('antennas/Dipole10cmT1104AdaptiveT2208.stl');
 % stl = stlread('antennas/AntBinMesh2556.stl');
 % stl = stlread('antennas/HalfAntT212.stl');
 %% faces and unique vertices
@@ -76,7 +78,7 @@ disp('Pre-Calculating self-coupling terms')
 I2 = ArbitraryAntenna.SelfTerm(p, t);
 toc;
 %% MoM
-vectorized = 0;
+vectorized = 1;
 tic;
 fprintf('\n')
 disp('MoM')
@@ -113,7 +115,7 @@ axis('equal');
 rotate3d
 %% Calculating E
 %x-min/max, z-min/max, y-min/max
-normalize = 1;
+normalize = 0;
 PlotComp = 0;
 tic;
 fprintf('\n')

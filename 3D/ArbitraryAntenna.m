@@ -753,6 +753,16 @@ classdef ArbitraryAntenna
             figure(2)
             polarplot(angles,abs(EPlot));
         end
+        
+        function [] = AngularFarField(E, w, mu, r)
+            xH = [1 0];
+            yH = [0 1];
+            phiH = -xH.*sin(phi)+yH.*cos(phi);
+            thetaH = 4;
+            rHat =5;
+            Esc = abs(E).^2*r^2;
+            
+        end
     end    
 end
 
