@@ -2,8 +2,8 @@
 % Don't use this this
 % stl = stlread('antennas/ShortAntMesh.stl');
 
-stl = stlread('antennas/Dipole10cmT264.stl');
-% stl = stlread('antennas/Dipole10cmT580.stl');
+% stl = stlread('antennas/Dipole10cmT264.stl');
+stl = stlread('antennas/Dipole10cmT580.stl');
 % stl = stlread('antennas/Dipole10cmT744.stl');
 
 % stl = stlread('antennas/Dipole10cmT722.stl');
@@ -19,8 +19,20 @@ tic;
 fprintf('\n')
 disp('Removing duplicate points')
 [p, t] = ArbitraryAntenna.RemoveEqualPoints(stl);
+p1 = p;
+p2 = p;
+p3 = p;
+p4 = p;
+p1(:,1) = p(:,1)-0.005;
+p2(:,1) = p(:,1)+0.005;
+% p3(:,1) = p(:,1)-0.08;
+% p4(:,1) = p(:,1)-0.05;
 %% Visual check
+p = [p1; p2];%; p3; p4];
+t = [t; t+length(p1)];% t+length(p1)+length(p2); t+length(p1)+length(p2)+length(p3)];
+% p(:,1) = p(:,1)+0.03;
 figure(1)
+hold on
 plot3(p(:,1),p(:,2),p(:,3),'*')
 axis image
 toc;
@@ -29,7 +41,7 @@ minp = min(p);
 maxp = max(p);
 [maxmaxp, maxaxis] = max(max(p));
 radius = abs(min(min(p))+min(min(p)));
-Length = (maxmaxp-minp(maxaxis));%-2*radius;
+Length = (maxmaxp-minp(maxaxis));
 %% constants
 eps0=8.854187817*10^-12; %F/m
 mu0=4*pi*10^-7; %N/A^2
@@ -52,7 +64,7 @@ disp('Calculating areals for triangles')
 [Area, Center] = ArbitraryAntenna.TriangleAreas(p, t);
 toc;
 %%
-SubSubTri = 0;
+SubSubTri = 1;
 tic;
 fprintf('\n')
 disp('Calculating areals for subtriangles')
@@ -77,15 +89,33 @@ fprintf('\n')
 disp('Pre-Calculating self-coupling terms')
 I2 = ArbitraryAntenna.SelfTerm(p, t);
 toc;
+%%
+xmin = -2;
+ymin = -2;
+zmin = -2;
+xmax = 2;
+ymax = 2;
+zmax = 2;
+steps = 200;
+PointArea = xmax^2/steps;
+tic;
+fprintf('\n')
+disp('Setting up Dipole')
+Origo = [0,0,0];
+[ExyD, ExzD, EzyD] = ...
+    ArbitraryAntenna.Dipole(Origo, k, [0,1,0] , xmin, xmax, ymin, ymax, zmin, zmax, steps, PointArea);
+toc;
+%%
+[Ei] = ArbitraryAntenna.PointSource(1, 0, 0, w, mu0, k, Center, Origo, [0,1,0], PointArea);
 %% MoM
-vectorized = 1;
+vectorized = 0;
 tic;
 fprintf('\n')
 disp('MoM')
 if vectorized
-    [Z, a, b ] = ArbitraryAntenna.MoMVectorized(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k, SubTri, 0, 1, 0);
+    [Z, a, b ] = ArbitraryAntenna.MoMVectorized(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k, SubTri, 0, 1, 0, 1, Ei);
 else
-    [Z, b, a] = ArbitraryAntenna.MoM(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k,  SubTri, 0, 1, 0);
+    [Z, b, a] = ArbitraryAntenna.MoM(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k,  SubTri, 0, 1, 0, 1, Ei);
 end
 toc;
 %% Current calc in Triangle
@@ -113,15 +143,16 @@ colormap gray;
 colorbar;
 axis('equal');
 rotate3d
+%%
+% ArbitraryAntenna.AngularFarField(w, mu0, k, 12, Center, Jface, 200)
 %% Calculating E
-%x-min/max, z-min/max, y-min/max
 normalize = 0;
 PlotComp = 0;
 tic;
 fprintf('\n')
 disp('Calculating E-field')
 [Exy, Exz, Ezy, x, y, z, Exyx, Exzx, Eyzx, Exyy, Exzy, Eyzy, Exyz, Exzz, Eyzz] = ...
-    ArbitraryAntenna.EField(Center, k, Jface, -2, 2, -2, 2, -2, 2, 100, Area);
+    ArbitraryAntenna.EField(Center, k, Jface, xmin, xmax, ymin, ymax, zmin, zmax, steps, Area);
 toc;
 
 if normalize
@@ -178,7 +209,7 @@ title('xy plane - z comp');
 end
 
 figure(7)
-pcolor(x, y, abs(Exy)')
+pcolor(x, y, abs(Exy)'+abs(ExyD)')
 shading interp
 colorbar
 if normalize
@@ -224,7 +255,7 @@ title('xz plane - z comp');
 end
 
 figure(11)
-pcolor(x, z, abs(Exz).')
+pcolor(x, z, abs(Exz).'+abs(ExzD)')
 shading interp
 colorbar
 if normalize
@@ -270,7 +301,7 @@ title('yz plane z-comp');
 end
 
 figure(15)
-pcolor(z, y, abs(Ezy)')
+pcolor(z, y, abs(Ezy)'+abs(EzyD)')
 shading interp
 colorbar
 if normalize

@@ -155,7 +155,7 @@ classdef ArbitraryAntenna
             end
         end
         
-        function [SubTri, SubTriArea] = SubTrianglesIttMet(r1,r2,r3, Center)       
+        function [SubTri] = SubTrianglesIttMet(r1,r2,r3, Center)       
                 % Center of triangle
                 M = Center;
                 % Edges coordinates
@@ -343,12 +343,101 @@ classdef ArbitraryAntenna
             end
         end
         
-        function [Z, b, a] = MoM(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k, SubTri, x, y, z)
+        function [Ei] = PointSource(xy, yz, zx, w, mu, k, Center, PointPos, J, Area) 
+            Rx = PointPos(1)-Center(:,1);
+            Ry = PointPos(2)-Center(:,2);
+            Rz = PointPos(3)-Center(:,3);
+            r = sqrt(Rx.^2+Ry.^2+Rz.^2);
+                                                        
+            g = exp(1i.*k.*r)./(4*pi*r);
+            G1 = (1+1i./(k*r)-1./(k*r).^2);
+            G2 = (1+3i./(k*r)-3./(k*r).^2);
+            if xy
+                RR = Rx.*Rx;            
+                Gxx = (G1-(RR./r.^2).*G2).*g;
+                RR = Ry.*Rx;            
+                Gxy = (-(RR./r.^2).*G2).*g;
+                RR = Rz.*Rx;
+                Gxz = (-(RR./r.^2).*G2).*g;
+
+                RR = Ry.*Rx;
+                Gyx = (-(RR./r.^2).*G2).*g;
+                RR = Ry.*Ry;
+                Gyy = (G1-(RR./r.^2).*G2).*g;
+                RR = Ry.*Rz;
+                Gyz = (-(RR./r.^2).*G2).*g;
+                            
+                RR = Rz.*Rx;
+                Gzx = (-(RR./r.^2).*G2).*g;
+                RR = Rz.*Ry;
+                Gzy = (-(RR./r.^2).*G2).*g;
+                RR = Rz.*Rz;
+                Gzz = (G1-(RR./r.^2).*G2).*g;
+            
+                Ei(:,1) = w^2*mu.*(Gxx .* J(1) + Gyx .* J(1) + Gzx .* J(1))*Area;
+                Ei(:,2) = w^2*mu.*(Gxy .* J(2) + Gyy .* J(2) + Gzy .* J(2))*Area;
+                Ei(:,3) = w^2*mu.*(Gxz .* J(3) + Gyz .* J(3) + Gzz .* J(3))*Area;
+            elseif yz    
+                RR = Rx.*Rx;
+                Gxx = (G1-(RR./r.^2).*G2).*g;
+                RR = Rx.*Ry;
+                Gxy = (-(RR./r.^2).*G2).*g;
+                RR = Rx.*Rz;
+                Gxz = (-(RR./r.^2).*G2).*g;
+                            
+                RR = Ry.*Rx;
+                Gyx = (-(RR./r.^2).*G2).*g;
+                RR = Ry.*Ry;
+                Gyy = (G1-(RR./r.^2).*G2).*g;
+                RR = Ry.*Rz;
+                Gyz = (-(RR./r.^2).*G2).*g;
+                            
+                RR = Rz.*Rx;
+                Gzx = (-(RR./r.^2).*G2).*g;
+                RR = Rz.*Ry;
+                Gzy = (-(RR./r.^2).*G2).*g;
+                RR = Rz.*Rz;
+                Gzz = (G1-(RR./r.^2).*G2).*g;
+                            
+                Ei(:,1) = w^2*mu.*(Gxx .* J(1) + Gyx .* J(1) + Gzx .* J(1))*Area;
+                Ei(:,2) = w^2*mu.*(Gxy .* J(2) + Gyy .* J(2) + Gzy .* J(2))*Area;
+                Ei(:,3) = w^2*mu.*(Gxz .* J(3) + Gyz .* J(3) + Gzz .* J(3))*Area;
+            elseif zx
+                RR = Rx.*Rx;
+                Gxx = (G1-(RR./r.^2).*G2).*g;
+                RR = Rx.*Ry;
+                Gxy = (-(RR./r.^2).*G2).*g;
+                RR = Rx.*Rz;
+                Gxz = (-(RR./r.^2).*G2).*g;
+                            
+                RR = Ry.*Rx;
+                Gyx = (-(RR./r.^2).*G2).*g;
+                RR = Ry.*Ry;
+                Gyy = (G1-(RR./r.^2).*G2).*g;
+                RR = Ry.*Rz;
+                Gyz = (-(RR./r.^2).*G2).*g;
+                            
+                RR = Rz.*Rx;
+                Gzx = (-(RR./r.^2).*G2).*g;
+                RR = Rz.*Ry;
+                Gzy = (-(RR./r.^2).*G2).*g;
+                RR = Rz.*Rz;
+                Gzz = (G1-(RR./r.^2).*G2).*g;
+                
+                Ei(:,1) = w^2*mu.*(Gxx .* J(1) + Gyx .* J(1) + Gzx .* J(1))*Area;
+                Ei(:,2) = w^2*mu.*(Gxy .* J(2) + Gyy .* J(2) + Gzy .* J(2))*Area;
+                Ei(:,3) = w^2*mu.*(Gzz .* J(3) + Gyz .* J(3) + Gzz .* J(3))*Area;
+                end    
+        end
+        
+        function [Z, b, a] = MoM(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k, SubTri, x, y, z, Point, Ei)
             % alocating space
             Z = zeros(length(EdgeList),length(EdgeList))+1i*zeros(length(EdgeList),length(EdgeList));
-            Ei(:,1) = x.*exp(-1i*k.*(Center(:,1)));
-            Ei(:,2) = y.*exp(-1i*k.*(Center(:,1)));
-            Ei(:,3) = z.*exp(-1i*k.*(Center(:,1)));
+            if ~Point
+                Ei(:,1) = x.*exp(-1i*k.*(Center(:,1)));
+                Ei(:,2) = y.*exp(-1i*k.*(Center(:,1)));
+                Ei(:,3) = z.*exp(-1i*k.*(Center(:,1)));
+            end
             b1 = 1:length(EdgeList);
             b2 = 1:length(EdgeList);
             [PlusTri, MinusTri] = ArbitraryAntenna.PMTri(t, EdgeList);
@@ -495,16 +584,18 @@ classdef ArbitraryAntenna
             a = Z\b;
         end
       
-        function [Z, a, b] = MoMVectorized(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k, SubTri, x, y, z)
+        function [Z, a, b] = MoMVectorized(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k, SubTri, x, y, z, Point, Ei)
             % alocating space
             Z = zeros(length(EdgeList),length(EdgeList))+1i*zeros(length(EdgeList),length(EdgeList));
             TotTri = length(t);
             SubTri = permute(reshape(SubTri, 3, [], TotTri),[2 1 3]);
             SubAmount = size(SubTri);
+            if ~Point
             Ei = zeros(size(t));
             Ei(:,1) = x.*exp(-1i*k.*(Center(:,1)));
             Ei(:,2) = y.*exp(-1i*k.*(Center(:,1)));
             Ei(:,3) = z.*exp(-1i*k.*(Center(:,1)));
+            end
             EdgesTotal = length(EdgeList);
                             
             for m=1:EdgesTotal
@@ -739,6 +830,144 @@ classdef ArbitraryAntenna
             Ezy = sqrt(Eyzx.^2+Eyzy.^2+Eyzz.^2);
         end
         
+        function [Exy, Exz, Ezy, Exyx, Exzx, Eyzx, Exyy, Exzy, Eyzy, Exyz, Exzz, Eyzz] = Dipole(Center, k, J,...
+                xmin, xmax, zmin, zmax, ymin, ymax, steps, Area)
+       
+            xrange = linspace(xmin, xmax, steps);
+            yrange = linspace(ymin, ymax, steps);
+            zrange = linspace(zmin, zmax, steps);
+            
+            Exy = zeros(steps, steps); 
+            Exyx = Exy; Exyy = Exy; Exyz = Exy;
+            Exz = zeros(steps,steps);
+            Exzx = Exz; Exzy = Exz; Exzz = Exz;
+            Eyz = zeros(steps,steps); 
+            Eyzx = Eyz; Eyzy = Eyz; Eyzz = Eyz;
+                        
+            for j=1:3
+                if j == 1
+                    rx = (xrange-Center(:,1));
+                    ry = (yrange-Center(:,2));
+                    rz = (0-Center(:,3));
+                elseif j==2
+                    rx = (xrange-Center(:,1));
+                    ry = (0-Center(:,2));
+                    rz = (zrange-Center(:,3));
+                else
+                    rx = (0-Center(:,1));
+                    ry = (yrange-Center(:,2));
+                    rz = (zrange-Center(:,3));
+                end
+                
+                if j == 1
+                            %xy
+                            Rx = repmat(rx(:),1,steps);
+                            Ry = repmat(ry(:)',steps,1);
+                            Rz = repmat(rz,steps,steps);
+                            r = sqrt(Rx.^2+Ry.^2+Rz.^2);
+                                                        
+                            g = exp(1i.*k.*r)./(4*pi*r);
+                            G1 = (1+1i./(k*r)-1./(k*r).^2);
+                            G2 = (1+3i./(k*r)-3./(k*r).^2);
+                            
+                            RR = Rx.*Rx;
+                            Gxx = (G1-(RR./r.^2).*G2).*g;
+                            RR = Ry.*Rx;
+                            Gxy = (-(RR./r.^2).*G2).*g;
+                            RR = Rz.*Rx;
+                            Gxz = (-(RR./r.^2).*G2).*g;
+                            Exyx = Exyx + (Gxx .* J(1) + Gxy .* J(2) + Gxz .* J(3)).*Area;
+                            
+                            RR = Ry.*Rx;
+                            Gyx = (-(RR./r.^2).*G2).*g;
+                            RR = Ry.*Ry;
+                            Gyy = (G1-(RR./r.^2).*G2).*g;
+                            RR = Ry.*Rz;
+                            Gyz = (-(RR./r.^2).*G2).*g;
+                            Exyy = Exyy + (Gyx .* J(1) + Gyy .* J(2) + Gyz .* J(3)).*Area;
+                            
+                            RR = Rz.*Rx;
+                            Gzx = (-(RR./r.^2).*G2).*g;
+                            RR = Rz.*Ry;
+                            Gzy = (-(RR./r.^2).*G2).*g;
+                            RR = Rz.*Rz;
+                            Gzz = (G1-(RR./r.^2).*G2).*g;
+                            Exyz = Exyz + (Gzx .* J(1) + Gzy .* J(2) + Gzz .* J(3)).*Area;
+                        elseif j==2
+                            %xz
+                            Rx = repmat(rx(:)',steps,1);
+                            Ry = repmat(ry(:),steps,steps);
+                            Rz = repmat(rz(:),1,steps);
+                            r = sqrt(Rx.^2+Ry.^2+Rz.^2);
+                            
+                            g = exp(1i.*k.*r)./(4*pi*r);
+                            G1 = (1+1i./(k*r)-1./(k*r).^2);
+                            G2 = (1+3i./(k*r)-3./(k*r).^2);
+                            
+                            RR = Rx.*Rx;
+                            Gxx = (G1-(RR./r.^2).*G2).*g;
+                            RR = Rx.*Ry;
+                            Gxy = (-(RR./r.^2).*G2).*g;
+                            RR = Rx.*Rz;
+                            Gxz = (-(RR./r.^2).*G2).*g;
+                            Exzx = Exzx + (Gxx .* J(1) + Gxy .* J(2) + Gxz .* J(3)).*Area;
+                            
+                            RR = Ry.*Rx;
+                            Gyx = (-(RR./r.^2).*G2).*g;
+                            RR = Ry.*Ry;
+                            Gyy = (G1-(RR./r.^2).*G2).*g;
+                            RR = Ry.*Rz;
+                            Gyz = (-(RR./r.^2).*G2).*g;
+                            Exzy = Exzy + (Gyx .* J(1) + Gyy .* J(2) + Gyz .* J(3)).*Area;
+                            
+                            RR = Rz.*Rx;
+                            Gzx = (-(RR./r.^2).*G2).*g;
+                            RR = Rz.*Ry;
+                            Gzy = (-(RR./r.^2).*G2).*g;
+                            RR = Rz.*Rz;
+                            Gzz = (G1-(RR./r.^2).*G2).*g;
+                            Exzz = Exzz + (Gzx .* J(1) + Gzy .* J(2) + Gzz .* J(3)).*Area;
+                        else
+                            %yz
+                            Rx = repmat(rx(:),steps,steps);
+                            Ry = repmat(ry(:)',steps,1);
+                            Rz = repmat(rz(:),1,steps);
+                            r = sqrt(Rx.^2+Ry.^2+Rz.^2);
+                                
+                            g = exp(1i.*k.*r)./(4*pi*r);
+                            G1 = (1+1i./(k*r)-1./(k*r).^2);
+                            G2 = (1+3i./(k*r)-3./(k*r).^2);
+                            
+                            RR = Rx.*Rx;
+                            Gxx = (G1-(RR./r.^2).*G2).*g;
+                            RR = Rx.*Ry;
+                            Gxy = (-(RR./r.^2).*G2).*g;
+                            RR = Rx.*Rz;
+                            Gxz = (-(RR./r.^2).*G2).*g;
+                            Eyzx = Eyzx + (Gxx .* J(1) + Gxy .* J(2) + Gxz .* J(3)).*Area;
+                            
+                            RR = Ry.*Rx;
+                            Gyx = (-(RR./r.^2).*G2).*g;
+                            RR = Ry.*Ry;
+                            Gyy = (G1-(RR./r.^2).*G2).*g;
+                            RR = Ry.*Rz;
+                            Gyz = (-(RR./r.^2).*G2).*g;
+                            Eyzy = Eyzy + (Gyx .* J(1) + Gyy .* J(2) + Gyz .* J(3)).*Area;
+                            
+                            RR = Rz.*Rx;
+                            Gzx = (-(RR./r.^2).*G2).*g;
+                            RR = Rz.*Ry;
+                            Gzy = (-(RR./r.^2).*G2).*g;
+                            RR = Rz.*Rz;
+                            Gzz = (G1-(RR./r.^2).*G2).*g;
+                            Eyzz = Eyzz + (Gzx .* J(1) + Gzy .* J(2) + Gzz .* J(3)).*Area;
+                end    
+            end
+            Exy = sqrt(Exyx.^2+Exyy.^2+Exyz.^2);
+            Exz = sqrt(Exzx.^2+Exzy.^2+Exzz.^2);
+            Ezy = sqrt(Eyzx.^2+Eyzy.^2+Eyzz.^2);
+        end
+   
         function [] = PolarPlot(E, xmin, xmax,  ymin, ymax, steps, dist)
             xrange = linspace(xmin, xmax, steps);
             yrange = linspace(ymin, ymax, steps);
@@ -754,13 +983,24 @@ classdef ArbitraryAntenna
             polarplot(angles,abs(EPlot));
         end
         
-        function [] = AngularFarField(E, w, mu, r)
-            xH = [1 0];
-            yH = [0 1];
+        function [] = AngularFarField(w, mu, k, r, Center, J, steps)
+            phi = linspace(0, 2*pi, steps)';
+            theta = linspace(0, 2*pi, steps)';
+            xH = [1, 0, 0];
+            yH = [0, 1, 0];
+            zH = [0, 0, 1];
             phiH = -xH.*sin(phi)+yH.*cos(phi);
-            thetaH = 4;
-            rHat =5;
-            Esc = abs(E).^2*r^2;
+            thetaH = (xH.*cos(phi)+yH.*sin(phi)).*cos(theta)-zH.*sin(theta);
+            rHat = (xH.*cos(phi)+yH.*sin(phi)).*sin(theta)+zH.*cos(theta);
+            Esc = zeros(steps);
+            for i=1:length(Center)
+            Esc = sum(1i*w*mu*(thetaH.*thetaH+phiH.*phiH).*...
+                (exp(1i*k*r)/(4*pi*r))...
+                .*exp(-1i*k*rHat.*Center(i,:)).*J(i,:),2) + Esc;
+            end
+            
+            figure(2)
+            plot(phi, abs(Esc))
             
         end
     end    
