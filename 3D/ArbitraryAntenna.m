@@ -352,8 +352,8 @@ classdef ArbitraryAntenna
             g = exp(1i.*k.*r)./(4*pi*r);
             G1 = (1+1i./(k*r)-1./(k*r).^2);
             G2 = (1+3i./(k*r)-3./(k*r).^2);
-            if xy
-                RR = Rx.*Rx;            
+
+                RR = Rx.*Rx;
                 Gxx = (G1-(RR./r.^2).*G2).*g;
                 RR = Ry.*Rx;            
                 Gxy = (-(RR./r.^2).*G2).*g;
@@ -374,10 +374,10 @@ classdef ArbitraryAntenna
                 RR = Rz.*Rz;
                 Gzz = (G1-(RR./r.^2).*G2).*g;
             
-                Ei(:,1) = w^2*mu.*(Gxx .* J(1) + Gyx .* J(1) + Gzx .* J(1))*Area;
-                Ei(:,2) = w^2*mu.*(Gxy .* J(2) + Gyy .* J(2) + Gzy .* J(2))*Area;
-                Ei(:,3) = w^2*mu.*(Gxz .* J(3) + Gyz .* J(3) + Gzz .* J(3))*Area;
-            elseif yz    
+                Ei(:,1) = w^2*mu.*(Gxx .* J(1) + Gxy .* J(2) + Gxz .* J(3))*Area;
+                Ei(:,2) = w^2*mu.*(Gyx .* J(1) + Gyy .* J(2) + Gyz .* J(3))*Area;
+                Ei(:,3) = w^2*mu.*(Gzx .* J(1) + Gzy .* J(2) + Gzz .* J(3))*Area;
+            
                 RR = Rx.*Rx;
                 Gxx = (G1-(RR./r.^2).*G2).*g;
                 RR = Rx.*Ry;
@@ -399,10 +399,10 @@ classdef ArbitraryAntenna
                 RR = Rz.*Rz;
                 Gzz = (G1-(RR./r.^2).*G2).*g;
                             
-                Ei(:,1) = w^2*mu.*(Gxx .* J(1) + Gyx .* J(1) + Gzx .* J(1))*Area;
-                Ei(:,2) = w^2*mu.*(Gxy .* J(2) + Gyy .* J(2) + Gzy .* J(2))*Area;
-                Ei(:,3) = w^2*mu.*(Gxz .* J(3) + Gyz .* J(3) + Gzz .* J(3))*Area;
-            elseif zx
+                Ei(:,1) = Ei(:,1) + w^2*mu.*(Gxx .* J(1) + Gxy .* J(2) + Gxz .* J(3))*Area;
+                Ei(:,2) = Ei(:,2) + w^2*mu.*(Gyx .* J(1) + Gyy .* J(2) + Gyz .* J(3))*Area;
+                Ei(:,3) = Ei(:,3) + w^2*mu.*(Gzx .* J(1) + Gzy .* J(2) + Gzz .* J(3))*Area;
+                
                 RR = Rx.*Rx;
                 Gxx = (G1-(RR./r.^2).*G2).*g;
                 RR = Rx.*Ry;
@@ -424,10 +424,9 @@ classdef ArbitraryAntenna
                 RR = Rz.*Rz;
                 Gzz = (G1-(RR./r.^2).*G2).*g;
                 
-                Ei(:,1) = w^2*mu.*(Gxx .* J(1) + Gyx .* J(1) + Gzx .* J(1))*Area;
-                Ei(:,2) = w^2*mu.*(Gxy .* J(2) + Gyy .* J(2) + Gzy .* J(2))*Area;
-                Ei(:,3) = w^2*mu.*(Gzz .* J(3) + Gyz .* J(3) + Gzz .* J(3))*Area;
-            end    
+                Ei(:,1) = Ei(:,1) + w^2*mu.*(Gxx .* J(1) + Gxy .* J(2) + Gxz .* J(3))*Area;
+                Ei(:,2) = Ei(:,2) + w^2*mu.*(Gyx .* J(1) + Gyy .* J(2) + Gyz .* J(3))*Area;
+                Ei(:,3) = Ei(:,3) + w^2*mu.*(Gzx .* J(1) + Gzy .* J(2) + Gzz .* J(3))*Area;
         end
         
         function [Z, b, a] = MoM(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k, SubTri, x, y, z, Point, Ei)
@@ -677,14 +676,14 @@ classdef ArbitraryAntenna
                     if sub
                         Jface(n,:) = sum(1i.*w.*mu0*a(Plus(y))*BasisLA(Plus(y),2)*RhoP_(:,:,Plus(y))/(2*Quad)) + Jface(n,:);
                     else 
-                        Jface(n,:) = 1i.*w.*mu0*a(Plus(y))*BasisLA(Plus(y),1)*RhoP(Plus(y),:)/2 + Jface(n,:);    
+                        Jface(n,:) = 1i.*w.*mu0*a(Plus(y))*BasisLA(Plus(y),2)*RhoP(Plus(y),:)/2 + Jface(n,:);    
                     end
                 end
                 for y=1:length(Minus)
                     if sub
                         Jface(n,:) = sum(1i.*w.*mu0*a(Minus(y))*BasisLA(Minus(y),2)*RhoM_(:,:,Minus(y))/(2*Quad)) + Jface(n,:);
                     else
-                        Jface(n,:) = 1i.*w.*mu0*a(Minus(y))*BasisLA(Minus(y),3)*RhoM(Minus(y),:)/2 + Jface(n,:);    
+                        Jface(n,:) = 1i.*w.*mu0*a(Minus(y))*BasisLA(Minus(y),2)*RhoM(Minus(y),:)/2 + Jface(n,:);    
                     end
                 end    
             end

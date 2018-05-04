@@ -1,18 +1,18 @@
 %% load STL file into matlab
-% Don't use this this
-% stl = stlread('antennas/ShortAntMesh.stl');
-
-stl = stlread('antennas/Dipole10cmT264.stl');
-% stl = stlread('antennas/Dipole10cmT580.stl');
-% stl = stlread('antennas/Dipole10cmT744.stl');
-
-% stl = stlread('antennas/Dipole10cmT722.stl');
-% stl = stlread('antennas/Dipole10cmT904.stl');
-
-% stl = stlread('antennas/Dipole10cmT1104.stl');
-% stl = stlread('antennas/Dipole10cmT1060.stl');
-% stl = stlread('antennas/Dipole10cmT1104UniformT4732.stl');
-% stl = stlread('antennas/Dipole10cmT1104AdaptiveT2208.stl');
+% stl = stlread('antennas/Dipole10cmT264.stl');
+% stl = stlread('antennas/Dipole10cmT580.stl'); %ok
+stl = stlread('antennas/Dipole10cmT722.stl'); %god
+% stl = stlread('antennas/Dipole10cmT744.stl'); %
+% stl = stlread('antennas/Dipole10cmT904.stl'); %
+% stl = stlread('antennas/Dipole10cmT924.stl'); %god
+% stl = stlread('antennas/Dipole10cmT1060.stl'); %god
+% stl = stlread('antennas/Dipole10cmT1104.stl'); %god
+% stl = stlread('antennas/Dipole10cmT1458.stl'); %god 
+% stl = stlread('antennas/Dipole10cmT1680.stl'); 
+% stl = stlread('antennas/Dipole10cmT1922.stl'); %god
+% stl = stlread('antennas/Dipole10cmT2312.stl'); %god
+% stl = stlread('antennas/Dipole10cmT2888.stl'); %god
+% stl = stlread('antennas/Dipole10cmT3528.stl');
 % stl = stlread('antennas/AntBinMesh2556.stl');
 % stl = stlread('antennas/HalfAntT212.stl');
 %% faces and unique vertices
@@ -20,27 +20,26 @@ tic;
 fprintf('\n')
 disp('Removing duplicate points')
 [p, t] = ArbitraryAntenna.RemoveEqualPoints(stl);
-
 %% Parameters
 % Controls amount of antenna
 p1 = p;
 p2 = p;
 p3 = p;
 p4 = p;
-% p1(:,1) = p(:,1)-0.005;
-% p2(:,1) = p(:,1)+0.005;
+p1(:,2) = p(:,2)-0.0515;
+p2(:,2) = p(:,2)+0.0515;
 % p3(:,1) = p(:,1)-0.08;
 % p4(:,1) = p(:,1)-0.05;
-% p = [p1; p2];%; p3; p4];
-% t = [t; t+length(p1)];% t+length(p1)+length(p2); t+length(p1)+length(p2)+length(p3)];
+p = [p1; p2];%; p3; p4];
+t = [t; t+length(p1)];% t+length(p1)+length(p2); t+length(p1)+length(p2)+length(p3)];
 % p(:,1) = p(:,1)+0.03;
 % Should source be dipole, if 0 a plane wave propagating in +x direction used
 UseDipole = 1;
 DipolePoint = [0,0,0];
 % If set to one use 81 sub triangles pr element, if 0 use 9
-SubSubTri = 1;
+SubSubTri = 0;
 % if 1 use fast (but more inacurate) MoM
-vectorized = 1;
+vectorized = 0;
 % Use subtriangles to calculate current
 sub = 1;
 % Emmision parameters and size of plottet area
@@ -111,7 +110,7 @@ I2 = ArbitraryAntenna.SelfTerm(p, t);
 toc;
 %% Calculating Dipole strength on antenna points
 if UseDipole
-[Ei] = ArbitraryAntenna.PointSource(1, 0, 0, w, mu0, k, Center, DipolePoint, [0,1,0], PointArea);
+[Ei] = ArbitraryAntenna.PointSource(0, 1, 0, w, mu0, k, Center, DipolePoint, [0,1,0], PointArea);
 else
     Ei = 0;
 end
@@ -164,8 +163,8 @@ disp('Setting up Dipole')
 [ExyD, ExzD, EzyD] = ...
     ArbitraryAntenna.Dipole(DipolePoint, k, [0,1,0] , xmin, xmax, ymin, ymax, zmin, zmax, steps, PointArea);
 toc;
-end
 Exy=Exy+ExyD; Exz=Exz+ExzD; Ezy=Ezy+EzyD;
+end
 if normalize
 Exyx = Exyx/max(max(Exy));
 Exyy = Exyy/max(max(Exy));
@@ -224,7 +223,7 @@ pcolor(x, y, abs(Exy)')
 shading interp
 colorbar
 if normalize
-caxis([0 0.1])
+caxis([0 0.001])
 end
 xlabel('x');
 ylabel('y');
@@ -316,7 +315,7 @@ pcolor(z, y, abs(Ezy)')
 shading interp
 colorbar
 if normalize
-caxis([0 0.1])
+caxis([0 0.001])
 end
 xlabel('z');
 ylabel('y');

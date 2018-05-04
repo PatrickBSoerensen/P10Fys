@@ -1,4 +1,4 @@
-P264=1;
+P264=0;
 P580=1;
 P722=1;
 P744=1;
@@ -6,8 +6,8 @@ P904=1;
 P1104=1;
 close all
 
-load('ConvSlow.mat')
-% load('ConvSlowSub.mat')
+% load('ConvSlow.mat')
+load('ConvSlowSub.mat')
 % load('ConvFast.mat')
 % load('ConvFastSub.mat')
 
