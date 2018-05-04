@@ -24,13 +24,13 @@ p1 = p;
 p2 = p;
 p3 = p;
 p4 = p;
-p1(:,1) = p(:,1)-0.005;
-p2(:,1) = p(:,1)+0.005;
+% p1(:,1) = p(:,1)-0.005;
+% p2(:,1) = p(:,1)+0.005;
 % p3(:,1) = p(:,1)-0.08;
 % p4(:,1) = p(:,1)-0.05;
 %% Visual check
-p = [p1; p2];%; p3; p4];
-t = [t; t+length(p1)];% t+length(p1)+length(p2); t+length(p1)+length(p2)+length(p3)];
+% p = [p1; p2];%; p3; p4];
+% t = [t; t+length(p1)];% t+length(p1)+length(p2); t+length(p1)+length(p2)+length(p3)];
 % p(:,1) = p(:,1)+0.03;
 figure(1)
 hold on
@@ -116,7 +116,7 @@ disp('MoM')
 if vectorized
     [Z, a, b ] = ArbitraryAntenna.MoMVectorized(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k, SubTri, 0, 1, 0, 1, Ei);
 else
-    [Z, b, a] = ArbitraryAntenna.MoM(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k,  SubTri, 0, 1, 0, 1, Ei);
+    [Z, b, a] = ArbitraryAntenna.MoM(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k,  SubTri, 0, 1, 0, 0, Ei);
 end
 toc;
 %% Current calc in Triangle
