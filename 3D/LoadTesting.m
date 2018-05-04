@@ -3,13 +3,13 @@
 % stl = stlread('antennas/ShortAntMesh.stl');
 
 % stl = stlread('antennas/Dipole10cmT264.stl');
-stl = stlread('antennas/Dipole10cmT580.stl');
+% stl = stlread('antennas/Dipole10cmT580.stl');
 % stl = stlread('antennas/Dipole10cmT744.stl');
 
 % stl = stlread('antennas/Dipole10cmT722.stl');
 % stl = stlread('antennas/Dipole10cmT904.stl');
 
-% stl = stlread('antennas/Dipole10cmT1104.stl');
+stl = stlread('antennas/Dipole10cmT1104.stl');
 % stl = stlread('antennas/Dipole10cmT1060.stl');
 % stl = stlread('antennas/Dipole10cmT1104UniformT4732.stl');
 % stl = stlread('antennas/Dipole10cmT1104AdaptiveT2208.stl');
@@ -27,18 +27,20 @@ p1 = p;
 p2 = p;
 p3 = p;
 p4 = p;
-% p1(:,1) = p(:,1)-0.005;
-% p2(:,1) = p(:,1)+0.005;
+p1(:,1) = p(:,1)-0.01;
+p2(:,1) = p(:,1)+0.01;
 % p3(:,1) = p(:,1)-0.08;
 % p4(:,1) = p(:,1)-0.05;
-% p = [p1; p2];%; p3; p4];
-% t = [t; t+length(p1)];% t+length(p1)+length(p2); t+length(p1)+length(p2)+length(p3)];
+p = [p1; p2];%; p3; p4];
+t = [t; t+length(p1)];% t+length(p1)+length(p2); t+length(p1)+length(p2)+length(p3)];
 % p(:,1) = p(:,1)+0.03;
 % Should source be dipole, if 0 a plane wave propagating in +x direction used
 UseDipole = 1;
 DipolePoint = [0,0,0];
 % If set to one use 81 sub triangles pr element, if 0 use 9
 SubSubTri = 1;
+% if 1 use fast (but more inacurate) MoM
+vectorized = 1;
 % Area of radiation
 xmin = -2; xmax = 2;
 ymin = -2; ymax = 2;
@@ -110,7 +112,6 @@ else
     Ei = 0;
 end
 %% MoM
-vectorized = 0;
 tic;
 fprintf('\n')
 disp('MoM')
@@ -148,7 +149,7 @@ rotate3d
 %%
 % ArbitraryAntenna.AngularFarField(w, mu0, k, 12, Center, Jface, 200)
 %% Calculating E
-normalize = 0;
+normalize = 1;
 PlotComp = 0;
 tic;
 fprintf('\n')
