@@ -3,14 +3,14 @@
 % stl = stlread('antennas/ShortAntMesh.stl');
 
 % stl = stlread('antennas/Dipole10cmT264.stl');
-% stl = stlread('antennas/Dipole10cmT580.stl');
+stl = stlread('antennas/Dipole10cmT580.stl');
 % stl = stlread('antennas/Dipole10cmT744.stl');
 
 % stl = stlread('antennas/Dipole10cmT722.stl');
 % stl = stlread('antennas/Dipole10cmT904.stl');
 
 % stl = stlread('antennas/Dipole10cmT1104.stl');
-stl = stlread('antennas/Dipole10cmT1060.stl');
+% stl = stlread('antennas/Dipole10cmT1060.stl');
 % stl = stlread('antennas/Dipole10cmT1104UniformT4732.stl');
 % stl = stlread('antennas/Dipole10cmT1104AdaptiveT2208.stl');
 % stl = stlread('antennas/AntBinMesh2556.stl');
@@ -20,6 +20,9 @@ tic;
 fprintf('\n')
 disp('Removing duplicate points')
 [p, t] = ArbitraryAntenna.RemoveEqualPoints(stl);
+
+%% Parameters
+% Controls amount of antenna
 p1 = p;
 p2 = p;
 p3 = p;
@@ -28,10 +31,21 @@ p4 = p;
 % p2(:,1) = p(:,1)+0.005;
 % p3(:,1) = p(:,1)-0.08;
 % p4(:,1) = p(:,1)-0.05;
-%% Visual check
 % p = [p1; p2];%; p3; p4];
 % t = [t; t+length(p1)];% t+length(p1)+length(p2); t+length(p1)+length(p2)+length(p3)];
 % p(:,1) = p(:,1)+0.03;
+% Should source be dipole, if 0 a plane wave propagating in +x direction used
+UseDipole = 1;
+DipolePoint = [0,0,0];
+% If set to one use 81 sub triangles pr element, if 0 use 9
+SubSubTri = 1;
+% Area of radiation
+xmin = -2; xmax = 2;
+ymin = -2; ymax = 2;
+zmin = -2; zmax = 2;
+steps = 200;
+PointArea = xmax^2/steps;
+%% Visual check
 figure(1)
 hold on
 plot3(p(:,1),p(:,2),p(:,3),'*')
@@ -47,7 +61,7 @@ Length = (maxmaxp-minp(maxaxis));
 eps0=8.854187817*10^-12; %F/m
 mu0=4*pi*10^-7; %N/A^2
 c=1/sqrt(eps0*mu0); %m/s
-%2/5, 2/3, 2 
+%2/5, 2/3, 2
 lambda=2*Length;
 f=c/lambda;
 w=2*pi*f;
@@ -64,8 +78,7 @@ fprintf('\n')
 disp('Calculating areals for triangles')
 [Area, Center] = ArbitraryAntenna.TriangleAreas(p, t);
 toc;
-%%
-SubSubTri = 1;
+%% SubTri
 tic;
 fprintf('\n')
 disp('Calculating areals for subtriangles')
@@ -77,7 +90,7 @@ fprintf('\n')
 disp('Defining basis functions')
 [EdgeList, Basis, BasisLA] = ArbitraryAntenna.BasisFunc(p, t, ConnectCell);
 toc;
-%%
+%% Evaluating Basis Functions
 tic;
 fprintf('\n')
 disp('Evaluating basis functions in center points')
@@ -90,33 +103,21 @@ fprintf('\n')
 disp('Pre-Calculating self-coupling terms')
 I2 = ArbitraryAntenna.SelfTerm(p, t);
 toc;
-%%
-xmin = -2;
-ymin = -2;
-zmin = -2;
-xmax = 2;
-ymax = 2;
-zmax = 2;
-steps = 200;
-PointArea = xmax^2/steps;
-tic;
-fprintf('\n')
-disp('Setting up Dipole')
-Origo = [0,0,0];
-[ExyD, ExzD, EzyD] = ...
-    ArbitraryAntenna.Dipole(Origo, k, [0,1,0] , xmin, xmax, ymin, ymax, zmin, zmax, steps, PointArea);
-toc;
-%%
-[Ei] = ArbitraryAntenna.PointSource(1, 0, 0, w, mu0, k, Center, Origo, [0,1,0], PointArea);
+%% Calculating Dipole strength on antenna points
+if UseDipole
+[Ei] = ArbitraryAntenna.PointSource(1, 0, 0, w, mu0, k, Center, DipolePoint, [0,1,0], PointArea);
+else
+    Ei = 0;
+end
 %% MoM
 vectorized = 0;
 tic;
 fprintf('\n')
 disp('MoM')
 if vectorized
-    [Z, a, b ] = ArbitraryAntenna.MoMVectorized(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k, SubTri, 0, 1, 0, 1, Ei);
+    [Z, a, b ] = ArbitraryAntenna.MoMVectorized(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k, SubTri, 0, 1, 0, UseDipole, Ei);
 else
-    [Z, b, a] = ArbitraryAntenna.MoM(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k,  SubTri, 0, 1, 0, 0, Ei);
+    [Z, b, a] = ArbitraryAntenna.MoM(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k,  SubTri, 0, 1, 0, UseDipole, Ei);
 end
 toc;
 %% Current calc in Triangle
@@ -155,7 +156,14 @@ disp('Calculating E-field')
 [Exy, Exz, Ezy, x, y, z, Exyx, Exzx, Eyzx, Exyy, Exzy, Eyzy, Exyz, Exzz, Eyzz] = ...
     ArbitraryAntenna.EField(Center, k, Jface, xmin, xmax, ymin, ymax, zmin, zmax, steps, Area);
 toc;
-
+if UseDipole
+fprintf('\n')
+disp('Setting up Dipole')
+[ExyD, ExzD, EzyD] = ...
+    ArbitraryAntenna.Dipole(DipolePoint, k, [0,1,0] , xmin, xmax, ymin, ymax, zmin, zmax, steps, PointArea);
+toc;
+end
+Exy=Exy+ExyD; Exz=Exz+ExzD; Ezy=Ezy+EzyD;
 if normalize
 Exyx = Exyx/max(max(Exy));
 Exyy = Exyy/max(max(Exy));
@@ -210,7 +218,7 @@ title('xy plane - z comp');
 end
 
 figure(7)
-pcolor(x, y, abs(Exy)'+abs(ExyD)')
+pcolor(x, y, abs(Exy)')    
 shading interp
 colorbar
 if normalize
@@ -256,7 +264,7 @@ title('xz plane - z comp');
 end
 
 figure(11)
-pcolor(x, z, abs(Exz).'+abs(ExzD)')
+pcolor(x, z, abs(Exz).')
 shading interp
 colorbar
 if normalize
@@ -302,7 +310,7 @@ title('yz plane z-comp');
 end
 
 figure(15)
-pcolor(z, y, abs(Ezy)'+abs(EzyD)')
+pcolor(z, y, abs(Ezy)')
 shading interp
 colorbar
 if normalize

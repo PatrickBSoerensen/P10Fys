@@ -6,8 +6,6 @@ center = [];
 
 ExyCrossX = [];
 ExzCrossZ =[];
-ExyCrossY = [];
-ExzCrossX =[];
 
 stl1 = stlread('antennas/Dipole10cmT264.stl');
 stl2 = stlread('antennas/Dipole10cmT580.stl');
@@ -17,8 +15,6 @@ stl5 = stlread('antennas/Dipole10cmT904.stl');
 stl6 = stlread('antennas/Dipole10cmT1104.stl');
 
 for convloop=1:6
-% Don't use this this
-% stl = stlread('antennas/ShortAntMesh.stl');
 if convloop ==1
 stl = stl1;
 elseif convloop ==2
@@ -32,10 +28,6 @@ stl = stl5;
 elseif convloop ==6
 stl = stl6;
 end
-% stl = stlread('antennas/Dipole10cmT1104UniformT4732.stl');
-% stl = stlread('antennas/Dipole10cmT1104AdaptiveT2208.stl');
-% stl = stlread('antennas/AntBinMesh2556.stl');
-% stl = stlread('antennas/HalfAntT212.stl');
 %% faces and unique vertices
 tic;
 fprintf('\n')
@@ -133,8 +125,6 @@ a = max(sx(1),sy(1));
 center = [[center ;zeros(abs([a 0]-sx))],[Center;zeros(abs([a,0]-sy))]];
 ExyCrossX= [ExyCrossX Exy(:,50)];
 ExzCrossZ = [ExzCrossZ  Exz(:,50)];
-ExyCrossY= [ExyCrossY Exy(50,:)];
-ExzCrossX = [ExzCrossX Exz(50,:)];
 
 end
-save('ConvFast', 'J', 'center', 'ExyCrossX', 'ExyCrossY', 'ExzCrossX', 'ExzCrossZ');
+save('ConvFast', 'J', 'center', 'ExyCrossX', 'ExzCrossZ');
