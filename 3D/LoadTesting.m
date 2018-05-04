@@ -1,7 +1,7 @@
 %% load STL file into matlab
 % stl = stlread('antennas/Dipole10cmT264.stl');
-% stl = stlread('antennas/Dipole10cmT580.stl'); %ok
-stl = stlread('antennas/Dipole10cmT722.stl'); %god
+stl = stlread('antennas/Dipole10cmT580.stl'); %ok
+% stl = stlread('antennas/Dipole10cmT722.stl'); %god
 % stl = stlread('antennas/Dipole10cmT744.stl'); %
 % stl = stlread('antennas/Dipole10cmT904.stl'); %
 % stl = stlread('antennas/Dipole10cmT924.stl'); %god
@@ -26,13 +26,13 @@ p1 = p;
 p2 = p;
 p3 = p;
 p4 = p;
-p1(:,2) = p(:,2)-0.0515;
-p2(:,2) = p(:,2)+0.0515;
+% p1(:,2) = p(:,2)-0.0515;
+% p2(:,2) = p(:,2)+0.0515;
 % p3(:,1) = p(:,1)-0.08;
 % p4(:,1) = p(:,1)-0.05;
-p = [p1; p2];%; p3; p4];
-t = [t; t+length(p1)];% t+length(p1)+length(p2); t+length(p1)+length(p2)+length(p3)];
-% p(:,1) = p(:,1)+0.03;
+% p = [p1; p2];%; p3; p4];
+% t = [t; t+length(p1)];% t+length(p1)+length(p2); t+length(p1)+length(p2)+length(p3)];
+% % p(:,1) = p(:,1)+0.03;
 % Should source be dipole, if 0 a plane wave propagating in +x direction used
 UseDipole = 1;
 DipolePoint = [0,0,0];
@@ -155,13 +155,13 @@ tic;
 fprintf('\n')
 disp('Calculating E-field')
 [Exy, Exz, Ezy, x, y, z, Exyx, Exzx, Eyzx, Exyy, Exzy, Eyzy, Exyz, Exzz, Eyzz] = ...
-    ArbitraryAntenna.EField(Center, k, Jface, xmin, xmax, ymin, ymax, zmin, zmax, steps, Area);
+    ArbitraryAntenna.EField(Center, k, Jface, xmin, xmax, ymin, ymax, zmin, zmax, steps);
 toc;
 if UseDipole
 fprintf('\n')
 disp('Setting up Dipole')
 [ExyD, ExzD, EzyD] = ...
-    ArbitraryAntenna.Dipole(DipolePoint, k, [0,1,0] , xmin, xmax, ymin, ymax, zmin, zmax, steps, PointArea);
+    ArbitraryAntenna.Dipole(DipolePoint, k, [0,1,0] , xmin, xmax, ymin, ymax, zmin, zmax, steps);
 toc;
 Exy=Exy+ExyD; Exz=Exz+ExzD; Ezy=Ezy+EzyD;
 end
@@ -223,7 +223,7 @@ pcolor(x, y, abs(Exy)')
 shading interp
 colorbar
 if normalize
-caxis([0 0.001])
+caxis([0 0.1])
 end
 xlabel('x');
 ylabel('y');
@@ -315,7 +315,7 @@ pcolor(z, y, abs(Ezy)')
 shading interp
 colorbar
 if normalize
-caxis([0 0.001])
+caxis([0 0.1])
 end
 xlabel('z');
 ylabel('y');
