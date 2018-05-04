@@ -3,13 +3,14 @@
 % stl = stlread('antennas/ShortAntMesh.stl');
 
 % stl = stlread('antennas/Dipole10cmT264.stl');
-stl = stlread('antennas/Dipole10cmT580.stl');
+% stl = stlread('antennas/Dipole10cmT580.stl');
 % stl = stlread('antennas/Dipole10cmT744.stl');
 
 % stl = stlread('antennas/Dipole10cmT722.stl');
 % stl = stlread('antennas/Dipole10cmT904.stl');
 
 % stl = stlread('antennas/Dipole10cmT1104.stl');
+stl = stlread('antennas/Dipole10cmT1060.stl');
 % stl = stlread('antennas/Dipole10cmT1104UniformT4732.stl');
 % stl = stlread('antennas/Dipole10cmT1104AdaptiveT2208.stl');
 % stl = stlread('antennas/AntBinMesh2556.stl');
