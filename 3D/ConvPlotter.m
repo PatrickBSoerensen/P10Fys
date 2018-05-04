@@ -1,13 +1,22 @@
 P264=0;
-P580=1;
-P722=1;
+P580=0;
+P722=0;
 P744=1;
-P904=1;
+P904=0;
+P924=0;
+P1060=0;
 P1104=1;
+P1458 =1;
+P1680 =1;
+P1922 =1;
+P2312 =0;
+P2888 =1;
+P3528 =1;
+
 close all
 
 % load('ConvSlow.mat')
-load('ConvSlowSub.mat')
+load('ConvSlowSubDi.mat')
 % load('ConvFast.mat')
 % load('ConvFastSub.mat')
 
@@ -75,15 +84,88 @@ if P904
     plot(abs(ExzCrossZ(:,5)))
     PlottetLabels = [PlottetLabels, '904 T'];
 end
-if P1104
+if P924
     figure(1)
     plot(center(:,17),abs(J(:,17)),'*')
+    figure(2)
+    plot(abs(ExyCrossX(:,5)))
+    figure(3)
+    plot(abs(ExzCrossZ(:,5)))
+    PlottetLabels = [PlottetLabels, '924 T'];
+end
+if P1060
+    figure(1)
+    plot(center(:,20),abs(J(:,20)),'*')
+    figure(2)
+    plot(abs(ExyCrossX(:,6)))
+    figure(3)
+    plot(abs(ExzCrossZ(:,6)))
+    PlottetLabels = [PlottetLabels, '1060 T'];
+end
+if P1104
+    figure(1)
+    plot(center(:,23),abs(J(:,23)),'*')
     figure(2)
     plot(abs(ExyCrossX(:,6)))
     figure(3)
     plot(abs(ExzCrossZ(:,6)))
     PlottetLabels = [PlottetLabels, '1104 T'];
 end
+if P1458
+    figure(1)
+    plot(center(:,26),abs(J(:,26)),'*')
+    figure(2)
+    plot(abs(ExyCrossX(:,6)))
+    figure(3)
+    plot(abs(ExzCrossZ(:,6)))
+    PlottetLabels = [PlottetLabels, '1458 T'];
+end
+if P1680
+    figure(1)
+    plot(center(:,26),abs(J(:,26)),'*')
+    figure(2)
+    plot(abs(ExyCrossX(:,6)))
+    figure(3)
+    plot(abs(ExzCrossZ(:,6)))
+    PlottetLabels = [PlottetLabels, '1680 T'];
+end
+if P1922
+    figure(1)
+    plot(center(:,29),abs(J(:,29)),'*')
+    figure(2)
+    plot(abs(ExyCrossX(:,6)))
+    figure(3)
+    plot(abs(ExzCrossZ(:,6)))
+    PlottetLabels = [PlottetLabels, '1922 T'];
+end
+if P2312
+    figure(1)
+    plot(center(:,32),abs(J(:,32)),'*')
+    figure(2)
+    plot(abs(ExyCrossX(:,6)))
+    figure(3)
+    plot(abs(ExzCrossZ(:,6)))
+    PlottetLabels = [PlottetLabels, '2312 T'];
+end
+if P2888
+    figure(1)
+    plot(center(:,35),abs(J(:,35)),'*')
+    figure(2)
+    plot(abs(ExyCrossX(:,6)))
+    figure(3)
+    plot(abs(ExzCrossZ(:,6)))
+    PlottetLabels = [PlottetLabels, '2888 T'];
+end
+if P3528
+    figure(1)
+    plot(center(:,38),abs(J(:,38)),'*')
+    figure(2)
+    plot(abs(ExyCrossX(:,6)))
+    figure(3)
+    plot(abs(ExzCrossZ(:,6)))
+    PlottetLabels = [PlottetLabels, '3528 T'];
+end
+
 figure(1)
 legend(PlottetLabels)
 figure(2)

@@ -109,11 +109,7 @@ disp('Pre-Calculating self-coupling terms')
 I2 = ArbitraryAntenna.SelfTerm(p, t);
 toc;
 %% Calculating Dipole strength on antenna points
-if UseDipole
 [Ei] = ArbitraryAntenna.PointSource(0, 1, 0, w, mu0, k, Center, DipolePoint, [0,1,0], PointArea);
-else
-    Ei = 0;
-end
 %% MoM
 tic;
 fprintf('\n')

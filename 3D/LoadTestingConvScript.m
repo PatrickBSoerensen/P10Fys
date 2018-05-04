@@ -9,22 +9,30 @@ stl2 = stlread('antennas/Dipole10cmT580.stl');
 stl3 = stlread('antennas/Dipole10cmT722.stl');
 stl4 = stlread('antennas/Dipole10cmT744.stl');
 stl5 = stlread('antennas/Dipole10cmT904.stl');
-stl6 = stlread('antennas/Dipole10cmT1104.stl');
+stl6 = stlread('antennas/Dipole10cmT924.stl'); %god
+stl7 = stlread('antennas/Dipole10cmT1060.stl'); %god
+stl8 = stlread('antennas/Dipole10cmT1104.stl');
+stl9 = stlread('antennas/Dipole10cmT1458.stl'); %god 
+stl10 = stlread('antennas/Dipole10cmT1680.stl'); 
+stl11 = stlread('antennas/Dipole10cmT1922.stl'); %god
+stl12 = stlread('antennas/Dipole10cmT2312.stl'); %god
+stl13 = stlread('antennas/Dipole10cmT2888.stl'); %god
+stl14 = stlread('antennas/Dipole10cmT3528.stl');
 %% Parameters
 % Controls amount of antenna
-p1 = p;
-p2 = p;
-p3 = p;
-p4 = p;
-p1(:,1) = p(:,1)-0.01;
-p2(:,1) = p(:,1)+0.01;
+% p1 = p;
+% p2 = p;
+% p3 = p;
+% p4 = p;
+% p1(:,1) = p(:,1)-0.01;
+% p2(:,1) = p(:,1)+0.01;
 % p3(:,1) = p(:,1)-0.08;
 % p4(:,1) = p(:,1)-0.05;
-p = [p1; p2];%; p3; p4];
-t = [t; t+length(p1)];% t+length(p1)+length(p2); t+length(p1)+length(p2)+length(p3)];
+% p = [p1; p2];%; p3; p4];
+% t = [t; t+length(p1)];% t+length(p1)+length(p2); t+length(p1)+length(p2)+length(p3)];
 % p(:,1) = p(:,1)+0.03;
 % Should source be dipole, if 0 a plane wave propagating in +x direction used
-UseDipole = 1;
+UseDipole = 0;
 DipolePoint = [0,0,0];
 % If set to one use 81 sub triangles pr element, if 0 use 9
 SubSubTri = 1;
@@ -37,9 +45,10 @@ zmin = -2; zmax = 2;
 steps = 200;
 PointArea = xmax^2/steps;
 
-FileName = 'Conv';
+FileName = 'ConvSlowSubWave';
 %% Loop
-for convloop=1:6
+for convloop=1:14
+convloop
 if convloop ==1
 stl = stl1;
 elseif convloop ==2
@@ -52,6 +61,22 @@ elseif convloop ==5
 stl = stl5;
 elseif convloop ==6
 stl = stl6;
+elseif convloop ==7
+stl = stl7;
+elseif convloop ==8
+stl = stl8;
+elseif convloop ==9
+stl = stl9;
+elseif convloop ==10
+stl = stl10;
+elseif convloop ==11
+stl = stl11;
+elseif convloop ==12
+stl = stl12;
+elseif convloop ==13
+stl = stl13;
+elseif convloop ==14
+stl = stl14;
 end
 %% faces and unique vertices
 tic;
@@ -110,11 +135,7 @@ disp('Pre-Calculating self-coupling terms')
 I2 = ArbitraryAntenna.SelfTerm(p, t);
 toc;
 %% Calculating Dipole strength on antenna points
-if UseDipole
 [Ei] = ArbitraryAntenna.PointSource(1, 0, 0, w, mu0, k, Center, DipolePoint, [0,1,0], PointArea);
-else
-    Ei = 0;
-end
 %% MoM
 tic;
 fprintf('\n')
@@ -136,13 +157,13 @@ tic;
 fprintf('\n')
 disp('Calculating E-field')
 [Exy, Exz, Ezy, x, y, z, Exyx, Exzx, Eyzx, Exyy, Exzy, Eyzy, Exyz, Exzz, Eyzz] = ...
-    ArbitraryAntenna.EField(Center, k, Jface, xmin, xmax, ymin, ymax, zmin, zmax, steps, Area);
+    ArbitraryAntenna.EField(Center, k, Jface, xmin, xmax, ymin, ymax, zmin, zmax, steps);
 toc;
 if UseDipole
 fprintf('\n')
 disp('Setting up Dipole')
 [ExyD, ExzD, EzyD] = ...
-    ArbitraryAntenna.Dipole(DipolePoint, k, [0,1,0] , xmin, xmax, ymin, ymax, zmin, zmax, steps, PointArea);
+    ArbitraryAntenna.Dipole(DipolePoint, k, [0,1,0] , xmin, xmax, ymin, ymax, zmin, zmax, steps);
 toc;
 end
 Exy=Exy+ExyD; Exz=Exz+ExzD; Ezy=Ezy+EzyD;
