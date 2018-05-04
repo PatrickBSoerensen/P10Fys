@@ -427,7 +427,7 @@ classdef ArbitraryAntenna
                 Ei(:,1) = w^2*mu.*(Gxx .* J(1) + Gyx .* J(1) + Gzx .* J(1))*Area;
                 Ei(:,2) = w^2*mu.*(Gxy .* J(2) + Gyy .* J(2) + Gzy .* J(2))*Area;
                 Ei(:,3) = w^2*mu.*(Gzz .* J(3) + Gyz .* J(3) + Gzz .* J(3))*Area;
-                end    
+            end    
         end
         
         function [Z, b, a] = MoM(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k, SubTri, x, y, z, Point, Ei)
