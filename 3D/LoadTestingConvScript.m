@@ -32,12 +32,13 @@ stl14 = stlread('antennas/Dipole10cmT3528.stl');
 % t = [t; t+length(p1)];% t+length(p1)+length(p2); t+length(p1)+length(p2)+length(p3)];
 % p(:,1) = p(:,1)+0.03;
 % Should source be dipole, if 0 a plane wave propagating in +x direction used
-UseDipole = 0;
+UseDipole = 1;
 DipolePoint = [0,0,0];
 % If set to one use 81 sub triangles pr element, if 0 use 9
 SubSubTri = 1;
 % if 1 use fast (but more inacurate) MoM
 vectorized = 0;
+sub=1;
 % Area of radiation
 xmin = -2; xmax = 2;
 ymin = -2; ymax = 2;
@@ -45,7 +46,7 @@ zmin = -2; zmax = 2;
 steps = 200;
 PointArea = xmax^2/steps;
 
-FileName = 'ConvSlowSubWave';
+FileName = 'ConvSlowSubHalfTestDi';
 %% Loop
 for convloop=1:14
 convloop
@@ -163,10 +164,10 @@ if UseDipole
 fprintf('\n')
 disp('Setting up Dipole')
 [ExyD, ExzD, EzyD] = ...
-    ArbitraryAntenna.Dipole(DipolePoint, k, [0,1,0] , xmin, xmax, ymin, ymax, zmin, zmax, steps);
+    ArbitraryAntenna.Dipole(DipolePoint, k, [0,1,0] , xmin, xmax, ymin, ymax, zmin, zmax, steps, PointArea);
 toc;
-end
 Exy=Exy+ExyD; Exz=Exz+ExzD; Ezy=Ezy+EzyD;
+end
 
 sx = size(J);
 sy = size(Jface);

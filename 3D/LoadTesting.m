@@ -1,12 +1,12 @@
 %% load STL file into matlab
 % stl = stlread('antennas/Dipole10cmT264.stl');
-stl = stlread('antennas/Dipole10cmT580.stl'); %ok
+% stl = stlread('antennas/Dipole10cmT580.stl'); %ok
 % stl = stlread('antennas/Dipole10cmT722.stl'); %god
 % stl = stlread('antennas/Dipole10cmT744.stl'); %
 % stl = stlread('antennas/Dipole10cmT904.stl'); %
 % stl = stlread('antennas/Dipole10cmT924.stl'); %god
 % stl = stlread('antennas/Dipole10cmT1060.stl'); %god
-% stl = stlread('antennas/Dipole10cmT1104.stl'); %god
+stl = stlread('antennas/Dipole10cmT1104.stl'); %god
 % stl = stlread('antennas/Dipole10cmT1458.stl'); %god 
 % stl = stlread('antennas/Dipole10cmT1680.stl'); 
 % stl = stlread('antennas/Dipole10cmT1922.stl'); %god
@@ -34,16 +34,17 @@ p4 = p;
 % t = [t; t+length(p1)];% t+length(p1)+length(p2); t+length(p1)+length(p2)+length(p3)];
 % % p(:,1) = p(:,1)+0.03;
 % Should source be dipole, if 0 a plane wave propagating in +x direction used
-UseDipole = 1;
+UseDipole = 0;
 DipolePoint = [0,0,0];
 % If set to one use 81 sub triangles pr element, if 0 use 9
-SubSubTri = 0;
+SubSubTri = 1;
 % if 1 use fast (but more inacurate) MoM
 vectorized = 0;
+InTest = 0;
 % Use subtriangles to calculate current
 sub = 1;
 % Emmision parameters and size of plottet area
-normalize = 1;
+normalize = 0;
 PlotComp = 0;
 xmin = -2; xmax = 2;
 ymin = -2; ymax = 2;
@@ -60,7 +61,7 @@ toc;
 minp = min(p);
 maxp = max(p);
 [maxmaxp, maxaxis] = max(max(p));
-radius = abs(min(min(p))+min(min(p)));
+radius = 0.003;
 Length = (maxmaxp-minp(maxaxis));
 %% constants
 eps0=8.854187817*10^-12; %F/m
@@ -110,10 +111,15 @@ I2 = ArbitraryAntenna.SelfTerm(p, t);
 toc;
 %% Calculating Dipole strength on antenna points
 [Ei] = ArbitraryAntenna.PointSource(0, 1, 0, w, mu0, k, Center, DipolePoint, [0,1,0], PointArea);
+%% Calculating Interface params
+[InterfaceSurf, iG] = ArbitraryAntenna.InterfaceCalc(x, ymin, ymax, zmin, zmax, steps);
 %% MoM
 tic;
 fprintf('\n')
 disp('MoM')
+if InTest
+    [Z, b, a] = ArbitraryAntenna.MoMIG(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k,  SubTri, 0, 1, 0, UseDipole, Ei, InterfaceSurf, 3.4);
+end
 if vectorized
     [Z, a, b ] = ArbitraryAntenna.MoMVectorized(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k, SubTri, 0, 1, 0, UseDipole, Ei);
 else
@@ -157,7 +163,7 @@ if UseDipole
 fprintf('\n')
 disp('Setting up Dipole')
 [ExyD, ExzD, EzyD] = ...
-    ArbitraryAntenna.Dipole(DipolePoint, k, [0,1,0] , xmin, xmax, ymin, ymax, zmin, zmax, steps);
+    ArbitraryAntenna.Dipole(DipolePoint, k, [0,1,0] , xmin, xmax, ymin, ymax, zmin, zmax, steps, PointArea);
 toc;
 Exy=Exy+ExyD; Exz=Exz+ExzD; Ezy=Ezy+EzyD;
 end
