@@ -34,10 +34,10 @@ p4 = p;
 % t = [t; t+length(p1)];% t+length(p1)+length(p2); t+length(p1)+length(p2)+length(p3)];
 % % p(:,1) = p(:,1)+0.03;
 % Should source be dipole, if 0 a plane wave propagating in +x direction used
-UseDipole = 0;
+UseDipole = 1;
 DipolePoint = [0,0,0];
 % If set to one use 81 sub triangles pr element, if 0 use 9
-SubSubTri = 1;
+SubSubTri = 0;
 % if 1 use fast (but more inacurate) MoM
 vectorized = 0;
 InTest = 0;
@@ -112,7 +112,7 @@ toc;
 %% Calculating Dipole strength on antenna points
 [Ei] = ArbitraryAntenna.PointSource(0, 1, 0, w, mu0, k, Center, DipolePoint, [0,1,0], PointArea);
 %% Calculating Interface params
-[InterfaceSurf, iG] = ArbitraryAntenna.InterfaceCalc(x, ymin, ymax, zmin, zmax, steps);
+[InterfaceSurf, iG] = ArbitraryAntenna.InterfaceCalc(2, ymin, ymax, zmin, zmax, steps);
 %% MoM
 tic;
 fprintf('\n')

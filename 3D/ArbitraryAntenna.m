@@ -582,15 +582,19 @@ classdef ArbitraryAntenna
             % Z\b is a newer faster version of inv(Z)*b
             a = Z\b;
         end
+        
         function [Interface, iG] = InterfaceCalc(x, ymin, ymax, zmin, zmax, steps)
             Interfacey = linspace(ymin, ymax, steps);
             Interfacez = linspace(zmin, zmax, steps);
             
-            Interface(:,2) = Interfacey.';
-            Interface(:,3) = Interfacez.';
-            Interface(:,1) = x;
+            Interfacey = repmat(Interfacey.',1,steps);
+            Interfacez = repmat(Interfacez,steps,1);
             
-            iG = 1;
+            Interface(1:steps,1:steps,1) = x;
+            Interface(:,:,2) = Interfacey;
+            Interface(:,:,3) = Interfacez;
+            
+            iG=1;
         end
         
         function [Z, b, a] = MoMIG(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k, SubTri, x, y, z, Point, Ei, InterfaceSurf, InEps)
