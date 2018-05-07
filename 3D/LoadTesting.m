@@ -4,9 +4,9 @@
 % stl = stlread('antennas/Dipole10cmT722.stl'); %god
 % stl = stlread('antennas/Dipole10cmT744.stl'); %
 % stl = stlread('antennas/Dipole10cmT904.stl'); %
-% stl = stlread('antennas/Dipole10cmT924.stl'); %god
+stl = stlread('antennas/Dipole10cmT924.stl'); %god
 % stl = stlread('antennas/Dipole10cmT1060.stl'); %god
-stl = stlread('antennas/Dipole10cmT1104.stl'); %god
+% stl = stlread('antennas/Dipole10cmT1104.stl'); %god
 % stl = stlread('antennas/Dipole10cmT1458.stl'); %god 
 % stl = stlread('antennas/Dipole10cmT1680.stl'); 
 % stl = stlread('antennas/Dipole10cmT1922.stl'); %god
@@ -42,7 +42,7 @@ SubSubTri = 0;
 vectorized = 0;
 InTest = 0;
 % Use subtriangles to calculate current
-sub = 0;
+sub = 1;
 % Emmision parameters and size of plottet area
 normalize = 0;
 PlotComp = 0;
@@ -151,7 +151,7 @@ colorbar;
 axis('equal');
 rotate3d
 %%
-ArbitraryAntenna.AngularFarField(w, mu0, k, 12, Center, Jface, 200)
+ArbitraryAntenna.AngularFarField(w, mu0, k, 20, Center, Jface, 200)
 %% Calculating E
 tic;
 fprintf('\n')
