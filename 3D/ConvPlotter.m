@@ -1,26 +1,36 @@
 P264=0;
 P580=0;
-P722=0;
+P722=1;
 P744=0;
 P904=0;
-P924=0;
+P924=1;
 P1060=0;
-P1104=0;
+P1104=1;
 P1458 =0;
 P1680 =0;
 P1922 =0;
 P2312 =0;
-P2888 =1;
+P2888 =0;
 P3528 =0;
 
 close all
-
+%% First batch
 % load('ConvSlow.mat')
-% load('ConvSlowSubWave.mat')
-
-load('ConvSlowHalfTestWave.mat')
+% load('ConvSlowSub.mat')
 % load('ConvFast.mat')
 % load('ConvFastSub.mat')
+%% Wave/Dipole initiatl batch
+% load('ConvSlowSubWave.mat')
+%% Test batch
+% load('ConvFastHalfTestWave.mat')
+% load('ConvFastHalfTestDipole.mat')
+% load('ConvFastSubHalfTestWave.mat')
+% load('ConvFastSubHalfTestDipole.mat')
+load('ConvSlowHalfTestWave.mat')
+% load('ConvSlowHalfTestDipole.mat')
+% load('ConvSlowSubHalfTestWave.mat')
+% load('ConvSlowSubHalfTestDi.mat')
+
 
 figure(1)
 title('Convergence of J_y')
