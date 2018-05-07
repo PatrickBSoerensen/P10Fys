@@ -178,8 +178,8 @@ sx = size(center);
 sy = size(Center);
 a = max(sx(1),sy(1));
 center = [[center ;zeros(abs([a 0]-sx))],[Center;zeros(abs([a,0]-sy))]];
-ExyCrossX= [ExyCrossX Exy(:,50)];
-ExzCrossZ = [ExzCrossZ  Exz(:,50)];
+ExyCrossX= [ExyCrossX Exy(:,steps/2)];
+ExzCrossZ = [ExzCrossZ  Exz(:,steps/2)];
 
 end
 save(FileName, 'J', 'center', 'ExyCrossX', 'ExzCrossZ');
