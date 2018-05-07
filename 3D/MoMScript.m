@@ -6,15 +6,17 @@
 % stl = stlread('antennas/Dipole10cmT904.stl'); %
 % stl = stlread('antennas/Dipole10cmT924.stl'); %god
 % stl = stlread('antennas/Dipole10cmT1060.stl'); %god
-stl = stlread('antennas/Dipole10cmT1104.stl'); %god
+% stl = stlread('antennas/Dipole10cmT1104.stl'); %god
 % stl = stlread('antennas/Dipole10cmT1458.stl'); %god 
 % stl = stlread('antennas/Dipole10cmT1680.stl'); 
 % stl = stlread('antennas/Dipole10cmT1922.stl'); %god
 % stl = stlread('antennas/Dipole10cmT2312.stl'); %god
-% stl = stlread('antennas/Dipole10cmT2888.stl'); %god
+stl = stlread('antennas/Dipole10cmT2888.stl'); %god
 % stl = stlread('antennas/Dipole10cmT3528.stl');
 % stl = stlread('antennas/AntBinMesh2556.stl');
 % stl = stlread('antennas/HalfAntT212.stl');
+
+% stl =  stlread('antennas/AspecPrio/Dipole10cmT1680.stl');
 %% faces and unique vertices
 tic;
 fprintf('\n')
@@ -39,10 +41,10 @@ DipolePoint = [0,0,0];
 % If set to one use 81 sub triangles pr element, if 0 use 9
 SubSubTri = 0;
 % if 1 use fast (but more inacurate) MoM
-vectorized = 0;
+vectorized = 1;
 InTest = 0;
 % Use subtriangles to calculate current
-sub = 0;
+sub = 1;
 % Emmision parameters and size of plottet area
 normalize = 0;
 PlotComp = 0;
