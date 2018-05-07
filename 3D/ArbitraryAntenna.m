@@ -1168,7 +1168,7 @@ classdef ArbitraryAntenna
                 .*exp(-1i*k*rHat.*Center(i,:)).*J(i,:),2) + Esc;
             end
             
-            figure(2)
+            figure(4)
             plot(phi, abs(Esc))
             
         end
