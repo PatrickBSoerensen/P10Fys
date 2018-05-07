@@ -833,7 +833,7 @@ classdef ArbitraryAntenna
             a=Z\b;
           end
           
-        function [Jface] = CurrentCalc(t, EdgeList, w, mu0, a, BasisLA, RhoP, RhoM, RhoP_, RhoM_, sub)
+        function [Jface] = CurrentCalc(t, EdgeList, w, mu0, a, BasisLA, RhoP, RhoM, RhoP_, RhoM_, sub, Area)
             Jface = zeros(size(t));
             
             [PlusTri, MinusTri] = ArbitraryAntenna.PMTri(t, EdgeList);
@@ -844,16 +844,16 @@ classdef ArbitraryAntenna
                 Quad = Quad(1);
                 for y=1:length(Plus)
                     if sub
-                        Jface(n,:) = sum(1i.*w.*mu0*a(Plus(y))*BasisLA(Plus(y),2)*RhoP_(:,:,Plus(y))/(2*Quad)) + Jface(n,:);
+                        Jface(n,:) = sum(1i.*w.*mu0*a(Plus(y))*BasisLA(Plus(y),2)*RhoP_(:,:,Plus(y))/(2*Quad))*Area(n) + Jface(n,:);
                     else 
-                        Jface(n,:) = 1i.*w.*mu0*a(Plus(y))*BasisLA(Plus(y),2)*RhoP(Plus(y),:)/2 + Jface(n,:);    
+                        Jface(n,:) = 1i.*w.*mu0*a(Plus(y))*BasisLA(Plus(y),2)*RhoP(Plus(y),:)*Area(n)/2 + Jface(n,:);    
                     end
                 end
                 for y=1:length(Minus)
                     if sub
-                        Jface(n,:) = sum(1i.*w.*mu0*a(Minus(y))*BasisLA(Minus(y),2)*RhoM_(:,:,Minus(y))/(2*Quad)) + Jface(n,:);
+                        Jface(n,:) = sum(1i.*w.*mu0*a(Minus(y))*BasisLA(Minus(y),2)*RhoM_(:,:,Minus(y))/(2*Quad))*Area(n) + Jface(n,:);
                     else
-                        Jface(n,:) = 1i.*w.*mu0*a(Minus(y))*BasisLA(Minus(y),2)*RhoM(Minus(y),:)/2 + Jface(n,:);    
+                        Jface(n,:) = 1i.*w.*mu0*a(Minus(y))*BasisLA(Minus(y),2)*RhoM(Minus(y),:)*Area(n)/2 + Jface(n,:);    
                     end
                 end    
             end
