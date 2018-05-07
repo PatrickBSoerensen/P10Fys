@@ -1,17 +1,17 @@
-P264=1;
-P580=1;
-P722=1;
-P744=1;
-P904=1;
+P264=0;
+P580=0;
+P722=0;
+P744=0;
+P904=0;
 P924=1;
-P1060=1;
-P1104=1;
-P1458 =01;
-P1680 =01;
-P1922 =01;
-P2312 =01;
-P2888 =1;
-P3528 =1;
+P1060=0;
+P1104=0;
+P1458 =0;
+P1680 =0;
+P1922 =0;
+P2312 =0;
+P2888 =0;
+P3528 =0;
 
 close all
 %% First batch
@@ -30,6 +30,8 @@ load('ConvSlowHalfTestWave.mat')
 % load('ConvSlowHalfTestDipole.mat')
 % load('ConvSlowSubHalfTestWave.mat')
 % load('ConvSlowSubHalfTestDi.mat')
+
+% load('ConvSlowAspecWave.mat')
 
 
 figure(1)
@@ -121,7 +123,7 @@ if P904
 end
 if P924
     figure(1)
-    plot(center(:,17),abs(J(:,17)),'*')
+    plot(center(:,17),abs(J(:,17))/max(abs(J(:,17))),'*')
     
     figure(4)
     [Jm, Ji] = max(abs(J(:,17)));

@@ -4,9 +4,9 @@
 % stl = stlread('antennas/Dipole10cmT722.stl'); %god
 % stl = stlread('antennas/Dipole10cmT744.stl'); %
 % stl = stlread('antennas/Dipole10cmT904.stl'); %
-% stl = stlread('antennas/Dipole10cmT924.stl'); %god
+stl = stlread('antennas/Dipole10cmT924.stl'); %god
 % stl = stlread('antennas/Dipole10cmT1060.stl'); %god
-stl = stlread('antennas/Dipole10cmT1104.stl'); %god
+% stl = stlread('antennas/Dipole10cmT1104.stl'); %god
 % stl = stlread('antennas/Dipole10cmT1458.stl'); %god 
 % stl = stlread('antennas/Dipole10cmT1680.stl'); 
 % stl = stlread('antennas/Dipole10cmT1922.stl'); %god
@@ -15,6 +15,7 @@ stl = stlread('antennas/Dipole10cmT1104.stl'); %god
 % stl = stlread('antennas/Dipole10cmT3528.stl');
 % stl = stlread('antennas/AntBinMesh2556.stl');
 % stl = stlread('antennas/HalfAntT212.stl');
+% stl =  stlread('antennas/AspecPrio/Dipole10cmT910.stl');
 %% faces and unique vertices
 tic;
 fprintf('\n')
@@ -42,7 +43,7 @@ SubSubTri = 0;
 vectorized = 0;
 InTest = 0;
 % Use subtriangles to calculate current
-sub = 1;
+sub = 0;
 % Emmision parameters and size of plottet area
 normalize = 0;
 PlotComp = 0;
