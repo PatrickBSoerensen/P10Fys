@@ -24,7 +24,7 @@ stl6 = stlread('antennas/AspecPrio/Dipole10cmT1680.stl'); %god
 % t = [t; t+length(p1)];% t+length(p1)+length(p2); t+length(p1)+length(p2)+length(p3)];
 % p(:,1) = p(:,1)+0.03;
 % Should source be dipole, if 0 a plane wave propagating in +x direction used
-UseDipole = 1;
+UseDipole = 0;
 DipolePoint = [0,0,0];
 % If set to one use 81 sub triangles pr element, if 0 use 9
 SubSubTri = 0;
@@ -38,7 +38,7 @@ zmin = -2; zmax = 2;
 steps = 200;
 PointArea = xmax^2/steps;
 
-FileName = 'ConvSlowAspecDipole';
+FileName = 'ConvSlowAspecWave';
 %% Loop
 for convloop=1:6
 convloop
