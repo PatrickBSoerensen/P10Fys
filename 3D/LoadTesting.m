@@ -34,7 +34,7 @@ p4 = p;
 % t = [t; t+length(p1)];% t+length(p1)+length(p2); t+length(p1)+length(p2)+length(p3)];
 % % p(:,1) = p(:,1)+0.03;
 % Should source be dipole, if 0 a plane wave propagating in +x direction used
-UseDipole = 1;
+UseDipole = 0;
 DipolePoint = [0,0,0];
 % If set to one use 81 sub triangles pr element, if 0 use 9
 SubSubTri = 0;
@@ -112,7 +112,7 @@ toc;
 %% Calculating Dipole strength on antenna points
 [Ei] = ArbitraryAntenna.PointSource(0, 1, 0, w, mu0, k, Center, DipolePoint, [0,1,0], PointArea);
 %% Calculating Interface params
-[InterfaceSurf, iG] = ArbitraryAntenna.InterfaceCalc(2, ymin, ymax, zmin, zmax, steps);
+[Interfacesurf, iG] = ArbitraryAntenna.InterfaceCalc(0.002, ymin, ymax, zmin, zmax, steps);
 %% MoM
 tic;
 fprintf('\n')
@@ -130,7 +130,7 @@ toc;
 tic;
 fprintf('\n')
 disp('Calculating Current')
-[Jface] = ArbitraryAntenna.CurrentCalc(t, EdgeList, w, mu0, a, BasisLA, RhoP, RhoM, RhoP_, RhoM_, sub);
+[Jface] = ArbitraryAntenna.CurrentCalc(t, EdgeList, w, mu0, a, BasisLA, RhoP, RhoM, RhoP_, RhoM_, sub, Area);
 toc;
 %% Surf plot Current
 JfaceSize = sqrt(sum(Jface.^2,2));
