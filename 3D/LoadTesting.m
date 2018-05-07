@@ -42,8 +42,6 @@ SubSubTri = 0;
 % if 1 use fast (but more inacurate) MoM
 vectorized = 0;
 InTest = 0;
-% Use subtriangles to calculate current
-sub = 1;
 % Emmision parameters and size of plottet area
 normalize = 0;
 PlotComp = 0;
@@ -131,7 +129,7 @@ toc;
 tic;
 fprintf('\n')
 disp('Calculating Current')
-[Jface] = ArbitraryAntenna.CurrentCalc(t, EdgeList, w, mu0, a, BasisLA, RhoP, RhoM, RhoP_, RhoM_, sub, Area);
+[Jface] = ArbitraryAntenna.CurrentCalc(t, EdgeList, w, mu0, a, BasisLA, RhoP, RhoM);
 toc;
 %% Surf plot Current
 JfaceSize = sqrt(sum(Jface.^2,2));
