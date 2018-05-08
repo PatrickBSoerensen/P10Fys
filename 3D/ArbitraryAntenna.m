@@ -105,7 +105,6 @@ classdef ArbitraryAntenna
             TotTri = length(t);
             
             for i=1:TotTri
-                
                 % Center of triangle
                 M = Center(i,:);
                 % Coordinates to triangle points
@@ -135,15 +134,15 @@ classdef ArbitraryAntenna
                 a9=1/3*(C4+C6+r3);
                 % Saving subtriangles centerpoints
                 if itt
-                    [aa1] = ArbitraryAntenna.SubTrianglesIttMet(C1,C5,r1, a1);
-                    [aa2] = ArbitraryAntenna.SubTrianglesIttMet(C1,C2,M, a2);           
-                    [aa3] = ArbitraryAntenna.SubTrianglesIttMet(C2,C3,r2, a3); 
-                    [aa4] = ArbitraryAntenna.SubTrianglesIttMet(C2,C3,M, a4);                    
-                    [aa5] = ArbitraryAntenna.SubTrianglesIttMet(C3,C4,M, a5); 
-                    [aa6] = ArbitraryAntenna.SubTrianglesIttMet(C1,C5,M, a6);
-                    [aa7] = ArbitraryAntenna.SubTrianglesIttMet(C5,C6,M, a7); 
+                    [aa1] = ArbitraryAntenna.SubTrianglesIttMet(r1,C1,C5, a1);
+                    [aa2] = ArbitraryAntenna.SubTrianglesIttMet(C1,C2,M, a2);        
+                    [aa3] = ArbitraryAntenna.SubTrianglesIttMet(C2,r2,C3, a3);
+                    [aa4] = ArbitraryAntenna.SubTrianglesIttMet(C2,C3,M, a4);            
+                    [aa5] = ArbitraryAntenna.SubTrianglesIttMet(C3,M,C4, a5);
+                    [aa6] = ArbitraryAntenna.SubTrianglesIttMet(C1,M,C5, a6);
+                    [aa7] = ArbitraryAntenna.SubTrianglesIttMet(C5,M,C6, a7);
                     [aa8] = ArbitraryAntenna.SubTrianglesIttMet(C4,C6,M, a8);
-                    [aa9] = ArbitraryAntenna.SubTrianglesIttMet(C4,C6,r3, a9); 
+                    [aa9] = ArbitraryAntenna.SubTrianglesIttMet(C4,r3,C6, a9);
                     
                     SubTri(:,:,i)=...
                     [aa1 aa2 aa3 aa4 aa5 aa6 aa7 aa8 aa9];

@@ -5,11 +5,23 @@ ExyCrossX = [];
 ExzCrossZ =[];
 ESC = [];
 
-stl1 = stlread('antennas/Dipole10cmT722.stl');
-stl2 = stlread('antennas/Dipole10cmT924.stl'); %god
-stl3 = stlread('antennas/Dipole10cmT1060.stl'); %god
-stl4 = stlread('antennas/Dipole10cmT1104.stl');
-stl5 = stlread('antennas/Dipole10cmT1922.stl'); %god
+% stl1 = stlread('antennas/Dipole10cmT722.stl');
+% stl2 = stlread('antennas/Dipole10cmT924.stl'); %god
+% stl3 = stlread('antennas/Dipole10cmT1060.stl'); %god
+% stl4 = stlread('antennas/Dipole10cmT1104.stl');
+% stl5 = stlread('antennas/Dipole10cmT1922.stl'); %god
+
+stl1 = stlread('antennas/test/720.stl');
+stl2 = stlread('antennas/test/912.stl'); %god
+stl3 = stlread('antennas/test/1026.stl'); %god
+stl4 = stlread('antennas/test/1140.stl');
+stl5 = stlread('antennas/test/1330.stl'); %god
+
+stl6 = stlread('antennas/test/1444.stl');
+stl7 = stlread('antennas/test/1634.stl'); %god
+stl8 = stlread('antennas/test/1900.stl'); %god
+stl9 = stlread('antennas/test/2280.stl');
+stl10 = stlread('antennas/test/2546.stl'); %god
 %% Parameters
 % Controls amount of antenna
 % p1 = p;
@@ -24,7 +36,7 @@ stl5 = stlread('antennas/Dipole10cmT1922.stl'); %god
 % t = [t; t+length(p1)];% t+length(p1)+length(p2); t+length(p1)+length(p2)+length(p3)];
 % p(:,1) = p(:,1)+0.03;
 % Should source be dipole, if 0 a plane wave propagating in +x direction used
-UseDipole = 1;
+UseDipole = 0;
 DipolePoint = [0,0,0];
 % If set to one use 81 sub triangles pr element, if 0 use 9
 SubSubTri = 0;
@@ -37,10 +49,10 @@ zmin = -2; zmax = 2;
 steps = 200;
 PointArea = xmax^2/steps;
 
-FileName= 'ConSlowBothrDipole';
+FileName= 'ConSlowBothrWaveTest';
 
 %% Loop
-for convloop=1:5
+for convloop=1:10
 convloop
 if convloop ==1
 stl = stl1;

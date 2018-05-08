@@ -38,7 +38,7 @@ close all
 % load('conv/test/ConvSlowSubtestWave.mat')
 % load('conv/test/ConvSlowSubtestDipole.mat')
 %% Tomatchtest Longer center triangles
-load('conv/Tomatchtest/ConvSlowWave.mat')
+% load('conv/Tomatchtest/ConvSlowWave.mat')
 % load('conv/Tomatchtest/ConvSlowDipole.mat')
 % load('conv/Tomatchtest/ConvSlowSubWave.mat')
 % load('conv/Tomatchtest/ConvSlowSubDipole.mat')
@@ -72,7 +72,7 @@ if P264
     figure(1)
     plot(center(:,2),abs(J(:,2)),'*')
     figure(4)
-    Jm = max(abs(J(:,2)));
+    Jm = mean(abs(J(:,2)));
     plot(264,abs(Jm),'*')
     figure(2)
     plot(abs(ExyCrossX(:,1)))
@@ -84,7 +84,7 @@ if P580
     figure(1)
     plot(center(:,5),abs(J(:,5)),'*')
     figure(4)
-    [Jm, Ji] = max(abs(J(:,5)));
+    Jm = mean(abs(J(:,5)));
     plot(580,abs(Jm),'*')
     figure(2)
     plot(abs(ExyCrossX(:,2)))
@@ -96,7 +96,7 @@ if P722
     figure(1)
     plot(center(:,8),abs(J(:,8)),'*')
     figure(4)
-    [Jm, Ji] = max(abs(J(:,8)));
+    Jm = mean(abs(J(:,8)));
     plot(722,abs(Jm),'*')
     figure(2)
     plot(abs(ExyCrossX(:,3)))
@@ -109,7 +109,7 @@ if P744
     plot(center(:,11),abs(J(:,11)),'*')
     
     figure(4)
-    [Jm, Ji] = max(abs(J(:,11)));
+    Jm = mean(abs(J(:,11)));
     plot(744,abs(Jm),'*')
     figure(2)
     plot(abs(ExyCrossX(:,4)))
@@ -122,7 +122,7 @@ if P904
     plot(center(:,14),abs(J(:,14)),'*')
     
     figure(4)
-    [Jm, Ji] = max(abs(J(:,14)));
+    Jm = mean(abs(J(:,14)));
     plot(904,abs(Jm),'*')
     figure(2)
     plot(abs(ExyCrossX(:,5)))
@@ -132,10 +132,10 @@ if P904
 end
 if P924
     figure(1)
-    plot(center(:,17),abs(J(:,17))/max(abs(J(:,17))),'*')
+    plot(center(:,17),abs(J(:,17)),'*')
     
     figure(4)
-    [Jm, Ji] = max(abs(J(:,17)));
+    Jm = mean(abs(J(:,17)));
     plot(924,abs(Jm),'*')
     figure(2)
     plot(abs(ExyCrossX(:,5)))
@@ -161,7 +161,7 @@ if P1104
     plot(center(:,23),abs(J(:,23)),'*')
     
     figure(4)
-    [Jm, Ji] = max(abs(J(:,23)));
+    Jm = max(abs(J(:,23)));
     plot(1104,abs(Jm),'*')
     figure(2)
     plot(abs(ExyCrossX(:,6)))
