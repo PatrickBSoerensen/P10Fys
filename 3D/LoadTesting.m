@@ -1,7 +1,9 @@
 %% load STL file into matlab
-% stl = stlread('antennas/Dipole10cmT264.stl');
+stl = stlread('antennas/Dipole10cmT264.stl');
+
+[p, t, N] = stlread('antennas/Dipole10cmT264.stl');
 % stl = stlread('antennas/Dipole10cmT580.stl'); %ok
-stl = stlread('antennas/Dipole10cmT722.stl'); %god
+% stl = stlread('antennas/Dipole10cmT722.stl'); %god
 % stl = stlread('antennas/Dipole10cmT744.stl'); %
 % stl = stlread('antennas/Dipole10cmT904.stl'); %
 % stl = stlread('antennas/Dipole10cmT924.stl'); %god
@@ -25,7 +27,7 @@ disp('Removing duplicate points')
 minp = min(p);
 maxp = max(p);
 [maxmaxp, maxaxis] = max(max(p));
-radius = 0.003;
+radius = 0.0015;
 Length = (maxmaxp-minp(maxaxis));
 %% Parameters
 % Controls amount of antenna
