@@ -1154,8 +1154,10 @@ classdef ArbitraryAntenna
             rHat = (xH.*cos(phi)+yH.*sin(phi)).*sin(theta)+zH.*cos(theta);
             EscTheta = zeros(steps);
             EscPhi = zeros(steps);
+           for i=1:length(Center)
                 IntegralTerm = 1i*w*mu*(exp(1i*k*r)/(4*pi*r))...
                 *exp(-1i*k*sum(rHat.*Center(i,:),2)).*J(i,:); 
+                           
                 EscTheta = dot(thetaH,IntegralTerm,2) + EscTheta;
             
                 EscPhi = dot(phiH,IntegralTerm,2) + EscPhi;
