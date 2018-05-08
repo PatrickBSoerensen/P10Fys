@@ -1144,24 +1144,32 @@ classdef ArbitraryAntenna
         end
         
         function [] = AngularFarField(w, mu, k, r, Center, J, steps)
-            phi = linspace(0, 2*pi, steps)';
-            theta = linspace(0, 2*pi, steps)';
+            phi = linspace(-pi, 2*pi, steps)';
+            theta = linspace(-pi, 2*pi, steps)';
             xH = [1, 0, 0];
             yH = [0, 1, 0];
             zH = [0, 0, 1];
             phiH = -xH.*sin(phi)+yH.*cos(phi);
             thetaH = (xH.*cos(phi)+yH.*sin(phi)).*cos(theta)-zH.*sin(theta);
             rHat = (xH.*cos(phi)+yH.*sin(phi)).*sin(theta)+zH.*cos(theta);
-            Esc = zeros(steps);
+            EscTheta = zeros(steps);
+            EscPhi = zeros(steps);
             for i=1:length(Center)
-            Esc = sum(1i*w*mu*(thetaH.*thetaH+phiH.*phiH).*...
-                (exp(1i*k*r)/(4*pi*r))...
-                .*exp(-1i*k*rHat.*Center(i,:)).*J(i,:),2) + Esc;
+            IntegralTerm = 1i*w*mu*(exp(1i*k*r)/(4*pi*r))...
+                *exp(-1i*k*sum(rHat.*Center(i,:),2)).*J(i,:); 
+                
+            EscTheta = dot(thetaH,IntegralTerm,2) + EscTheta;
+            
+            EscPhi = dot(phiH,IntegralTerm,2) + EscPhi;
             end
             
-            figure(4)
-            plot(phi, abs(Esc))
+            Esc = EscPhi+EscTheta;
             
+            figure(4)
+            plot(phi, abs(Esc).^2*r^2)
+            xlabel('Phi')
+            ylabel('E')
+            title('Esc in yx-plane')
         end
     end    
 end

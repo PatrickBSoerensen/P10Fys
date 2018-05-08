@@ -62,10 +62,10 @@ InTest = 0;
 % Emmision parameters and size of plottet area
 normalize = 0;
 PlotComp = 0;
-xmin = -2; xmax = 12;
+xmin = -12; xmax = 12;
 ymin = -5; ymax = 5;
 zmin = -5; zmax = 5;
-steps = 500;
+steps = 600;
 PointArea = xmax^2/steps;
 %% Visual check
 figure(1)
@@ -161,9 +161,9 @@ axis('equal');
 rotate3d
 %%
 tic;
-fprint('\n')
+fprintf('\n')
 disp('Angular far field calc')
-ArbitraryAntenna.AngularFarField(w, mu0, k, 20, Center, Jface, 200)
+ArbitraryAntenna.AngularFarField(w, mu0, k, 20, Center, Jface, 300)
 toc
 %% Calculating E
 tic;
@@ -241,7 +241,7 @@ if normalize
 caxis([0 0.1])
 end
 
-caxis([0 2*10^16])
+caxis([0 2*10^15])
 xlabel('x');
 ylabel('y');
 title('xy plane E-size');

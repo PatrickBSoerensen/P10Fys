@@ -150,7 +150,7 @@ colorbar;
 axis('equal');
 rotate3d
 %%
-ArbitraryAntenna.AngularFarField(w, mu0, k, 20, Center, Jface, 200)
+ArbitraryAntenna.AngularFarField(w, mu0, k, 30, Center, Jface, 400)
 %% Calculating E
 tic;
 fprintf('\n')
