@@ -20,7 +20,7 @@ stl = stlread('antennas/Dipole10cmT1104.stl'); %god
 tic;
 fprintf('\n')
 disp('Removing duplicate points')
-[p, t] = ArbitraryAntenna.RemoveDuplicatePoints(stl);
+[p, t] = ArbitraryAntenna.RemoveEqualPoints(stl);
 %% Calculating dimensions of dipole
 minp = min(p);
 maxp = max(p);
@@ -33,16 +33,26 @@ p1 = p;
 p2 = p;
 p3 = p;
 p4 = p;
-p1(:,1) = p(:,1)-0.001;
-p2(:,1) = p(:,1)+0.01;
-p2(:,2) = p(:,2)+0.05;
-p3(:,1) = p(:,1)+0.02;
-p3(:,2) = p(:,2)-0.05;
-p = [p1; p2; p3; p4];
-t = [t; t+length(p1); t+length(p1)+length(p2); t+length(p1)+length(p2)+length(p3)];
-% % p(:,1) = p(:,1)+0.03;
+p5 = p;
+p6 = p;
+p7 = p;
+p1(:,1) = p(:,1)-0.321;
+p2(:,1) = p(:,1);
+p2(:,1) = p(:,1)+0.135;
+p3(:,1) = p(:,1)+0.378;
+p3(:,1) = p(:,1)+0.729;
+p4(:,1) = p(:,1)+1.170;
+p5(:,1) = p(:,1)+1.674;
+p6(:,1) = p(:,1)+2.241;
+p7(:,1) = p(:,1)+2.874;
+p = [p1; p2; p3; p4; p5; p6; p7];
+t = [t; t+length(p1); t+length(p1)+length(p2);...
+    t+length(p1)+length(p2)+length(p3);...
+    t+length(p1)+length(p2)+length(p3)+length(p4);...
+    t+length(p1)+length(p2)+length(p3)+length(p4)+length(p5);...
+    t+length(p1)+length(p2)+length(p3)+length(p4)+length(p5)+length(p6)];
 % Should source be dipole, if 0 a plane wave propagating in +x direction used
-UseDipole = 0;
+UseDipole = 1;
 DipolePoint = [0,0,0];
 % If set to one use 81 sub triangles pr element, if 0 use 9
 SubSubTri = 0;
@@ -52,10 +62,10 @@ InTest = 0;
 % Emmision parameters and size of plottet area
 normalize = 0;
 PlotComp = 0;
-xmin = -2; xmax = 2;
-ymin = -2; ymax = 2;
-zmin = -2; zmax = 2;
-steps = 200;
+xmin = -2; xmax = 12;
+ymin = -5; ymax = 5;
+zmin = -5; zmax = 5;
+steps = 500;
 PointArea = xmax^2/steps;
 %% Visual check
 figure(1)
@@ -150,7 +160,11 @@ colorbar;
 axis('equal');
 rotate3d
 %%
+tic;
+fprint('\n')
+disp('Angular far field calc')
 ArbitraryAntenna.AngularFarField(w, mu0, k, 20, Center, Jface, 200)
+toc
 %% Calculating E
 tic;
 fprintf('\n')
@@ -226,6 +240,8 @@ colorbar
 if normalize
 caxis([0 0.1])
 end
+
+caxis([0 2*10^16])
 xlabel('x');
 ylabel('y');
 title('xy plane E-size');
