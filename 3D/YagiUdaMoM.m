@@ -163,7 +163,7 @@ rotate3d
 tic;
 fprintf('\n')
 disp('Angular far field calc')
-ArbitraryAntenna.AngularFarField(w, mu0, k, 20, Center, Jface, 300)
+ArbitraryAntenna.AngularFarField(w, mu0, k, 100, Center, Jface, 1000)
 toc
 %% Calculating E
 tic;

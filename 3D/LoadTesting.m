@@ -6,10 +6,10 @@
 % stl = stlread('antennas/Dipole10cmT904.stl'); %
 % stl = stlread('antennas/Dipole10cmT924.stl'); %god
 % stl = stlread('antennas/Dipole10cmT1060.stl'); %god
-stl = stlread('antennas/Dipole10cmT1104.stl'); %god
+% stl = stlread('antennas/Dipole10cmT1104.stl'); %god
 % stl = stlread('antennas/Dipole10cmT1458.stl'); %god 
 % stl = stlread('antennas/Dipole10cmT1680.stl'); 
-% stl = stlread('antennas/Dipole10cmT1922.stl'); %god
+stl = stlread('antennas/Dipole10cmT1922.stl'); %god
 % stl = stlread('antennas/Dipole10cmT2312.stl'); %god
 % stl = stlread('antennas/Dipole10cmT2888.stl'); %god
 % stl = stlread('antennas/Dipole10cmT3528.stl');
@@ -150,7 +150,7 @@ colorbar;
 axis('equal');
 rotate3d
 %%
-ArbitraryAntenna.AngularFarField(w, mu0, k, 30, Center, Jface, 400)
+ArbitraryAntenna.AngularFarField(w, mu0, k, 50, Center, Jface, 500)
 %% Calculating E
 tic;
 fprintf('\n')
