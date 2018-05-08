@@ -4,6 +4,20 @@ center = [];
 ExyCrossX = [];
 ExzCrossZ =[];
 
+stl1 = stlread('antennas/Dipole10cmT264.stl');
+stl2 = stlread('antennas/Dipole10cmT580.stl');
+stl3 = stlread('antennas/Dipole10cmT722.stl');
+stl4 = stlread('antennas/Dipole10cmT744.stl');
+stl5 = stlread('antennas/Dipole10cmT904.stl');
+stl6 = stlread('antennas/Dipole10cmT924.stl'); %god
+stl7 = stlread('antennas/Dipole10cmT1060.stl'); %god
+stl8 = stlread('antennas/Dipole10cmT1104.stl');
+stl9 = stlread('antennas/Dipole10cmT1458.stl'); %god 
+stl10 = stlread('antennas/Dipole10cmT1680.stl'); 
+stl11 = stlread('antennas/Dipole10cmT1922.stl'); %god
+stl12 = stlread('antennas/Dipole10cmT2312.stl'); %god
+stl13 = stlread('antennas/Dipole10cmT2888.stl'); %god
+stl14 = stlread('antennas/Dipole10cmT3528.stl');
 % stl1 = stlread('antennas/Dipole10cmT264.stl');
 % stl2 = stlread('antennas/Dipole10cmT580.stl');
 stl1 = stlread('antennas/Dipole10cmT722.stl');
@@ -46,9 +60,7 @@ zmin = -2; zmax = 2;
 steps = 200;
 PointArea = xmax^2/steps;
 
-FileName = 'ConvSlowSubDipole';
 %% Loop
-for convloop=1:5
 convloop
 if convloop ==1
 stl = stl1;
@@ -151,6 +163,7 @@ toc;
 tic;
 fprintf('\n')
 disp('Calculating Current')
+[Jface] = ArbitraryAntenna.CurrentCalc(t, EdgeList, w, mu0, a, BasisLA, RhoP, RhoM, RhoP_, RhoM_, sub);
 [Jface] = ArbitraryAntenna.CurrentCalc(t, EdgeList, w, mu0, a, BasisLA, RhoP, RhoM);
 toc;
 %% Calculating E

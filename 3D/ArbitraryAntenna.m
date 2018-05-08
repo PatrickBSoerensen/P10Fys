@@ -8,6 +8,7 @@ classdef ArbitraryAntenna
     
     methods(Static)
         function [p, t] = RemoveEqualPoints(stl)
+        function [p, t] = RemoveDuplicatePoints(stl)
             %Loading p/t matrixes from STL object
             p = zeros(size(stl.vertices));
             t = stl.faces;
@@ -1161,7 +1162,14 @@ classdef ArbitraryAntenna
             EscTheta = dot(thetaH,IntegralTerm,2) + EscTheta;
             
             EscPhi = dot(phiH,IntegralTerm,2) + EscPhi;
+                IntegralTerm = 1i*w*mu*(exp(1i*k*r)/(4*pi*r))...
+                *exp(-1i*k*sum(rHat.*Center(i,:),2)).*J(i,:); 
+                
+                EscTheta = dot(thetaH,IntegralTerm,2) + EscTheta;
+            
+                EscPhi = dot(phiH,IntegralTerm,2) + EscPhi;
             end
+            Esc = EscPhi+EscTheta;
             
             Esc = EscPhi+EscTheta;
             

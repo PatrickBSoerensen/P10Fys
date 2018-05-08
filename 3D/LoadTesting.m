@@ -20,7 +20,7 @@ stl = stlread('antennas/Dipole10cmT1104.stl'); %god
 tic;
 fprintf('\n')
 disp('Removing duplicate points')
-[p, t] = ArbitraryAntenna.RemoveEqualPoints(stl);
+[p, t] = ArbitraryAntenna.RemoveDuplicatePoints(stl);
 %% Calculating dimensions of dipole
 minp = min(p);
 maxp = max(p);
