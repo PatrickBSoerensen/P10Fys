@@ -842,16 +842,16 @@ classdef ArbitraryAntenna
                 Minus    =find(MinusTri-n==0);
                 
                 for y=1:length(Plus)
-                    Jface(n,:) = 1i.*w.*mu0*a(Plus(y))*BasisLA(Plus(y),2)*RhoP(Plus(y),:)/2 + Jface(n,:);    
+                    Jface(n,:) = 1i.*w.*mu0*a(Plus(y))*BasisLA(Plus(y),1)*RhoP(Plus(y),:)/2 + Jface(n,:);    
                 end
                 for y=1:length(Minus)
-                    Jface(n,:) = 1i.*w.*mu0*a(Minus(y))*BasisLA(Minus(y),2)*RhoM(Minus(y),:)/2 + Jface(n,:);    
+                    Jface(n,:) = 1i.*w.*mu0*a(Minus(y))*BasisLA(Minus(y),3)*RhoM(Minus(y),:)/2 + Jface(n,:);    
                 end    
             end
         end
         
         function [Exy, Exz, Ezy, xrange, yrange, zrange, Exyx, Exzx, Eyzx, Exyy, Exzy, Eyzy, Exyz, Exzz, Eyzz] = EField(Center, k, J,...
-                xmin, xmax, zmin, zmax, ymin, ymax, steps)
+                xmin, xmax, zmin, zmax, ymin, ymax, steps, Area)
        
             xrange = linspace(xmin, xmax, steps);
             yrange = linspace(ymin, ymax, steps);
@@ -897,7 +897,7 @@ classdef ArbitraryAntenna
                             Gxy = (-(RR./r.^2).*G2).*g;
                             RR = Rz.*Rx;
                             Gxz = (-(RR./r.^2).*G2).*g;
-                            Exyx = Exyx + (Gxx .* J(i,1) + Gxy .* J(i,2) + Gxz .* J(i,3));
+                            Exyx = Exyx + (Gxx .* J(i,1) + Gxy .* J(i,2) + Gxz .* J(i,3))*Area(i);
                             
                             RR = Ry.*Rx;
                             Gyx = (-(RR./r.^2).*G2).*g;
@@ -905,7 +905,7 @@ classdef ArbitraryAntenna
                             Gyy = (G1-(RR./r.^2).*G2).*g;
                             RR = Ry.*Rz;
                             Gyz = (-(RR./r.^2).*G2).*g;
-                            Exyy = Exyy + (Gyx .* J(i,1) + Gyy .* J(i,2) + Gyz .* J(i,3));
+                            Exyy = Exyy + (Gyx .* J(i,1) + Gyy .* J(i,2) + Gyz .* J(i,3))*Area(i);
                             
                             RR = Rz.*Rx;
                             Gzx = (-(RR./r.^2).*G2).*g;
@@ -913,7 +913,7 @@ classdef ArbitraryAntenna
                             Gzy = (-(RR./r.^2).*G2).*g;
                             RR = Rz.*Rz;
                             Gzz = (G1-(RR./r.^2).*G2).*g;
-                            Exyz = Exyz + (Gzx .* J(i,1) + Gzy .* J(i,2) + Gzz .* J(i,3));
+                            Exyz = Exyz + (Gzx .* J(i,1) + Gzy .* J(i,2) + Gzz .* J(i,3))*Area(i);
                         elseif j==2
                             %xz
                             Rx = repmat(rx(i,:)',1,steps);
@@ -931,7 +931,7 @@ classdef ArbitraryAntenna
                             Gxy = (-(RR./r.^2).*G2).*g;
                             RR = Rx.*Rz;
                             Gxz = (-(RR./r.^2).*G2).*g;
-                            Exzx = Exzx + (Gxx .* J(i,1) + Gxy .* J(i,2) + Gxz .* J(i,3));
+                            Exzx = Exzx + (Gxx .* J(i,1) + Gxy .* J(i,2) + Gxz .* J(i,3))*Area(i);
                             
                             RR = Ry.*Rx;
                             Gyx = (-(RR./r.^2).*G2).*g;
@@ -939,7 +939,7 @@ classdef ArbitraryAntenna
                             Gyy = (G1-(RR./r.^2).*G2).*g;
                             RR = Ry.*Rz;
                             Gyz = (-(RR./r.^2).*G2).*g;
-                            Exzy = Exzy + (Gyx .* J(i,1) + Gyy .* J(i,2) + Gyz .* J(i,3));
+                            Exzy = Exzy + (Gyx .* J(i,1) + Gyy .* J(i,2) + Gyz .* J(i,3))*Area(i);
                             
                             RR = Rz.*Rx;
                             Gzx = (-(RR./r.^2).*G2).*g;
@@ -947,7 +947,7 @@ classdef ArbitraryAntenna
                             Gzy = (-(RR./r.^2).*G2).*g;
                             RR = Rz.*Rz;
                             Gzz = (G1-(RR./r.^2).*G2).*g;
-                            Exzz = Exzz + (Gzx .* J(i,1) + Gzy .* J(i,2) + Gzz .* J(i,3));
+                            Exzz = Exzz + (Gzx .* J(i,1) + Gzy .* J(i,2) + Gzz .* J(i,3))*Area(i);
                         else
                             %yz
                             Rx = repmat(rx(i,:),steps,steps);
@@ -965,7 +965,7 @@ classdef ArbitraryAntenna
                             Gxy = (-(RR./r.^2).*G2).*g;
                             RR = Rx.*Rz;
                             Gxz = (-(RR./r.^2).*G2).*g;
-                            Eyzx = Eyzx + (Gxx .* J(i,1) + Gxy .* J(i,2) + Gxz .* J(i,3));
+                            Eyzx = Eyzx + (Gxx .* J(i,1) + Gxy .* J(i,2) + Gxz .* J(i,3))*Area(i);
                             
                             RR = Ry.*Rx;
                             Gyx = (-(RR./r.^2).*G2).*g;
@@ -973,7 +973,7 @@ classdef ArbitraryAntenna
                             Gyy = (G1-(RR./r.^2).*G2).*g;
                             RR = Ry.*Rz;
                             Gyz = (-(RR./r.^2).*G2).*g;
-                            Eyzy = Eyzy + (Gyx .* J(i,1) + Gyy .* J(i,2) + Gyz .* J(i,3));
+                            Eyzy = Eyzy + (Gyx .* J(i,1) + Gyy .* J(i,2) + Gyz .* J(i,3))*Area(i);
                             
                             RR = Rz.*Rx;
                             Gzx = (-(RR./r.^2).*G2).*g;
@@ -981,7 +981,7 @@ classdef ArbitraryAntenna
                             Gzy = (-(RR./r.^2).*G2).*g;
                             RR = Rz.*Rz;
                             Gzz = (G1-(RR./r.^2).*G2).*g;
-                            Eyzz = Eyzz + (Gzx .* J(i,1) + Gzy .* J(i,2) + Gzz .* J(i,3));
+                            Eyzz = Eyzz + (Gzx .* J(i,1) + Gzy .* J(i,2) + Gzz .* J(i,3))*Area(i);
                         end
                 end 
             end
@@ -1128,22 +1128,7 @@ classdef ArbitraryAntenna
             Ezy = sqrt(Eyzx.^2+Eyzy.^2+Eyzz.^2);
         end
    
-        function [] = PolarPlot(E, xmin, xmax,  ymin, ymax, steps, dist)
-            xrange = linspace(xmin, xmax, steps);
-            yrange = linspace(ymin, ymax, steps);
-            Rx = repmat(xrange',1,steps);
-            Ry = repmat(yrange,steps,1);
-            [theta,rho] = cart2pol(Rx,Ry);
-            angles = linspace(0, 2*pi, steps);
-            Look = angles*dist;
-            PlotScheme = find(round(sqrt(Rx.^2+Ry.^2)-Look)==0);
-            EPlot = E(PlotScheme);
-            angles = linspace(0, 2*pi, length(EPlot));
-            figure(2)
-            polarplot(angles,abs(EPlot));
-        end
-        
-        function [] = AngularFarField(w, mu, k, r, Center, J, steps)
+        function [Esc, EscPhi, EscTheta] = AngularFarField(w, mu, k, r, Center, J, steps)
             phi = linspace(-pi, 2*pi, steps)';
             theta = linspace(-pi, 2*pi, steps)';
             xH = [1, 0, 0];
