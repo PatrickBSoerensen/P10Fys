@@ -14,6 +14,7 @@ P2888 =0;
 P3528 =0;
 
 close all
+
 %% First batch
 % load('conv/ConvFirstBatch/ConvSlow.mat')
 % load('conv/ConvFirstBatch/ConvSlowSub.mat')
@@ -32,12 +33,13 @@ close all
 % load('ConvSlowSubHalfTestDi.mat')
 % load('ConvSlowAspecWave.mat')
 %% test low aspect ratio i.e. more uniform across antenna
-load('conv/test/ConvSlowtestWave.mat')
+% load('conv/test/ConvSlowtestWave.mat')
+% load('conv/test/ConvSlowtestWaveFirstFive.mat')
 % load('conv/test/ConvSlowtestDipole.mat')
 % load('conv/test/ConvSlowSubtestWave.mat')
 % load('conv/test/ConvSlowSubtestDipole.mat')
 %% Tomatchtest Longer center triangles
-% load('conv/Tomatchtest/ConvSlowWave.mat')
+load('conv/Tomatchtest/ConvSlowWave.mat')
 % load('conv/Tomatchtest/ConvSlowDipole.mat')
 % load('conv/Tomatchtest/ConvSlowSubWave.mat')
 % load('conv/Tomatchtest/ConvSlowSubDipole.mat')
@@ -77,7 +79,7 @@ if P264
     plot(abs(ExyCrossX(:,1)))
     figure(3)
     plot(abs(ExzCrossZ(:,1)))
-    PlottetLabels = [PlottetLabels, '1444 T'];
+    PlottetLabels = [PlottetLabels, '722 T'];
 end
 if P580
     figure(1)
@@ -89,7 +91,7 @@ if P580
     plot(abs(ExyCrossX(:,2)))
     figure(3)
     plot(abs(ExzCrossZ(:,2)))
-    PlottetLabels = [PlottetLabels, '1634 T'];
+    PlottetLabels = [PlottetLabels, '924 T'];
 end
 if P722
     figure(1)
@@ -101,7 +103,7 @@ if P722
     plot(abs(ExyCrossX(:,3)))
     figure(3)
     plot(abs(ExzCrossZ(:,3)))
-    PlottetLabels = [PlottetLabels, '1900 T' ];
+    PlottetLabels = [PlottetLabels, '1060 T' ];
 end
 if P744
     figure(1)
@@ -114,7 +116,7 @@ if P744
     plot(abs(ExyCrossX(:,4)))
     figure(3)
     plot(abs(ExzCrossZ(:,4)))
-    PlottetLabels = [PlottetLabels, '2280 T' ];
+    PlottetLabels = [PlottetLabels, '1104 T' ];
 end
 if P904
     figure(1)
@@ -127,7 +129,7 @@ if P904
     plot(abs(ExyCrossX(:,5)))
     figure(3)
     plot(abs(ExzCrossZ(:,5)))
-    PlottetLabels = [PlottetLabels, '2546 T'];
+    PlottetLabels = [PlottetLabels, '1922 T'];
 end
 if P924
     figure(1)
@@ -248,7 +250,7 @@ if P3528
     plot(abs(ExzCrossZ(:,6)))
     PlottetLabels = [PlottetLabels, '3528 T'];
 end
-
+%%
 figure(1)
 legend(PlottetLabels)
 figure(2)
@@ -257,3 +259,6 @@ figure(3)
 legend(PlottetLabels)
 figure(4)
 legend(PlottetLabels)
+saveas(figure(1), 'JyWave.jpg')
+saveas(figure(2), 'EyxWave.jpg')
+saveas(figure(4), 'JyMaxWave.jpg')
