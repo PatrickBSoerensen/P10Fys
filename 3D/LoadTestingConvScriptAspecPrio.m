@@ -75,7 +75,7 @@ end
 tic;
 fprintf('\n')
 disp('Removing duplicate points')
-[p, t] = ArbitraryAntenna.RemoveEqualPoints(stl);
+[p, t] = ArbitraryAntenna.RemoveDiplicatePoints(stl);
 %% Calculating dimensions of dipole
 minp = min(p);
 maxp = max(p);
