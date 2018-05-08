@@ -1,12 +1,12 @@
 %% load STL file into matlab
 % stl = stlread('antennas/Dipole10cmT264.stl');
 % stl = stlread('antennas/Dipole10cmT580.stl'); %ok
-% stl = stlread('antennas/Dipole10cmT722.stl'); %god
+stl = stlread('antennas/Dipole10cmT722.stl'); %god
 % stl = stlread('antennas/Dipole10cmT744.stl'); %
 % stl = stlread('antennas/Dipole10cmT904.stl'); %
 % stl = stlread('antennas/Dipole10cmT924.stl'); %god
 % stl = stlread('antennas/Dipole10cmT1060.stl'); %god
-stl = stlread('antennas/Dipole10cmT1104.stl'); %god
+% stl = stlread('antennas/Dipole10cmT1104.stl'); %god
 % stl = stlread('antennas/Dipole10cmT1458.stl'); %god 
 % stl = stlread('antennas/Dipole10cmT1680.stl'); 
 % stl = stlread('antennas/Dipole10cmT1922.stl'); %god
@@ -33,13 +33,13 @@ p1 = p;
 p2 = p;
 p3 = p;
 p4 = p;
-p1(:,1) = p(:,1)-0.001;
-p2(:,1) = p(:,1)+0.01;
-p2(:,2) = p(:,2)+0.05;
-p3(:,1) = p(:,1)+0.02;
-p3(:,2) = p(:,2)-0.05;
-p = [p1; p2; p3; p4];
-t = [t; t+length(p1); t+length(p1)+length(p2); t+length(p1)+length(p2)+length(p3)];
+% p1(:,1) = p(:,1)-0.001;
+% p2(:,1) = p(:,1)+0.01;
+% p2(:,2) = p(:,2)+0.05;
+% p3(:,1) = p(:,1)+0.02;
+% p3(:,2) = p(:,2)-0.05;
+% p = [p1; p2; p3; p4];
+% t = [t; t+length(p1); t+length(p1)+length(p2); t+length(p1)+length(p2)+length(p3)];
 % % p(:,1) = p(:,1)+0.03;
 % Should source be dipole, if 0 a plane wave propagating in +x direction used
 UseDipole = 0;
@@ -150,13 +150,13 @@ colorbar;
 axis('equal');
 rotate3d
 %%
-ArbitraryAntenna.AngularFarField(w, mu0, k, 30, Center, Jface, 400)
+[Esc, EscPhi, EscTheta] = ArbitraryAntenna.AngularFarField(w, mu0, k, 30, Center, Jface, 300);
 %% Calculating E
 tic;
 fprintf('\n')
 disp('Calculating E-field')
 [Exy, Exz, Ezy, x, y, z, Exyx, Exzx, Eyzx, Exyy, Exzy, Eyzy, Exyz, Exzz, Eyzz] = ...
-    ArbitraryAntenna.EField(Center, k, Jface, xmin, xmax, ymin, ymax, zmin, zmax, steps);
+    ArbitraryAntenna.EField(Center, k, Jface, xmin, xmax, ymin, ymax, zmin, zmax, steps, Area);
 toc;
 if UseDipole
 fprintf('\n')
