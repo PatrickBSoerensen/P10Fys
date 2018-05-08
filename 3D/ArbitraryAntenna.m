@@ -7,7 +7,6 @@ classdef ArbitraryAntenna
     end
     
     methods(Static)
-        function [p, t] = RemoveEqualPoints(stl)
         function [p, t] = RemoveDuplicatePoints(stl)
             %Loading p/t matrixes from STL object
             p = zeros(size(stl.vertices));
