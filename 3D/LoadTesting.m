@@ -1,7 +1,5 @@
 %% load STL file into matlab
 stl = stlread('antennas/Dipole10cmT264.stl');
-
-[p, t, N] = stlread('antennas/Dipole10cmT264.stl');
 % stl = stlread('antennas/Dipole10cmT580.stl'); %ok
 % stl = stlread('antennas/Dipole10cmT722.stl'); %god
 % stl = stlread('antennas/Dipole10cmT744.stl'); %
@@ -11,7 +9,7 @@ stl = stlread('antennas/Dipole10cmT264.stl');
 % stl = stlread('antennas/Dipole10cmT1104.stl'); %god
 % stl = stlread('antennas/Dipole10cmT1458.stl'); %god 
 % stl = stlread('antennas/Dipole10cmT1680.stl'); 
-stl = stlread('antennas/Dipole10cmT1922.stl'); %god
+% stl = stlread('antennas/Dipole10cmT1922.stl'); %god
 % stl = stlread('antennas/Dipole10cmT2312.stl'); %god
 % stl = stlread('antennas/Dipole10cmT2888.stl'); %god
 % stl = stlread('antennas/Dipole10cmT3528.stl');
