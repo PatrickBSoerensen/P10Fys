@@ -4,12 +4,17 @@ center = [];
 ExyCrossX = [];
 ExzCrossZ =[];
 
-stl1 = stlread('antennas/AspecPrio/Dipole10cmT648.stl');
-stl2 = stlread('antennas/AspecPrio/Dipole10cmT744.stl');
-stl3 = stlread('antennas/AspecPrio/Dipole10cmT888.stl');
-stl4 = stlread('antennas/AspecPrio/Dipole10cmT1008.stl');
-stl5 = stlread('antennas/AspecPrio/Dipole10cmT1152.stl');
-stl6 = stlread('antennas/AspecPrio/Dipole10cmT1680.stl'); %god
+stl1 = stlread('antennas/test/1444.stl');
+stl2 = stlread('antennas/test/1634.stl');
+stl3 = stlread('antennas/test/1900.stl');
+stl4 = stlread('antennas/test/2280.stl');
+stl5 = stlread('antennas/test/2546.stl');
+% stl1 = stlread('antennas/AspecPrio/Dipole10cmT648.stl');
+% stl2 = stlread('antennas/AspecPrio/Dipole10cmT744.stl');
+% stl3 = stlread('antennas/AspecPrio/Dipole10cmT888.stl');
+% stl4 = stlread('antennas/AspecPrio/Dipole10cmT1008.stl');
+% stl5 = stlread('antennas/AspecPrio/Dipole10cmT1152.stl');
+% stl6 = stlread('antennas/AspecPrio/Dipole10cmT1680.stl'); %god
 %% Parameters
 % Controls amount of antenna
 % p1 = p;
@@ -24,13 +29,12 @@ stl6 = stlread('antennas/AspecPrio/Dipole10cmT1680.stl'); %god
 % t = [t; t+length(p1)];% t+length(p1)+length(p2); t+length(p1)+length(p2)+length(p3)];
 % p(:,1) = p(:,1)+0.03;
 % Should source be dipole, if 0 a plane wave propagating in +x direction used
-UseDipole = 0;
+UseDipole = 1;
 DipolePoint = [0,0,0];
 % If set to one use 81 sub triangles pr element, if 0 use 9
 SubSubTri = 0;
 % if 1 use fast (but more inacurate) MoM
 vectorized = 0;
-sub=1;
 % Area of radiation
 xmin = -2; xmax = 2;
 ymin = -2; ymax = 2;
@@ -38,9 +42,9 @@ zmin = -2; zmax = 2;
 steps = 200;
 PointArea = xmax^2/steps;
 
-FileName = 'ConvSlowAspecWave';
+FileName = 'ConvSlowSubtestDipole';
 %% Loop
-for convloop=1:6
+for convloop=1:5
 convloop
 if convloop ==1
 stl = stl1;
@@ -143,7 +147,7 @@ toc;
 tic;
 fprintf('\n')
 disp('Calculating Current')
-[Jface] = ArbitraryAntenna.CurrentCalc(t, EdgeList, w, mu0, a, BasisLA, RhoP, RhoM, RhoP_, RhoM_, sub, Area);
+[Jface] = ArbitraryAntenna.CurrentCalc(t, EdgeList, w, mu0, a, BasisLA, RhoP, RhoM);
 toc;
 %% Calculating E
 tic;
