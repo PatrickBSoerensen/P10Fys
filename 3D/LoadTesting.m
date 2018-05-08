@@ -20,7 +20,7 @@ stl = stlread('antennas/Dipole10cmT924.stl'); %god
 tic;
 fprintf('\n')
 disp('Removing duplicate points')
-[p, t] = ArbitraryAntenna.RemoveEqualPoints(stl);
+[p, t] = ArbitraryAntenna.RemoveDuplicatePoints(stl);
 %% Parameters
 % Controls amount of antenna
 p1 = p;
@@ -60,7 +60,6 @@ toc;
 minp = min(p);
 maxp = max(p);
 [maxmaxp, maxaxis] = max(max(p));
-radius = 0.003;
 Length = (maxmaxp-minp(maxaxis));
 %% constants
 eps0=8.854187817*10^-12; %F/m
