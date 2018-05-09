@@ -4,7 +4,7 @@
 % stl = stlread('antennas/Dipole10cmT722.stl'); %god
 % stl = stlread('antennas/Dipole10cmT744.stl'); %
 % stl = stlread('antennas/Dipole10cmT904.stl'); %
-% % stl = stlread('antennas/Dipole10cmT924.stl'); %god
+% stl = stlread('antennas/Dipole10cmT924.stl'); %god
 % stl = stlread('antennas/Dipole10cmT1060.stl'); %god
 % stl = stlread('antennas/Dipole10cmT1104.stl'); %god
 % stl = stlread('antennas/Dipole10cmT1458.stl'); %god 
@@ -13,6 +13,8 @@ stl = stlread('antennas/Dipole10cmT1922.stl'); %god
 % stl = stlread('antennas/Dipole10cmT2312.stl'); %god
 % stl = stlread('antennas/Dipole10cmT2888.stl'); %god
 % stl = stlread('antennas/Dipole10cmT3528.stl');4
+stl = stlread('antennas/Dipole10cmT2888.stl'); %god
+% stl = stlread('antennas/Dipole10cmT3528.stl');
 % stl = stlread('antennas/AntBinMesh2556.stl');
 % stl = stlread('antennas/HalfAntT212.stl');
 % stl =  stlread('antennas/AspecPrio/Dipole10cmT910.stl');
@@ -44,6 +46,7 @@ p4 = p;
 % Should source be dipole, if 0 a plane wave propagating in +x direction used
 UseDipole = 0;
 DipolePoint = [.002,0,0];
+DipolePoint = [.1,0,0];
 % If set to one use 81 sub triangles pr element, if 0 use 9
 SubSubTri = 0;
 % if 1 use fast (but more inacurate) MoM
@@ -120,7 +123,7 @@ if InTest
     [Z, b, a] = ArbitraryAntenna.MoMIG(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k,  SubTri, 0, 1, 0, UseDipole, Ei, InterfaceSurf, 3.4);
 end
 if vectorized
-    [Z, a, b ] = ArbitraryAntenna.MoMVectorized(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k, SubTri, 0, 1, 0, UseDipole, Ei);
+    [Z, a, b ] = ArbitraryAntenna.MoMVectorized(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k, SubTri, 0, 1, 0, UseDipole, Ei);
 else
     [Z, b, a] = ArbitraryAntenna.MoM(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k,  SubTri, 0, 1, 0, UseDipole, Ei);
 end

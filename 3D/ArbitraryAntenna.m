@@ -342,7 +342,7 @@ classdef ArbitraryAntenna
             end
         end
         
-        function [Ei] = PointSource(x, y, z, w, mu, k, Center, PointPos, p) 
+        function [Ei] = PointSource(w, mu, k, Center, PointPos, p) 
             Rx = PointPos(1)-Center(:,1);
             Ry = PointPos(2)-Center(:,2);
             Rz = PointPos(3)-Center(:,3);
@@ -379,11 +379,11 @@ classdef ArbitraryAntenna
             
             end
         
-        function [Z, b, a] = MoM(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k, SubTri, x, y, z, Point, Ei)
+        function [Z, b, a] = MoM(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k, SubTri, x, y, z, Point, Ei)
             % alocating space
             Z = zeros(length(EdgeList),length(EdgeList))+1i*zeros(length(EdgeList),length(EdgeList));
             if ~Point
-                Ei(:,1) = x.*exp(-1i*k.*(Center(:,1)));
+                Ei(:,1) = x.*exp(-1i*k.*(Center(:,2)));
                 Ei(:,2) = y.*exp(-1i*k.*(Center(:,1)));
                 Ei(:,3) = z.*exp(-1i*k.*(Center(:,1)));
             end
@@ -429,14 +429,7 @@ classdef ArbitraryAntenna
                             % evaluated in center points, _ denotes sub
                             % triangle
                             zNP = (RhoP(PI(j),:));
-                            zNP_ = (RhoP_(:,:,PI(j)));                   
-                            if PO(i)==PI(j)
-                                g = I2(y);
-                                Z(PO(i), PI(j)) = ...
-                                (BasisLA(PO(i),2)*BasisLA(PI(j),2))/(4*pi)...
-                                *((dot(zMP, zNP)/4-1/k^2) * g)...
-                                + Z(PO(i), PI(j));
-                            else                                
+                            zNP_ = (RhoP_(:,:,PI(j)));           
                                 gPPo = exp(1i.*k.*ppo)./ppo;
                                 gPPi = exp(1i.*k.*ppi)./ppi;
                                 
@@ -449,18 +442,11 @@ classdef ArbitraryAntenna
                                 (BasisLA(PO(i),2)*BasisLA(PI(j),2))/(4*pi)...
                                 *sum((dot(zMP_, repmat(zNP,[Quad,1]),2)/4-1/k^2) .* gPPi/Quad)...
                                 + Z(PO(i), PI(j));
-                            end
                         end
                         for j=1:length(MI)
                             zNM = (RhoM(MI(j),:));
-                            zNM_ = (RhoM_(:,:,MI(j)));                             
-                            if PO(i)==MI(j)
-                                g = I2(y);
-                                Z(PO(i), MI(j)) = ...
-                                (BasisLA(PO(i),2)*BasisLA(MI(j),2))/(4*pi)...
-                                *((dot(zMP, zNM)/4-1/k^2) * g)...
-                                + Z(PO(i), MI(j));
-                            else   
+                            zNM_ = (RhoM_(:,:,MI(j)));         
+                            
                                 gPMo = exp(1i.*k.*pmo)./pmo;
                                 gMPi = exp(1i.*k.*mpi)./mpi;
                                 
@@ -473,7 +459,6 @@ classdef ArbitraryAntenna
                                 (BasisLA(PO(i),2)*BasisLA(MI(j),2))/(4*pi)...
                                 *sum((dot(zMP_, repmat(zNM,[Quad,1]),2)/4+1/k^2) .* gMPi/Quad)...
                                 + Z(PO(i), MI(j));
-                            end    
                         end  
                         b1(PO(i),:) = sum(sum(Ei(y,:).*RhoP_(:,:,PO(i)).*BasisLA(PO(i),2)/2,2)/Quad);
                     end
@@ -483,6 +468,7 @@ classdef ArbitraryAntenna
                         for j=1:length(PI)
                             zNP = (RhoP(PI(j),:));
                             zNP_ = (RhoP_(:,:,PI(j)));
+<<<<<<< HEAD
                             if MO(i)==PI(j)
                                 g = I2(y); 
                                 Z(MO(i), PI(j)) = ...
@@ -490,6 +476,7 @@ classdef ArbitraryAntenna
                                 *((dot(zMM, zNP)/4-1/k^2) * g)...
                                 + Z(MO(i), PI(j));   
                             else
+
                                 gPMi = exp(1i.*k.*pmi)./pmi;
                                 gMPo = exp(1i.*k.*mpo)./mpo;
                                    
@@ -502,10 +489,10 @@ classdef ArbitraryAntenna
                                 (BasisLA(MO(i),2)*BasisLA(PI(j),2))/(4*pi)...
                                 *sum((dot(zMM_, repmat(zNP,[Quad,1]),2)/4+1/k^2) .* gPMi/Quad)...
                                 + Z(MO(i), PI(j));  
-                            end 
                         end
                         for j=1:length(MI)
                             zNM = (RhoM(MI(j),:));
+<<<<<<< HEAD
                             zNM_ = (RhoM_(:,:,MI(j))); 
                             if MO(i)==MI(j)
                                 g = I2(y);
@@ -514,6 +501,7 @@ classdef ArbitraryAntenna
                                 *((dot(zMM, zNM)/4-1/k^2) * g)...
                                 + Z(MO(i), MI(j));        
                             else
+                            zNM_ = (RhoM_(:,:,MI(j)));     
                                 gMMo = exp(1i.*k.*mmo)./mmo;
                                 gMMi = exp(1i.*k.*mmi)./mmi;
                                     
@@ -526,7 +514,6 @@ classdef ArbitraryAntenna
                                 (BasisLA(MO(i),2)*BasisLA(MI(j),2))/(4*pi)...
                                 *sum((dot(zMM_, repmat(zNM,[Quad,1]),2)/4-1/k^2) .* gMMi/Quad)...
                                 + Z(MO(i), MI(j));
-                            end 
                         end
                         b2(MO(i),:) = sum(sum(Ei(y,:).*RhoM_(:,:,MO(i)).*BasisLA(MO(i),2)/2,2)/Quad);
                     end      
