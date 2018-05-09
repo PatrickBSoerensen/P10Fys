@@ -468,15 +468,7 @@ classdef ArbitraryAntenna
                         for j=1:length(PI)
                             zNP = (RhoP(PI(j),:));
                             zNP_ = (RhoP_(:,:,PI(j)));
-<<<<<<< HEAD
-                            if MO(i)==PI(j)
-                                g = I2(y); 
-                                Z(MO(i), PI(j)) = ...
-                                (BasisLA(MO(i),2)*BasisLA(PI(j),2))/(4*pi)...
-                                *((dot(zMM, zNP)/4-1/k^2) * g)...
-                                + Z(MO(i), PI(j));   
-                            else
-
+                            
                                 gPMi = exp(1i.*k.*pmi)./pmi;
                                 gMPo = exp(1i.*k.*mpo)./mpo;
                                    
@@ -492,16 +484,8 @@ classdef ArbitraryAntenna
                         end
                         for j=1:length(MI)
                             zNM = (RhoM(MI(j),:));
-<<<<<<< HEAD
                             zNM_ = (RhoM_(:,:,MI(j))); 
-                            if MO(i)==MI(j)
-                                g = I2(y);
-                                Z(MO(i), MI(j)) = ...
-                                (BasisLA(MO(i),2)*BasisLA(MI(j),2))/(4*pi)...
-                                *((dot(zMM, zNM)/4-1/k^2) * g)...
-                                + Z(MO(i), MI(j));        
-                            else
-                            zNM_ = (RhoM_(:,:,MI(j)));     
+                            
                                 gMMo = exp(1i.*k.*mmo)./mmo;
                                 gMMi = exp(1i.*k.*mmi)./mmi;
                                     
