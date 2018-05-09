@@ -6,10 +6,10 @@
 % stl = stlread('antennas/Dipole10cmT904.stl'); %
 % % stl = stlread('antennas/Dipole10cmT924.stl'); %god
 % stl = stlread('antennas/Dipole10cmT1060.stl'); %god
-stl = stlread('antennas/Dipole10cmT1104.stl'); %god
+% stl = stlread('antennas/Dipole10cmT1104.stl'); %god
 % stl = stlread('antennas/Dipole10cmT1458.stl'); %god 
 % stl = stlread('antennas/Dipole10cmT1680.stl'); 
-% stl = stlread('antennas/Dipole10cmT1922.stl'); %god
+stl = stlread('antennas/Dipole10cmT1922.stl'); %god
 % stl = stlread('antennas/Dipole10cmT2312.stl'); %god
 % stl = stlread('antennas/Dipole10cmT2888.stl'); %god
 % stl = stlread('antennas/Dipole10cmT3528.stl');
@@ -42,7 +42,7 @@ p4 = p;
 % t = [t; t+length(p1); t+length(p1)+length(p2); t+length(p1)+length(p2)+length(p3)];
 % % p(:,1) = p(:,1)+0.03;
 % Should source be dipole, if 0 a plane wave propagating in +x direction used
-UseDipole = 0;
+UseDipole = 1;
 DipolePoint = [.002,0,0];
 % If set to one use 81 sub triangles pr element, if 0 use 9
 SubSubTri = 0;

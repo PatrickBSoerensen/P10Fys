@@ -530,6 +530,8 @@ classdef ArbitraryAntenna
                         zMM = (RhoM(MO(i),:));
                         zMM_ = (RhoM_(:,:,MO(i)));
                         for j=1:length(PI)
+                            zNP = (RhoP(PI(j),:));
+                            zNP_ = (RhoP_(:,:,PI(j)));
                             if MO(i)==PI(j)
                                 g = I2(y); 
                                 Z(MO(i), PI(j)) = ...
@@ -552,6 +554,8 @@ classdef ArbitraryAntenna
                             end 
                         end
                         for j=1:length(MI)
+                            zNM = (RhoM(MI(j),:));
+                            zNM_ = (RhoM_(:,:,MI(j))); 
                             if MO(i)==MI(j)
                                 g = I2(y);
                                 Z(MO(i), MI(j)) = ...
