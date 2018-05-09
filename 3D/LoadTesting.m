@@ -1,5 +1,5 @@
 %% load STL file into matlab
-% stl = stlread('antennas/Dipole10cmT264.stl');
+stl = stlread('antennas/Dipole10cmT264.stl');
 % stl = stlread('antennas/Dipole10cmT580.stl'); %ok
 % stl = stlread('antennas/Dipole10cmT722.stl'); %god
 % stl = stlread('antennas/Dipole10cmT744.stl'); %
@@ -9,11 +9,11 @@
 % stl = stlread('antennas/Dipole10cmT1104.stl'); %god
 % stl = stlread('antennas/Dipole10cmT1458.stl'); %god 
 % stl = stlread('antennas/Dipole10cmT1680.stl'); 
-stl = stlread('antennas/Dipole10cmT1922.stl'); %god
+% stl = stlread('antennas/Dipole10cmT1922.stl'); %god
 % stl = stlread('antennas/Dipole10cmT2312.stl'); %god
 % stl = stlread('antennas/Dipole10cmT2888.stl'); %god
 % stl = stlread('antennas/Dipole10cmT3528.stl');4
-stl = stlread('antennas/Dipole10cmT2888.stl'); %god
+% stl = stlread('antennas/Dipole10cmT2888.stl'); %god
 % stl = stlread('antennas/Dipole10cmT3528.stl');
 % stl = stlread('antennas/AntBinMesh2556.stl');
 % stl = stlread('antennas/HalfAntT212.stl');
@@ -125,7 +125,7 @@ end
 if vectorized
     [Z, a, b ] = ArbitraryAntenna.MoMVectorized(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k, SubTri, 0, 1, 0, UseDipole, Ei);
 else
-    [Z, b, a] = ArbitraryAntenna.MoM(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k,  SubTri, 0, 1, 0, UseDipole, Ei);
+    [Z, b, a] = ArbitraryAntenna.MoM(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k,  SubTri, 0, 1, 0, UseDipole, Ei);
 end
 toc;
 %% Current calc in Triangle
