@@ -68,12 +68,12 @@ PointArea = xmax^2/steps;
 n = 3.9;
 epsR = 11.68;
 Reflector = 1;
-xdist = 0.002;
+xdist = 0.02;
 %% Visual check
-% figure(1)
-% plot3(p(:,1),p(:,2),p(:,3),'*')
-% axis image
-% toc;
+figure(1)
+plot3(p(:,1),p(:,2),p(:,3),'*')
+axis image
+toc;
 %% constants
 eps0=8.854187817*10^-12; %F/m
 mu0=4*pi*10^-7; %N/A^2
@@ -138,7 +138,7 @@ else
 %     [Z, b, a] = ArbitraryAntenna.MoM(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k,  SubTri, 0, 1, 0, UseDipole, Ei);
     
     [Z, b, a] = ArbitraryAntenna.MoMIG(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k,  SubTri, 0, 1, 0, UseDipole, Ei,...
-        InterfaceSurf, epsR, Length, radius, xdist, 10, 10, 10, lambda, n, eps0);
+        InterfaceSurf, epsR, Length, radius, xdist, 5, 30, 30, lambda, n, eps0);
 end
 toc;
 %% Current calc in Triangle
@@ -169,7 +169,7 @@ rotate3d
 [Esc, EscPhi, EscTheta] = ArbitraryAntenna.AngularFarField(w, mu0, k, 30, Center, Jface, 300);
 
 %% Etest
-[Exy, Exz, Ezy, x, y, z, Exyx, Exzx, Eyzx, Exyy, Exzy, Eyzy, Exyz, Exzz, Eyzz] = ArbitraryAntenna.EFieldSurf(Center, w, mu0, k, J,...
+[Exy, Exz, Ezy, x, y, z, Exyx, Exzx, Eyzx, Exyy, Exzy, Eyzy, Exyz, Exzz, Eyzz] = ArbitraryAntenna.EFieldSurf(Center, w, mu0, k, Jface,...
                 xmin, xmax, zmin, zmax, ymin, ymax, steps, Area, Reflector, xdist, n, epsR, eps0);
 
 %% Calculating E   
