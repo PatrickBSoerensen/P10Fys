@@ -2,12 +2,12 @@
 
 % stl = stlread('antennas/Dipole10cmT264.stl');
 % stl = stlread('antennas/Dipole10cmT580.stl'); %ok
-% stl = stlread('antennas/Dipole10cmT180.stl');
+stl = stlread('antennas/Dipole10cmT180.stl');
 
 % stl = stlread('antennas/Dipole10cmT264.stl');
 % stl = stlread('antennas/AspecPrio/Dipole10cmT1152.stl');
 
-stl = stlread('antennas/Dipole10cmT580.stl'); %ok
+% stl = stlread('antennas/Dipole10cmT580.stl'); %ok
 % stl = stlread('antennas/Dipole10cmT722.stl'); %god
 % stl = stlread('antennas/Dipole10cmT744.stl'); %
 % stl = stlread('antennas/Dipole10cmT904.stl'); %
@@ -71,7 +71,7 @@ PointArea = xmax^2/steps;
 n = 3.9;
 epsR = 11.68;
 Reflector = 1;
-xdist = 0.02;
+xdist = radius/2+0.0001;
 %% Visual check
 figure(1)
 plot3(p(:,1),p(:,2),p(:,3),'*')
@@ -125,8 +125,6 @@ I2 = ArbitraryAntenna.SelfTerm(p, t);
 toc;
 %% Calculating Dipole strength on antenna points
 [Ei] = ArbitraryAntenna.PointSource(w, mu0, k, Center, SubTri, sub, DipolePoint, [0,1,0]);
-%% Calculating Interface params
-[InterfaceSurf, iG] = ArbitraryAntenna.InterfaceCalc(xdist, ymin, ymax, zmin, zmax, steps);
 %% MoM
 tic;
 fprintf('\n')
@@ -134,10 +132,10 @@ disp('MoM')
 if vectorized
     [Z, a, b ] = ArbitraryAntenna.MoMVectorized(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k, SubTri, 0, 1, 0, UseDipole, Ei);
 else
-    [Z, b, a] = ArbitraryAntenna.MoM(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k,  SubTri, 0, 1, 0, UseDipole, Ei);
+%     [Z, b, a] = ArbitraryAntenna.MoM(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k,  SubTri, 0, 1, 0, UseDipole, Ei);
     
-%     [Z, b, a] = ArbitraryAntenna.MoMIG(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k,  SubTri, 0, 1, 0, UseDipole, Ei,...
-%         InterfaceSurf, epsR, Length, radius, xdist, 5, 30, 30, lambda, n, eps0);
+    [Z, b, a] = ArbitraryAntenna.MoMIG(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k,  SubTri, 0, 1, 0, UseDipole, Ei,...
+        xdist, Reflector, epsR, Length, radius, 0.001, 30, lambda, n, eps0);
 end
 toc;
 %% Current calc in Triangle
