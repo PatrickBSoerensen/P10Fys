@@ -817,10 +817,10 @@ classdef ArbitraryAntenna
             end
         end
         
-        function [Exy, Exz, Ezy, xrange, yrange, zrange, Exyx, Exzx, Eyzx, Exyy, Exzy, Eyzy, Exyz, Exzz, Eyzz] = EField(Center, w, mu0, k, J,...
-                xmin, xmax, zmin, zmax, ymin, ymax, steps, Area, Reflect, xsurf, n, epsR)
+        function [Exy, Exz, Ezy, xrange, yrange, zrange, Exyx, Exzx, Eyzx, Exyy, Exzy, Eyzy, Exyz, Exzz, Eyzz] = EField(Center, w, mu, k0, J,...
+                xmin, xmax, zmin, zmax, ymin, ymax, steps, Area, Reflect, xsurf, n, lambda)
        
-            muR = n^2/epsR;
+            kR = 2*pi/(lambda*n);
             xrange = linspace(xmin, xmax, steps);
             yrange = linspace(ymin, ymax, steps);
             zrange = linspace(zmin, zmax, steps);
@@ -855,15 +855,15 @@ classdef ArbitraryAntenna
                             Rz = repmat(rz(i),steps,steps);
                             r = sqrt(Rx.^2+Ry.^2+Rz.^2);
                             surfside = find(rx(i,:)>=xsurf);
-                            mu = zeros(steps,steps);
-                            mu(:,:) = mu0; 
+                            k = zeros(steps,steps);
+                            k(:,:) = k0; 
                             if Reflect
-                                mu(surfside,:) = muR;
+                                k(surfside,:) = kR;
                             end
                             
                             g = exp(1i.*k.*r)./(4*pi*r);
-                            G1 = (1+1i./(k*r)-1./(k*r).^2);
-                            G2 = (1+3i./(k*r)-3./(k*r).^2);
+                            G1 = (1+1i./(k.*r)-1./(k.*r).^2);
+                            G2 = (1+3i./(k.*r)-3./(k.*r).^2);
                             
                             RR = Rx.*Rx;
                             Gxx = (G1-(RR./r.^2).*G2).*g;
@@ -895,15 +895,15 @@ classdef ArbitraryAntenna
                             Rz = repmat(rz(i,:),steps,1);
                             r = sqrt(Rx.^2+Ry.^2+Rz.^2);
                             surfside = find(rx(i,:)>=xsurf);
-                            mu = zeros(steps,steps);
-                            mu(:,:) = mu0; 
+                            k = zeros(steps,steps);
+                            k(:,:) = k0; 
                             if Reflect
-                                mu(surfside,:) = muR;
+                                k(surfside,:) = kR;
                             end
                             
                             g = exp(1i.*k.*r)./(4*pi*r);
-                            G1 = (1+1i./(k*r)-1./(k*r).^2);
-                            G2 = (1+3i./(k*r)-3./(k*r).^2);
+                            G1 = (1+1i./(k.*r)-1./(k.*r).^2);
+                            G2 = (1+3i./(k.*r)-3./(k.*r).^2);
                             
                             RR = Rx.*Rx;
                             Gxx = (G1-(RR./r.^2).*G2).*g;
@@ -935,15 +935,15 @@ classdef ArbitraryAntenna
                             Rz = repmat(rz(i,:)',1,steps);
                             r = sqrt(Rx.^2+Ry.^2+Rz.^2);
                             surfside = find(rx(i,:)>=xsurf);
-                            mu = zeros(steps,steps);
-                            mu(:,:) = mu0;
+                            k = zeros(steps,steps);
+                            k(:,:) = k0; 
                             if Reflect
-                                mu(surfside,:) = muR;
+                                k(surfside,:) = kR;
                             end
                             
                             g = exp(1i.*k.*r)./(4*pi*r);
-                            G1 = (1+1i./(k*r)-1./(k*r).^2);
-                            G2 = (1+3i./(k*r)-3./(k*r).^2);
+                            G1 = (1+1i./(k.*r)-1./(k.*r).^2);
+                            G2 = (1+3i./(k.*r)-3./(k.*r).^2);
                             
                             RR = Rx.*Rx;
                             Gxx = (G1-(RR./r.^2).*G2).*g;
