@@ -56,6 +56,7 @@ p4 = p;
 UseDipole = 0;
 <<<<<<< HEAD
 DipolePoint = [.1,0,0];
+DipolePoint = [0.003,0,0];
 % If set to one use 81 sub triangles pr element, if 0 use 9
 SubSubTri = 1;
 =======
