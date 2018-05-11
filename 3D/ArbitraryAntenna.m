@@ -1162,19 +1162,19 @@ classdef ArbitraryAntenna
             rhotabv=[rhov1 rhov2];
             Nrho=length(rhotabv);
     
-%             GItabzz=zeros(Nrho,2*Nz-1); GItabzr=GItabzz;
-%             GItabrr=GItabzz; GItabpp=GItabzz;
-%             tab_z=GItabzz; tab_r=GItabzz;
+            GItabzz=zeros(Nrho,2*Nz-1); GItabzr=GItabzz;
+            GItabrr=GItabzz; GItabpp=GItabzz;
+            tab_z=GItabzz; tab_r=GItabzz;
 count = 1;
             for jrho=1:Nrho
                 rho=rhotabv(jrho);
                 
-%                 for jz=1:Nz*2-1
-%                     zD=jz*dx;
+                for jz=1:Nz*2-1
                     temp = repmat(Center(:,3), [1 1 9]);
                     temp = permute(temp, [3 2 1]);
                     zD = temp(:,3)+SubTri(:,3,:);
                     zD = permute(zD, [1 3 2])';
+                    zD=jz*dx;
                     dJmf = @(krho) -besselj(1,krho*rho)./(krho*rho);
                     if jrho==1
                         dJmf = @(krho) -0.5;
@@ -1205,7 +1205,7 @@ count = 1;
                     tab_z(jrho,:) = zD;
                     tab_r(jrho,:) = rho;
                     count = count+1;
-%                 end
+                end
             end
 
              % Conversion to cartesian components
