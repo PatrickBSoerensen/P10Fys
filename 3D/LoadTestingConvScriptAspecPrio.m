@@ -30,7 +30,6 @@ DipolePoint = [0,0,0];
 SubSubTri = 0;
 % if 1 use fast (but more inacurate) MoM
 vectorized = 0;
-sub=1;
 % Area of radiation
 xmin = -2; xmax = 2;
 ymin = -2; ymax = 2;
@@ -75,7 +74,7 @@ end
 tic;
 fprintf('\n')
 disp('Removing duplicate points')
-[p, t] = ArbitraryAntenna.RemoveDiplicatePoints(stl);
+[p, t] = ArbitraryAntenna.RemoveDuplicatePoints(stl);
 %% Calculating dimensions of dipole
 minp = min(p);
 maxp = max(p);
@@ -128,7 +127,7 @@ disp('Pre-Calculating self-coupling terms')
 I2 = ArbitraryAntenna.SelfTerm(p, t);
 toc;
 %% Calculating Dipole strength on antenna points
-[Ei] = ArbitraryAntenna.PointSource(1, 0, 0, w, mu0, k, Center, DipolePoint, [0,1,0], PointArea);
+[Ei] = ArbitraryAntenna.PointSource(w, mu0, k, Center, DipolePoint, [0,1,0]);
 %% MoM
 tic;
 fprintf('\n')
@@ -136,27 +135,27 @@ disp('MoM')
 if vectorized
     [Z, a, b ] = ArbitraryAntenna.MoMVectorized(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k, SubTri, 0, 1, 0, UseDipole, Ei);
 else
-    [Z, b, a] = ArbitraryAntenna.MoM(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k,  SubTri, 0, 1, 0, UseDipole, Ei);
+    [Z, b, a] = ArbitraryAntenna.MoM(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k,  SubTri, 0, 1, 0, UseDipole, Ei);
 end
 toc;
 %% Current calc in Triangle
 tic;
 fprintf('\n')
 disp('Calculating Current')
-[Jface] = ArbitraryAntenna.CurrentCalc(t, EdgeList, w, mu0, a, BasisLA, RhoP, RhoM, RhoP_, RhoM_, sub, Area);
+[Jface] = ArbitraryAntenna.CurrentCalc(t, EdgeList, w, mu0, a, BasisLA, RhoP, RhoM);
 toc;
 %% Calculating E
 tic;
 fprintf('\n')
 disp('Calculating E-field')
 [Exy, Exz, Ezy, x, y, z, Exyx, Exzx, Eyzx, Exyy, Exzy, Eyzy, Exyz, Exzz, Eyzz] = ...
-    ArbitraryAntenna.EField(Center, k, Jface, xmin, xmax, ymin, ymax, zmin, zmax, steps);
+    ArbitraryAntenna.EField(Center, k, Jface, xmin, xmax, ymin, ymax, zmin, zmax, steps, Area);
 toc;
 if UseDipole
 fprintf('\n')
 disp('Setting up Dipole')
 [ExyD, ExzD, EzyD] = ...
-    ArbitraryAntenna.Dipole(DipolePoint, k, [0,1,0] , xmin, xmax, ymin, ymax, zmin, zmax, steps, PointArea);
+    ArbitraryAntenna.Dipole(DipolePoint, k, [0,1,0] , xmin, xmax, ymin, ymax, zmin, zmax, steps);
 toc;
 Exy=Exy+ExyD; Exz=Exz+ExzD; Ezy=Ezy+EzyD;
 end

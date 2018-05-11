@@ -5,23 +5,26 @@ ExyCrossX = [];
 ExzCrossZ =[];
 ESC = [];
 
-% stl1 = stlread('antennas/Dipole10cmT722.stl');
-% stl2 = stlread('antennas/Dipole10cmT924.stl'); %god
-% stl3 = stlread('antennas/Dipole10cmT1060.stl'); %god
-% stl4 = stlread('antennas/Dipole10cmT1104.stl');
-% stl5 = stlread('antennas/Dipole10cmT1922.stl'); %god
 
-stl1 = stlread('antennas/test/720.stl');
-stl2 = stlread('antennas/test/912.stl'); %god
-stl3 = stlread('antennas/test/1026.stl'); %god
-stl4 = stlread('antennas/test/1140.stl');
-stl5 = stlread('antennas/test/1330.stl'); %god
-
-stl6 = stlread('antennas/test/1444.stl');
-stl7 = stlread('antennas/test/1634.stl'); %god
-stl8 = stlread('antennas/test/1900.stl'); %god
-stl9 = stlread('antennas/test/2280.stl');
-stl10 = stlread('antennas/test/2546.stl'); %god
+stl1 = stlread('antennas/Dipole10cmT264.stl');
+stl2 = stlread('antennas/Dipole10cmT580.stl'); %ok
+stl3 = stlread('antennas/Dipole10cmT722.stl'); %god
+stl5 = stlread('antennas/Dipole10cmT924.stl'); %god
+stl6 = stlread('antennas/Dipole10cmT1060.stl'); %god
+stl7 = stlread('antennas/Dipole10cmT1104.stl');
+stl8 = stlread('antennas/Dipole10cmT1922.stl'); %god
+% 
+% stl1 = stlread('antennas/test/720.stl');
+% stl2 = stlread('antennas/test/912.stl'); %god
+% stl3 = stlread('antennas/test/1026.stl'); %god
+% stl4 = stlread('antennas/test/1140.stl');
+% stl5 = stlread('antennas/test/1330.stl'); %god
+% 
+% stl6 = stlread('antennas/test/1444.stl');
+% stl7 = stlread('antennas/test/1634.stl'); %god
+% stl8 = stlread('antennas/test/1900.stl'); %god
+% stl9 = stlread('antennas/test/2280.stl');
+% stl10 = stlread('antennas/test/2546.stl'); %god
 %% Parameters
 % Controls amount of antenna
 % p1 = p;
@@ -36,10 +39,11 @@ stl10 = stlread('antennas/test/2546.stl'); %god
 % t = [t; t+length(p1)];% t+length(p1)+length(p2); t+length(p1)+length(p2)+length(p3)];
 % p(:,1) = p(:,1)+0.03;
 % Should source be dipole, if 0 a plane wave propagating in +x direction used
-UseDipole = 0;
-DipolePoint = [0,0,0];
+UseDipole = 1;
+DipolePoint = [0.003,0,0];
 % If set to one use 81 sub triangles pr element, if 0 use 9
-SubSubTri = 0;
+SubSubTri = 1;
+sub =1;
 % if 1 use fast (but more inacurate) MoM
 vectorized = 0;
 % Area of radiation
@@ -49,10 +53,10 @@ zmin = -2; zmax = 2;
 steps = 200;
 PointArea = xmax^2/steps;
 
-FileName= 'ConSlowBothrWaveTest';
+FileName= 'ConSlowWave264-1922DipoleSubSub';
 
 %% Loop
-for convloop=1:10
+for convloop=1:7
 convloop
 if convloop ==1
 stl = stl1;
@@ -140,7 +144,7 @@ disp('Pre-Calculating self-coupling terms')
 I2 = ArbitraryAntenna.SelfTerm(p, t);
 toc;
 %% Calculating Dipole strength on antenna points
-[Ei] = ArbitraryAntenna.PointSource(1, 0, 0, w, mu0, k, Center, DipolePoint, [0,1,0], PointArea);
+[Ei] = ArbitraryAntenna.PointSource(w, mu0, k, Center, SubTri, sub, DipolePoint, [0,1,0]);
 %% MoM
 tic;
 fprintf('\n')
@@ -148,7 +152,7 @@ disp('MoM')
 if vectorized
     [Z, a, b ] = ArbitraryAntenna.MoMVectorized(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k, SubTri, 0, 1, 0, UseDipole, Ei);
 else
-    [Z, b, a] = ArbitraryAntenna.MoM(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k,  SubTri, 0, 1, 0, UseDipole, Ei);
+    [Z, b, a] = ArbitraryAntenna.MoM(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k,  SubTri, 0, 1, 0, UseDipole, Ei);
 end
 toc;
 %% Current calc in Triangle
@@ -171,7 +175,7 @@ if UseDipole
 fprintf('\n')
 disp('Setting up Dipole')
 [ExyD, ExzD, EzyD] = ...
-    ArbitraryAntenna.Dipole(DipolePoint, k, [0,1,0] , xmin, xmax, ymin, ymax, zmin, zmax, steps, PointArea);
+    ArbitraryAntenna.PointSourceEmmision(DipolePoint, k, [0,1,0] , xmin, xmax, ymin, ymax, zmin, zmax, steps);
 toc;
 Exy=Exy+ExyD; Exz=Exz+ExzD; Ezy=Ezy+EzyD;
 end
