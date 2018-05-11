@@ -551,7 +551,7 @@ classdef ArbitraryAntenna
             [PlusTri, MinusTri] = ArbitraryAntenna.PMTri(t, EdgeList);
             
             [GIxx, GIxy, GIxz, GIyx, GIyy, GIyz, GIzx, GIzy, GIzz] = ...
-                ArbitraryAntenna.IDGreens(k, strip_length, strip_width, dx, Nz, Nx, Ny, lambda, n, InEps, eps1, Center);
+                ArbitraryAntenna.IDGreens(k, strip_length, strip_width, dx, Nz, lambda, n, InEps, eps1, Center);
            
             GIx = [GIxx GIxy GIxz];
             GIy = [GIyx GIyy GIyz];
@@ -975,162 +975,7 @@ classdef ArbitraryAntenna
             Exz = sqrt(Exzx.^2+Exzy.^2+Exzz.^2);
             Ezy = sqrt(Eyzx.^2+Eyzy.^2+Eyzz.^2);
         end
-        
-         function [Exy, Exz, Ezy, xrange, yrange, zrange, Exyx, Exzx, Eyzx, Exyy, Exzy, Eyzy, Exyz, Exzz, Eyzz] = EFieldSurf(Center, w, mu0, k, J,...
-                xmin, xmax, zmin, zmax, ymin, ymax, steps, Area, Reflect, xsurf, n, epsR, eps1)
-            
-            muR = n^2/epsR;
-            xrange = linspace(xmin, xmax, steps);
-            yrange = linspace(ymin, ymax, steps);
-            zrange = linspace(zmin, zmax, steps);
-            
-            Exy = zeros(steps, steps); 
-            Exyx = Exy; Exyy = Exy; Exyz = Exy;
-            Exz = zeros(steps,steps);
-            Exzx = Exz; Exzy = Exz; Exzz = Exz;
-            Eyz = zeros(steps,steps); 
-            Eyzx = Eyz; Eyzy = Eyz; Eyzz = Eyz;
-                        
-            for j=1:3
-                if j == 1
-                    rx = (xrange-Center(:,1));
-                    ry = (yrange-Center(:,2));
-                    rz = (0-Center(:,3));
-                elseif j==2
-                    rx = (xrange-Center(:,1));
-                    ry = (0-Center(:,2));
-                    rz = (zrange-Center(:,3));
-                else
-                    rx = (0-Center(:,1));
-                    ry = (yrange-Center(:,2));
-                    rz = (zrange-Center(:,3));
-                end
-                
-                for i=1:length(Center)
-                        if j == 1
-                            %xy
-                            Rx = repmat(rx(i,:)',1,steps);
-                            Ry = repmat(ry(i,:),steps,1);
-                            Rz = repmat(rz(i),steps,steps);
-                            r = sqrt(Rx.^2+Ry.^2+Rz.^2);
-                            surfside = find(rx(i,:)>=xsurf);
-                            mu = zeros(steps,steps);
-                            mu(:,:) = mu0;
-                            g = exp(1i.*k.*r)./(4*pi*r);
-                            G1 = (1+1i./(k*r)-1./(k*r).^2);
-                            G2 = (1+3i./(k*r)-3./(k*r).^2);
-                            
-                            if Reflect
-                                mu(surfside,:) = muR;
-                            end
-                            
-                            RR = Rx.*Rx;
-                            Gxx = (G1-(RR./r.^2).*G2).*g;
-                            RR = Ry.*Rx;
-                            Gxy = (-(RR./r.^2).*G2).*g;
-                            RR = Rz.*Rx;
-                            Gxz = (-(RR./r.^2).*G2).*g;
-                            Exyx = Exyx + 1i.*w.*mu.*(Gxx .* J(i,1) + Gxy .* J(i,2) + Gxz .* J(i,3))*Area(i);
-                            
-                            RR = Ry.*Rx;
-                            Gyx = (-(RR./r.^2).*G2).*g;
-                            RR = Ry.*Ry;
-                            Gyy = (G1-(RR./r.^2).*G2).*g;
-                            RR = Ry.*Rz;
-                            Gyz = (-(RR./r.^2).*G2).*g;
-                            Exyy = Exyy + 1i.*w.*mu.*(Gyx .* J(i,1) + Gyy .* J(i,2) + Gyz .* J(i,3))*Area(i);
-                            
-                            RR = Rz.*Rx;
-                            Gzx = (-(RR./r.^2).*G2).*g;
-                            RR = Rz.*Ry;
-                            Gzy = (-(RR./r.^2).*G2).*g;
-                            RR = Rz.*Rz;
-                            Gzz = (G1-(RR./r.^2).*G2).*g;
-                            Exyz = Exyz + 1i.*w.*mu.*(Gzx .* J(i,1) + Gzy .* J(i,2) + Gzz .* J(i,3))*Area(i);
-                        elseif j==2
-                            %xz
-                            Rx = repmat(rx(i,:)',1,steps);
-                            Ry = repmat(ry(i,:),steps,steps);
-                            Rz = repmat(rz(i,:),steps,1);
-                            r = sqrt(Rx.^2+Ry.^2+Rz.^2);
-                            surfside = find(rx(i,:)>=xsurf);
-                            mu = zeros(steps,steps);
-                            mu(:,:) = mu0;
-                            mu(surfside,:) = muR;
-                            
-                            g = exp(1i.*k.*r)./(4*pi*r);
-                            G1 = (1+1i./(k*r)-1./(k*r).^2);
-                            G2 = (1+3i./(k*r)-3./(k*r).^2);
-                            
-                            RR = Rx.*Rx;
-                            Gxx = (G1-(RR./r.^2).*G2).*g;
-                            RR = Rx.*Ry;
-                            Gxy = (-(RR./r.^2).*G2).*g;
-                            RR = Rx.*Rz;
-                            Gxz = (-(RR./r.^2).*G2).*g;
-                            Exzx = Exzx + 1i.*w.*mu.*(Gxx .* J(i,1) + Gxy .* J(i,2) + Gxz .* J(i,3))*Area(i);
-                            
-                            RR = Ry.*Rx;
-                            Gyx = (-(RR./r.^2).*G2).*g;
-                            RR = Ry.*Ry;
-                            Gyy = (G1-(RR./r.^2).*G2).*g;
-                            RR = Ry.*Rz;
-                            Gyz = (-(RR./r.^2).*G2).*g;
-                            Exzy = Exzy + 1i.*w.*mu.*(Gyx .* J(i,1) + Gyy .* J(i,2) + Gyz .* J(i,3))*Area(i);
-                            
-                            RR = Rz.*Rx;
-                            Gzx = (-(RR./r.^2).*G2).*g;
-                            RR = Rz.*Ry;
-                            Gzy = (-(RR./r.^2).*G2).*g;
-                            RR = Rz.*Rz;
-                            Gzz = (G1-(RR./r.^2).*G2).*g;
-                            Exzz = Exzz + 1i.*w.*mu.*(Gzx .* J(i,1) + Gzy .* J(i,2) + Gzz .* J(i,3))*Area(i);
-                        else
-                            %yz
-                            Rx = repmat(rx(i,:),steps,steps);
-                            Ry = repmat(ry(i,:),steps,1);
-                            Rz = repmat(rz(i,:)',1,steps);
-                            r = sqrt(Rx.^2+Ry.^2+Rz.^2);
-                            surfside = find(rx(i,:)>=xsurf);
-                            mu = zeros(steps,steps);
-                            mu(:,:) = mu0;
-                            mu(surfside,:) = muR;
-                            
-                            g = exp(1i.*k.*r)./(4*pi*r);
-                            G1 = (1+1i./(k*r)-1./(k*r).^2);
-                            G2 = (1+3i./(k*r)-3./(k*r).^2);
-                            
-                            RR = Rx.*Rx;
-                            Gxx = (G1-(RR./r.^2).*G2).*g;
-                            RR = Rx.*Ry;
-                            Gxy = (-(RR./r.^2).*G2).*g;
-                            RR = Rx.*Rz;
-                            Gxz = (-(RR./r.^2).*G2).*g;
-                            Eyzx = Eyzx + 1i.*w.*mu.*(Gxx .* J(i,1) + Gxy .* J(i,2) + Gxz .* J(i,3))*Area(i);
-                            
-                            RR = Ry.*Rx;
-                            Gyx = (-(RR./r.^2).*G2).*g;
-                            RR = Ry.*Ry;
-                            Gyy = (G1-(RR./r.^2).*G2).*g;
-                            RR = Ry.*Rz;
-                            Gyz = (-(RR./r.^2).*G2).*g;
-                            Eyzy = Eyzy + 1i.*w.*mu.*(Gyx .* J(i,1) + Gyy .* J(i,2) + Gyz .* J(i,3))*Area(i);
-                            
-                            RR = Rz.*Rx;
-                            Gzx = (-(RR./r.^2).*G2).*g;
-                            RR = Rz.*Ry;
-                            Gzy = (-(RR./r.^2).*G2).*g;
-                            RR = Rz.*Rz;
-                            Gzz = (G1-(RR./r.^2).*G2).*g;
-                            Eyzz = Eyzz + 1i.*w.*mu.*(Gzx .* J(i,1) + Gzy .* J(i,2) + Gzz .* J(i,3))*Area(i);
-                        end
-                end 
-            end
-            Exy = sqrt(Exyx.^2+Exyy.^2+Exyz.^2);
-            Exz = sqrt(Exzx.^2+Exzy.^2+Exzz.^2);
-            Ezy = sqrt(Eyzx.^2+Eyzy.^2+Eyzz.^2);
-        end
-        
+             
         function [Exy, Exz, Ezy, Exyx, Exzx, Eyzx, Exyy, Exzy, Eyzy, Exyz, Exzz, Eyzz] = PointSourceEmmision(Center, k, p,...
                 xmin, xmax, zmin, zmax, ymin, ymax, steps)
        
@@ -1298,7 +1143,7 @@ classdef ArbitraryAntenna
             title('EscPhi^2+EscTheta^2')
         end
         
-        function [GIxx, GIxy, GIxz, GIyx, GIyy, GIyz, GIzx, GIzy, GIzz] = IDGreens(k0, strip_length, strip_width, dx, Nz, Nx, Ny, lambda, n, epsL2, eps1, Center)
+        function [GIxx, GIxy, GIxz, GIyx, GIyy, GIyz, GIzx, GIzy, GIzz] = IDGreens(k0, strip_length, strip_width, dx, Nz, lambda, n, epsL2, eps1, Center)
 
             k1i2=2*pi/(lambda*n);
             

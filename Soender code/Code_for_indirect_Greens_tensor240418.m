@@ -1,6 +1,6 @@
 % Code for calculating the indirect Greens tensor   
     k0 = 2;
-    strip_length =10;
+    strip_length = 10;
     strip_width = 0.5;
     dx = 0.1;
     Nz = 10;
