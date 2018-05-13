@@ -9,11 +9,11 @@ ESC = [];
 stl1 = stlread('antennas/Dipole10cmT264.stl');
 stl2 = stlread('antennas/Dipole10cmT580.stl'); %ok
 stl3 = stlread('antennas/Dipole10cmT722.stl'); %god
-stl5 = stlread('antennas/Dipole10cmT924.stl'); %god
-stl6 = stlread('antennas/Dipole10cmT1060.stl'); %god
-stl7 = stlread('antennas/Dipole10cmT1104.stl');
-stl8 = stlread('antennas/Dipole10cmT1922.stl'); %god
-% 
+stl4 = stlread('antennas/Dipole10cmT924.stl'); %god
+stl5 = stlread('antennas/Dipole10cmT1060.stl'); %god
+stl6 = stlread('antennas/Dipole10cmT1104.stl');
+stl7 = stlread('antennas/Dipole10cmT1922.stl'); %god
+ 
 % stl1 = stlread('antennas/test/720.stl');
 % stl2 = stlread('antennas/test/912.stl'); %god
 % stl3 = stlread('antennas/test/1026.stl'); %god
@@ -39,11 +39,11 @@ stl8 = stlread('antennas/Dipole10cmT1922.stl'); %god
 % t = [t; t+length(p1)];% t+length(p1)+length(p2); t+length(p1)+length(p2)+length(p3)];
 % p(:,1) = p(:,1)+0.03;
 % Should source be dipole, if 0 a plane wave propagating in +x direction used
-UseDipole = 1;
+UseDipole = 0;
 DipolePoint = [0.003,0,0];
 % If set to one use 81 sub triangles pr element, if 0 use 9
-SubSubTri = 1;
-sub =1;
+SubSubTri = 0;
+sub =0;
 % if 1 use fast (but more inacurate) MoM
 vectorized = 0;
 % Area of radiation
@@ -52,8 +52,13 @@ ymin = -2; ymax = 2;
 zmin = -2; zmax = 2;
 steps = 200;
 PointArea = xmax^2/steps;
+% Reflector surface params
+n = 3.9;
+epsR = 11.68;
+Reflector = 1;
+xdist = radius/2+0;
 
-FileName= 'ConSlowWave264-1922DipoleSubSub';
+FileName= 'ConSlowWave264-1922WaveIndirectOnAntSurf';
 
 %% Loop
 for convloop=1:7
@@ -152,14 +157,17 @@ disp('MoM')
 if vectorized
     [Z, a, b ] = ArbitraryAntenna.MoMVectorized(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k, SubTri, 0, 1, 0, UseDipole, Ei);
 else
-    [Z, b, a] = ArbitraryAntenna.MoM(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k,  SubTri, 0, 1, 0, UseDipole, Ei);
+%     [Z, b, a] = ArbitraryAntenna.MoM(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k,  SubTri, 0, 1, 0, UseDipole, Ei);
+
+    [Z, b, a] = ArbitraryAntenna.MoMIG(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k,  SubTri, 0, 1, 0, UseDipole, Ei,...
+        xdist, Reflector, epsR, Length, radius, 2, 50, lambda, n, eps0);
 end
 toc;
 %% Current calc in Triangle
 tic;
 fprintf('\n')
 disp('Calculating Current')
-[Jface] = ArbitraryAntenna.CurrentCalc(t, EdgeList, w, mu0, a, BasisLA, RhoP, RhoM);
+[Jface] = ArbitraryAntenna.CurrentCalc(t, EdgeList, a, BasisLA, RhoP, RhoM);
 toc;
 %%
 [Esc, EscPhi, EscTheta] = ArbitraryAntenna.AngularFarField(w, mu0, k, 30, Center, Jface, 300);
@@ -169,7 +177,7 @@ tic;
 fprintf('\n')
 disp('Calculating E-field')
 [Exy, Exz, Ezy, x, y, z, Exyx, Exzx, Eyzx, Exyy, Exzy, Eyzy, Exyz, Exzz, Eyzz] = ...
-    ArbitraryAntenna.EField(Center, k, Jface, xmin, xmax, ymin, ymax, zmin, zmax, steps, Area);
+    ArbitraryAntenna.EField(Center, w, mu0, k, Jface, xmin, xmax, ymin, ymax, zmin, zmax, steps, Area, Reflector, xdist, n, lambda);
 toc;
 if UseDipole
 fprintf('\n')

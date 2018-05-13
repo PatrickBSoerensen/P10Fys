@@ -2,9 +2,9 @@
 
 % stl = stlread('antennas/Dipole10cmT264.stl');
 % stl = stlread('antennas/Dipole10cmT580.stl'); %ok
-stl = stlread('antennas/Dipole10cmT180.stl');
+% stl = stlread('antennas/Dipole10cmT180.stl');
 
-% stl = stlread('antennas/Dipole10cmT264.stl');
+stl = stlread('antennas/Dipole10cmT264.stl');
 % stl = stlread('antennas/AspecPrio/Dipole10cmT1152.stl');
 
 % stl = stlread('antennas/Dipole10cmT580.stl'); %ok
@@ -60,7 +60,7 @@ sub = 0;
 vectorized = 0;
 InTest = 0;
 % Emmision parameters and size of plottet area
-normalize = 0;
+normalize = 1;
 PlotComp = 0;
 xmin = -2; xmax = 2;
 ymin = -2; ymax = 2;
@@ -71,7 +71,8 @@ PointArea = xmax^2/steps;
 n = 3.9;
 epsR = 11.68;
 Reflector = 1;
-xdist = radius/2+0.0001;
+FromAnt=0;
+xdist = radius/2+FromAnt;
 %% Visual check
 figure(1)
 plot3(p(:,1),p(:,2),p(:,3),'*')
@@ -135,7 +136,7 @@ else
 %     [Z, b, a] = ArbitraryAntenna.MoM(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k,  SubTri, 0, 1, 0, UseDipole, Ei);
     
     [Z, b, a] = ArbitraryAntenna.MoMIG(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k,  SubTri, 0, 1, 0, UseDipole, Ei,...
-        xdist, Reflector, epsR, Length, radius, 0.001, 30, lambda, n, eps0);
+        xdist, Reflector, epsR, Length, radius, 1, 2, lambda, n, eps0);
 end
 toc;
 %% Current calc in Triangle
@@ -162,6 +163,7 @@ colormap gray;
 colorbar;
 axis('equal');
 rotate3d
+
 %%
 [Esc, EscPhi, EscTheta] = ArbitraryAntenna.AngularFarField(w, mu0, k, 30, Center, Jface, 300);
 

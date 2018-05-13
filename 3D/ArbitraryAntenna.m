@@ -524,7 +524,7 @@ classdef ArbitraryAntenna
         end
         
         function [Z, b, a] = MoMIG(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k, SubTri, x, y, z, Point, Ei,...
-                distx, Reflector, InEps, strip_length, strip_width,  dx, Nz, lambda, n, eps1)
+                distx, Reflector, InEps, strip_length, strip_width, dx, Nz, lambda, n, eps1)
             % alocating space
             Z = zeros(length(EdgeList),length(EdgeList))+1i*zeros(length(EdgeList),length(EdgeList));
             if ~Point
@@ -537,7 +537,12 @@ classdef ArbitraryAntenna
             [PlusTri, MinusTri] = ArbitraryAntenna.PMTri(t, EdgeList);
             
             if Reflector
-            [GIx, GIy, GIz, GIxS, GIyS, GIzS] = ...
+            [GIx, GIy, GIz, GItabzz,...
+                    GItabzr,...
+                    GItabpp,...
+                    GItabrr,...
+                    tab_z,...
+                    tab_r] = ...
                 ArbitraryAntenna.IDGreens(k, distx, strip_length, strip_width, dx, Nz, lambda, n, InEps, eps1, Center, SubTri);
             end
                         
@@ -565,137 +570,177 @@ classdef ArbitraryAntenna
                     mpi = sqrt(sum((Center(h,:)-SPO).^2,2));
                     pmi = sqrt(sum((Center(h,:)-SMO).^2,2));
                     mmi = sqrt(sum((Center(h,:)-SMO).^2,2));
+                     
+%                     GIppo = sqrt(sum(ArbitraryAntenna.SingleInterp(Center(y,:), SPI, tab_z, tab_r, GItabzz, GItabzr, GItabrr, GItabpp).^2,2));
+%                     GImpo = sqrt(sum(ArbitraryAntenna.SingleInterp(Center(y,:), SPI, tab_z, tab_r, GItabzz, GItabzr, GItabrr, GItabpp).^2,2));
+%                     GIpmo = sqrt(sum(ArbitraryAntenna.SingleInterp(Center(y,:), SMI, tab_z, tab_r, GItabzz, GItabzr, GItabrr, GItabpp).^2,2));
+%                     GImmo = sqrt(sum(ArbitraryAntenna.SingleInterp(Center(y,:), SMI, tab_z, tab_r, GItabzz, GItabzr, GItabrr, GItabpp).^2,2));
+%                     
+%                     GIppi = sqrt(sum(ArbitraryAntenna.SingleInterp(Center(h,:), SPO, tab_z, tab_r, GItabzz, GItabzr, GItabrr, GItabpp).^2,2));
+%                     GImpi = sqrt(sum(ArbitraryAntenna.SingleInterp(Center(h,:), SPO, tab_z, tab_r, GItabzz, GItabzr, GItabrr, GItabpp).^2,2));
+%                     GIpmi = sqrt(sum(ArbitraryAntenna.SingleInterp(Center(h,:), SMO, tab_z, tab_r, GItabzz, GItabzr, GItabrr, GItabpp).^2,2));
+%                     GImmi = sqrt(sum(ArbitraryAntenna.SingleInterp(Center(h,:), SMO, tab_z, tab_r, GItabzz, GItabzr, GItabrr, GItabpp).^2,2));
                     
+%                     [GIppox, GIppoy, GIppoz] = ArbitraryAntenna.SingleInterp(Center(y,:), SPI, tab_z, tab_r, GItabzz, GItabzr, GItabrr, GItabpp);
+%                     [GImpox, GImpoy, GImpoz] = ArbitraryAntenna.SingleInterp(Center(y,:), SPI, tab_z, tab_r, GItabzz, GItabzr, GItabrr, GItabpp);
+%                     [GIpmox, GIpmoy, GIpmoz] = ArbitraryAntenna.SingleInterp(Center(y,:), SMI, tab_z, tab_r, GItabzz, GItabzr, GItabrr, GItabpp);
+%                     [GImmox, GImmoy, GImmoz] = ArbitraryAntenna.SingleInterp(Center(y,:), SMI, tab_z, tab_r, GItabzz, GItabzr, GItabrr, GItabpp);
+%                     
+%                     [GIppix, GIppiy, GIppiz] = ArbitraryAntenna.SingleInterp(Center(h,:), SPO, tab_z, tab_r, GItabzz, GItabzr, GItabrr, GItabpp);
+%                     [GImpix, GImpiy, GImpiz] = ArbitraryAntenna.SingleInterp(Center(h,:), SPO, tab_z, tab_r, GItabzz, GItabzr, GItabrr, GItabpp);
+%                     [GIpmix, GIpmiy, GIpmiz] = ArbitraryAntenna.SingleInterp(Center(h,:), SMO, tab_z, tab_r, GItabzz, GItabzr, GItabrr, GItabpp);
+%                     [GImmix, GImmiy, GImmiz] = ArbitraryAntenna.SingleInterp(Center(h,:), SMO, tab_z, tab_r, GItabzz, GItabzr, GItabrr, GItabpp);
+                    
+%                     GIppo = GIppox+GIppoy+GIppoz;
+%                     GImpo = GImpox+GImpoy+GImpoz;
+%                     GIpmo = GIpmox+GIpmoy+GIpmoz;
+%                     GImmo = GImmox+GImmoy+GImmoz;
+%                     
+%                     GIppi = GIppix+GIppiy+GIppiz;
+%                     GImpi = GImpix+GImpiy+GImpiz;
+%                     GIpmi = GIpmix+GIpmiy+GIpmiz;
+%                     GImmi = GImmix+GImmiy+GImmiz;
+                    
+                    GIppo = GIx(:,:,y)+GIy(:,:,y)+GIz(:,:,y);
+                    GImpo = GIx(:,:,y)+GIy(:,:,y)+GIz(:,:,y);
+                    GIpmo = GIx(:,:,y)+GIy(:,:,y)+GIz(:,:,y);
+                    GImmo = GIx(:,:,y)+GIy(:,:,y)+GIz(:,:,y);
+                    
+                    GIppi = GIx(:,:,h)+GIy(:,:,h)+GIz(:,:,h);
+                    GImpi = GIx(:,:,h)+GIy(:,:,h)+GIz(:,:,h);
+                    GIpmi = GIx(:,:,h)+GIy(:,:,h)+GIz(:,:,h);
+                    GImmi = GIx(:,:,h)+GIy(:,:,h)+GIz(:,:,h);
                     %Loop over outer triangles basis functions
                     for i = 1:length(PO)
                         % Intermediate loading of plus and minus functions
                         % evaluated in center points, _ denotes sub
                         % triangle
-                        zMP = (RhoP(PO(i),:));
-                        zMP_ = (RhoP_(:,:,PO(i)));
+                        zOP = (RhoP(PO(i),:));
+                        zOP_ = (RhoP_(:,:,PO(i)));
                         % Subtriangles for the inner triangles basis
                         % functions
                         for j = 1:length(PI)
                             % Intermediate loading of plus and minus functions
                             % evaluated in center points, _ denotes sub
                             % triangle
-                            zNP = (RhoP(PI(j),:));
-                            zNP_ = (RhoP_(:,:,PI(j)));           
+                            zIP = (RhoP(PI(j),:));
+                            zIP_ = (RhoP_(:,:,PI(j)));           
                             
                             gPPo = exp(1i.*k.*ppo)./ppo;
                             gPPi = exp(1i.*k.*ppi)./ppi;
                             
                             Z(PO(i), PI(j)) = ...
                             (BasisLA(PO(i),2)*BasisLA(PI(j),2))/(4*pi)...
-                            *sum((dot(repmat(zMP,[Quad,1]), zNP_,2)/4-1/k^2) .* gPPo/Quad)...
+                            *sum((dot(repmat(zOP,[Quad,1]), zIP_,2)/4-1/k^2) .* gPPo/Quad)...
                             + Z(PO(i), PI(j));
                             
                             Z(PO(i), PI(j)) = ...
                             (BasisLA(PO(i),2)*BasisLA(PI(j),2))/(4*pi)...
-                            *sum((dot(zMP_, repmat(zNP,[Quad,1]),2)/4-1/k^2) .* gPPi/Quad)...
+                            *sum((dot(zOP_, repmat(zIP,[Quad,1]),2)/4-1/k^2) .* gPPi/Quad)...
                             + Z(PO(i), PI(j));
 
                             if Reflector
                                 Z(PO(i), PI(j)) = ...
-                                (BasisLA(PO(i),1)*BasisLA(PI(j),1))...
-                                *sum((dot(repmat(zMP,[Quad,1]), zNP_,2)) .* sqrt(sum(GIxS(:,:,y).^2+GIyS(:,:,y).^2+GIzS(:,:,y).^2,2))/Quad)...
+                                (BasisLA(PO(i),2)*BasisLA(PI(j),2))...
+                                *sum((dot(repmat(zOP,[Quad,1]).* GIppo, zIP_.* GIppo,2)) /Quad)...
                                 + Z(PO(i), PI(j));
                             
                                 Z(PO(i), PI(j)) = ...
-                                (BasisLA(PO(i),1)*BasisLA(PI(j),1))...
-                                *sum((dot(zMP_, repmat(zNP,[Quad,1]),2)) .* sqrt(sum(GIxS(:,:,h).^2+GIyS(:,:,h).^2+GIzS(:,:,h).^2,2))/Quad)...
+                                (BasisLA(PO(i),2)*BasisLA(PI(j),2))...
+                                *sum((dot(zOP_.*GIppi, repmat(zIP,[Quad,1]).*GIppi,2)) /Quad)...
                                 + Z(PO(i), PI(j));
+                             
                             end
                         end
                         for j=1:length(MI)
-                            zNM = (RhoM(MI(j),:));
-                            zNM_ = (RhoM_(:,:,MI(j)));                             
+                            zIM = (RhoM(MI(j),:));
+                            zIM_ = (RhoM_(:,:,MI(j)));                             
                             
                             gPMo = exp(1i.*k.*pmo)./pmo;
                             gMPi = exp(1i.*k.*mpi)./mpi;
                             
                             Z(PO(i), MI(j)) = ...
                             (BasisLA(PO(i),2)*BasisLA(MI(j),2))/(4*pi)...
-                            *sum((dot(repmat(zMP,[Quad,1]), zNM_ ,2)/4+1/k^2) .* gPMo/Quad)...
+                            *sum((dot(repmat(zOP,[Quad,1]), zIM_ ,2)/4+1/k^2) .* gPMo/Quad)...
                             + Z(PO(i), MI(j));
                                 
                             Z(PO(i), MI(j)) = ...
                             (BasisLA(PO(i),2)*BasisLA(MI(j),2))/(4*pi)...
-                            *sum((dot(zMP_, repmat(zNM,[Quad,1]),2)/4+1/k^2) .* gMPi/Quad)...
+                            *sum((dot(zOP_ , repmat(zIM,[Quad,1]) ,2)/4+1/k^2).* gMPi/Quad)...
                             + Z(PO(i), MI(j));
                             
                         if Reflector
                             Z(PO(i), MI(j)) = ...
-                            (BasisLA(PO(i),1)*BasisLA(MI(j),3))...
-                            *sum((dot(repmat(zMP,[Quad,1]), zNM_,2)) .* sqrt(sum(GIxS(:,:,y).^2+GIyS(:,:,y).^2+GIzS(:,:,y).^2,2))/Quad)...
+                            (BasisLA(PO(i),2)*BasisLA(MI(j),2))...
+                            *sum((dot(repmat(zOP,[Quad,1]).* GIpmo, zIM_.* GIpmo,2)) /Quad)...
                             + Z(PO(i), MI(j));
                             
                             Z(PO(i), MI(j)) = ...
-                            (BasisLA(PO(i),1)*BasisLA(MI(j),3))...
-                            *sum((dot(zMP_, repmat(zNM,[Quad,1]),2)) .* sqrt(sum(GIxS(:,:,h).^2+GIyS(:,:,h).^2+GIzS(:,:,h).^2,2))/Quad)...
+                            (BasisLA(PO(i),2)*BasisLA(MI(j),2))...
+                            *sum((dot(zOP_.*GImpi, repmat(zIM,[Quad,1]).*GImpi,2)) /Quad)...
                             + Z(PO(i), MI(j));
                         end
                         end  
                         b1(PO(i),:) = sum(sum(Ei(y,:).*RhoP_(:,:,PO(i)).*BasisLA(PO(i),2)/2,2)/Quad);
                     end
                     for i=1:length(MO)
-                        zMM = (RhoM(MO(i),:));
-                        zMM_ = (RhoM_(:,:,MO(i)));
+                        zOM = (RhoM(MO(i),:));
+                        zOM_ = (RhoM_(:,:,MO(i)));
                         for j=1:length(PI)
                            
-                            zNP = (RhoP(PI(j),:));
-                            zNP_ = (RhoP_(:,:,PI(j)));   
+                            zIP = (RhoP(PI(j),:));
+                            zIP_ = (RhoP_(:,:,PI(j)));   
                             
                             gPMi = exp(1i.*k.*pmi)./pmi;
                             gMPo = exp(1i.*k.*mpo)./mpo;
                             Z(MO(i), PI(j)) = ...
                             (BasisLA(MO(i),2)*BasisLA(PI(j),2))/(4*pi)...
-                            *sum((dot(repmat(zMM,[Quad,1]), zNP_,2)/4+1/k^2) .* gMPo/Quad)...
+                            *sum((dot(repmat(zOM,[Quad,1]), zIP_,2)/4+1/k^2) .* gMPo/Quad)...
                             + Z(MO(i), PI(j));
                             
                             Z(MO(i), PI(j)) = ...
                             (BasisLA(MO(i),2)*BasisLA(PI(j),2))/(4*pi)...
-                            *sum((dot(zMM_, repmat(zNP,[Quad,1]),2)/4+1/k^2) .* gPMi/Quad)...
+                            *sum((dot(zOM_, repmat(zIP,[Quad,1]),2)/4+1/k^2) .* gPMi/Quad)...
                             + Z(MO(i), PI(j));  
           
                         if Reflector
                             Z(MO(i), PI(j)) = ...
-                            (BasisLA(MO(i),3)*BasisLA(PI(j),1))/(4*pi)...
-                            *sum((dot(repmat(zMM,[Quad,1]), zNP_,2)) .* sqrt(sum(GIxS(:,:,y).^2+GIyS(:,:,y).^2+GIzS(:,:,y).^2,2))/Quad)...
+                            (BasisLA(MO(i),2)*BasisLA(PI(j),2))/(4*pi)...
+                            *sum((dot(repmat(zOM,[Quad,1]).*GImpo, zIP_.*GImpo,2))  /Quad)...
                             + Z(MO(i), PI(j));
                             
                             Z(MO(i), PI(j)) = ...
-                            (BasisLA(MO(i),3)*BasisLA(PI(j),1))...
-                            *sum((dot(zMM_, repmat(zNP,[Quad,1]),2)) .* sqrt(sum(GIxS(:,:,h).^2+GIyS(:,:,h).^2+GIzS(:,:,h).^2,2))/Quad)...
+                            (BasisLA(MO(i),2)*BasisLA(PI(j),2))...
+                            *sum((dot(zOM_.*GIpmi, repmat(zIP,[Quad,1]).*GIpmi,2)) /Quad)...
                             + Z(MO(i), PI(j));   
                         end
                         end
                         for j=1:length(MI)
-                            zNM = (RhoM(MI(j),:));
-                            zNM_ = (RhoM_(:,:,MI(j)));   
+                            zIM = (RhoM(MI(j),:));
+                            zIM_ = (RhoM_(:,:,MI(j)));   
                             
                             gMMo = exp(1i.*k.*mmo)./mmo;
                             gMMi = exp(1i.*k.*mmi)./mmi;
            
                             Z(MO(i), MI(j)) = ...
                             (BasisLA(MO(i),2)*BasisLA(MI(j),2))/(4*pi)...
-                            *sum((dot(repmat(zMM,[Quad,1]), zNM_,2)/4-1/k^2) .* gMMo/Quad)...
+                            *sum((dot(repmat(zOM,[Quad,1]), zIM_,2)/4-1/k^2) .* gMMo/Quad)...
                             + Z(MO(i), MI(j));
                             
                             Z(MO(i), MI(j)) = ...
                             (BasisLA(MO(i),2)*BasisLA(MI(j),2))/(4*pi)...
-                            *sum((dot(zMM_, repmat(zNM,[Quad,1]),2)/4-1/k^2) .* gMMi/Quad)...
+                            *sum((dot(zOM_, repmat(zIM,[Quad,1]),2)/4-1/k^2) .* gMMi/Quad)...
                             + Z(MO(i), MI(j));
             
                         if Reflector
                             Z(MO(i), MI(j)) = ...
-                            (BasisLA(MO(i),3)*BasisLA(MI(j),3))...
-                            *sum((dot(repmat(zMM,[Quad,1]), zNM_,2)) .* sqrt(sum(GIxS(:,:,y).^2+GIyS(:,:,y).^2+GIzS(:,:,y).^2,2))/Quad)...
+                            (BasisLA(MO(i),2)*BasisLA(MI(j),2))...
+                            *sum((dot(repmat(zOM,[Quad,1]).* GImmo, zIM_.* GImmo,2)) /Quad)...
                             + Z(MO(i), MI(j));
                             
                             Z(MO(i), MI(j)) = ...
-                            (BasisLA(MO(i),3)*BasisLA(MI(j),3))...
-                            *sum((dot(zMM_, repmat(zNM,[Quad,1]),2)) .* sqrt(sum(GIxS(:,:,h).^2+GIyS(:,:,h).^2+GIzS(:,:,h).^2,2))/Quad)...
+                            (BasisLA(MO(i),2)*BasisLA(MI(j),2))...
+                            *sum((dot(zOM_.* GImmi, repmat(zIM,[Quad,1]).* GImmi,2)) /Quad)...
                             + Z(MO(i), MI(j));    
                         end
                         end
@@ -1131,10 +1176,18 @@ classdef ArbitraryAntenna
             title('EscPhi^2+EscTheta^2')
         end
         
-        function [GIx, GIy, GIz, GIxS, GIyS, GIzS] = IDGreens(k0, distx, ant_length, ant_width, dx, Nz, lambda, n, epsL2, eps1, Center, SubTri)
+        
+        function [GIx, GIy, GIz, GItabzz,...
+                    GItabzr,...
+                    GItabpp,...
+                    GItabrr,...
+                    tab_z,...
+                    tab_r] = IDGreens(k0, distx, ant_length, ant_width, dx, Nz, lambda, n, epsL2, eps1, Center, SubTri)
+                
             SubAmount = size(SubTri);
             SubTri = reshape(SubTri, 3, [], SubAmount(3));
             SubTri = permute(SubTri,[2 1 3]);
+            %% Soender
             k1i2=(2*pi/(lambda*n))^2;
             
             kz1f=@(krho) sqrt(k0^2*eps1-krho.*krho);
@@ -1149,7 +1202,7 @@ classdef ArbitraryAntenna
             krhof=@(alpha) (1+cos(alpha))*ellipse_length/2+1i*ellipse_height*sin(alpha);
             dkrho_dalphaf=@(alpha) -sin(alpha)*ellipse_length/2+1i*ellipse_height*cos(alpha);
             
-            rhomin = ant_width/2+distx;
+            rhomin = distx;
             rhomax = sqrt((ant_length)^2+(distx-ant_width)^2);
             rhov1 = [rhomin rhomin+dx rhomin+dx*sqrt(2) rhomin+dx*2 rhomin+dx*sqrt(5) rhomin+dx*sqrt(8)];
             
@@ -1158,23 +1211,17 @@ classdef ArbitraryAntenna
             else
                 rhov2=[];
             end
-            
             rhotabv=[rhov1 rhov2];
             Nrho=length(rhotabv);
     
             GItabzz=zeros(Nrho,2*Nz-1); GItabzr=GItabzz;
             GItabrr=GItabzz; GItabpp=GItabzz;
             tab_z=GItabzz; tab_r=GItabzz;
-count = 1;
+            
             for jrho=1:Nrho
                 rho=rhotabv(jrho);
-                
                 for jz=1:Nz*2-1
-                    temp = repmat(Center(:,3), [1 1 9]);
-                    temp = permute(temp, [3 2 1]);
-                    zD = temp(:,3)+SubTri(:,3,:);
-                    zD = permute(zD, [1 3 2])';
-                    zD=jz*dx;
+                    zD=jz*dxM;
                     dJmf = @(krho) -besselj(1,krho*rho)./(krho*rho);
                     if jrho==1
                         dJmf = @(krho) -0.5;
@@ -1198,35 +1245,73 @@ count = 1;
                     Gpp = Gpp + integral(@(krho) Gippf(krho), ellipse_length, inf, 'ArrayValued', 1);
                     Grr = Grr + integral(@(krho) Girrf(krho), ellipse_length, inf, 'ArrayValued', 1);                
 
-                    GItabzz(jrho,:) = Gzz;
-                    GItabzr(jrho,:) = Gzr;
-                    GItabpp(jrho,:) = Gpp;
-                    GItabrr(jrho,:) = Grr;
-                    tab_z(jrho,:) = zD;
-                    tab_r(jrho,:) = rho;
-                    count = count+1;
+                    GItabzz(jrho,jz) = Gzz;
+                    GItabzr(jrho,jz) = Gzr;
+                    GItabpp(jrho,jz) = Gpp;
+                    GItabrr(jrho,jz) = Grr;
+                    tab_z(jrho,jz) = zD;
+                    tab_r(jrho,jz) = rho;
                 end
             end
 
-             % Conversion to cartesian components
-             for sub = 1:2
-                 if sub == 1
-                    x = Center(:,1);
-                    y = Center(:,2);
-                    z = Center(:,3);
-                 elseif sub == 2
-                    clear GIxx; clear GIxy; clear GIxz;
-                    clear GIyx; clear GIyy; clear GIyz;
-                    clear GIzx; clear GIzy; clear GIzz;
-                
-                    x = SubTri(:,1,:);
-                    y = SubTri(:,2,:);
-                    z = SubTri(:,3,:);
-                 end
+             %% Conversion to cartesian components
+            
+            TempCenters = permute(Center, [3 2 1]);
+            TempCenters = repmat(TempCenters, [9 1 1]);
+            AllSubDists = TempCenters-SubTri;
+
+            x = Center(:,1);
+            y = Center(:,2);
+            z = sum(AllSubDists.^2,2);
                  
+            for i=1:SubAmount(2)/3
                 rho = sqrt(x.*x+y.*y);
                 phi = atan2(y,x);
 
+                Gzz = interp2(tab_z, tab_r, GItabzz, permute(z(i,:,:), [3 2 1]), rho, 'spline'); 
+                Gzr = interp2(tab_z, tab_r, GItabzr, permute(z(i,:,:), [3 2 1]), rho, 'spline'); 
+                Grr = interp2(tab_z, tab_r, GItabrr, permute(z(i,:,:), [3 2 1]), rho, 'spline'); 
+                Gpp = interp2(tab_z, tab_r, GItabpp, permute(z(i,:,:), [3 2 1]), rho, 'spline');                
+                Grz = -Gzr;
+               
+                GIxx(i,:,:) = ((sin(phi)).^2).*Gpp+((cos(phi)).^2).*Grr;
+                GIxy(i,:,:) = sin(phi).*cos(phi).*(Grr-Gpp);
+                GIxz(i,:,:) = cos(phi).*Grz;
+                GIyx(i,:,:) = sin(phi).*cos(phi).*(Grr-Gpp);
+                GIyy(i,:,:) = ((cos(phi)).^2).*Gpp+((sin(phi)).^2).*Grr;
+                GIyz(i,:,:) = sin(phi).*Grz;
+                GIzx(i,:,:) = cos(phi).*Gzr;
+                GIzy(i,:,:) = sin(phi).*Gzr;
+                GIzz(i,:,:) = Gzz;
+            end
+            GIxx = reshape(GIxx, SubAmount(2)/3, [],SubAmount(3));
+            GIxy = reshape(GIxy, SubAmount(2)/3, [],SubAmount(3));
+            GIxz = reshape(GIxz, SubAmount(2)/3, [],SubAmount(3));
+            GIx = [GIxx GIxy GIxz];
+                    
+            GIyx = reshape(GIyx, SubAmount(2)/3,[],SubAmount(3));
+            GIyy = reshape(GIyy, SubAmount(2)/3,[],SubAmount(3));
+            GIyz = reshape(GIyz, SubAmount(2)/3,[],SubAmount(3));
+            GIy = [GIyx GIyy GIyz];
+            
+            GIzx = reshape(GIzx, SubAmount(2)/3,[],SubAmount(3));
+            GIzy = reshape(GIzy, SubAmount(2)/3,[],SubAmount(3));
+            GIzz = reshape(GIzz, SubAmount(2)/3,[],SubAmount(3));
+            GIz = [GIzx GIzy GIzz];
+        end
+            
+        
+        function [GIx, GIy, GIz] = SingleInterp(Center, SubTri, tab_z, tab_r, GItabzz, GItabzr, GItabrr, GItabpp)
+          
+            AllSubDists = Center+SubTri;
+
+            x = Center(1);
+            y = Center(2);
+            z = sum(AllSubDists.^2,2);
+                           
+            rho = sqrt(x.*x+y.*y);
+            phi = atan2(y,x);
+                
                 Gzz = interp2(tab_z, tab_r, GItabzz, z, rho, 'spline'); 
                 Gzr = interp2(tab_z, tab_r, GItabzr, z, rho, 'spline'); 
                 Grr = interp2(tab_z, tab_r, GItabrr, z, rho, 'spline'); 
@@ -1242,20 +1327,14 @@ count = 1;
                 GIzx(:,:,:) = cos(phi).*Gzr;
                 GIzy(:,:,:) = sin(phi).*Gzr;
                 GIzz(:,:,:) = Gzz;
-
-                if sub==1
-                    GIx = [GIxx GIxy GIxz];
-                    GIy = [GIyx GIyy GIyz];
-                    GIz = [GIzx GIzy GIzz];
-                elseif sub==2
-                    GIxS = [GIxx GIxy GIxz];
-                    GIyS = [GIyx GIyy GIyz];
-                    GIzS = [GIzx GIzy GIzz];
-                end
-             end
+   
+            GIx = [GIxx' GIxy' GIxz'];
+                    
+            GIy = [GIyx' GIyy' GIyz'];
+                    
+            GIz = [GIzx' GIzy' GIzz'];
+                 end
         end
-        
-        
-    end    
-end
+    end
+% end
 

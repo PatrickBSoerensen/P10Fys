@@ -1,4 +1,4 @@
-close all
+% close all
 %% First batch
 % load('conv/ConvFirstBatch/ConvSlow.mat')
 % load('conv/ConvFirstBatch/ConvSlowSub.mat')
@@ -71,7 +71,7 @@ legend(PlottetLabels)
 figure(3)
 legend(PlottetLabels)
 
-saveas(figure(1), 'JyWave.jpg')
-saveas(figure(2), 'EyxWave.jpg')
+% saveas(figure(1), 'JyWave.jpg')
+% saveas(figure(2), 'EyxWave.jpg')
 
 
