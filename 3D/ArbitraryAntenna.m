@@ -851,7 +851,7 @@ classdef ArbitraryAntenna
         end
         
         function [Exy, Exz, Ezy, xrange, yrange, zrange, Exyx, Exzx, Eyzx, Exyy, Exzy, Eyzy, Exyz, Exzz, Eyzz] = EField(Center, w, mu, k0, J,...
-                xmin, xmax, zmin, zmax, ymin, ymax, steps, Area, Reflect, xsurf, n, lambda)
+                xmin, xmax,  ymin, ymax,zmin, zmax, steps, Area, Reflect, xsurf, n, lambda)
        
             kR = 2*pi/(lambda*n);
             xrange = linspace(xmin, xmax, steps);

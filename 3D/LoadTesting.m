@@ -4,8 +4,8 @@
 % stl = stlread('antennas/Dipole10cmT580.stl'); %ok
 % stl = stlread('antennas/Dipole10cmT180.stl');
 
-stl = stlread('antennas/Dipole10cmT264.stl');
-% stl = stlread('antennas/AspecPrio/Dipole10cmT1152.stl');
+% stl = stlread('antennas/Dipole10cmT264.stl');
+stl = stlread('antennas/Test4400.stl');
 
 % stl = stlread('antennas/Dipole10cmT580.stl'); %ok
 % stl = stlread('antennas/Dipole10cmT722.stl'); %god
@@ -70,7 +70,7 @@ PointArea = xmax^2/steps;
 % Reflector surface params
 n = 3.9;
 epsR = 11.68;
-Reflector = 1;
+Reflector = 0;
 FromAnt=0;
 xdist = radius/2+FromAnt;
 %% Visual check
