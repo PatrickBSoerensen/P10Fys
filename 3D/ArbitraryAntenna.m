@@ -523,14 +523,20 @@ classdef ArbitraryAntenna
             a = Z\b;
         end
         
-        function [Z, b, a] = MoMIG(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k, SubTri, x, y, z, Point, Ei,...
+        function [Z, b, a] = MoMIG(w, mu, t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k, SubTri, x, y, z, Point, Ei,...
                 distx, Reflector, InEps, strip_length, strip_width, dx, Nz, lambda, n, eps1)
             % alocating space
             Z = zeros(length(EdgeList),length(EdgeList))+1i*zeros(length(EdgeList),length(EdgeList));
             if ~Point
-                Ei(:,1) = x.*exp(-1i*k.*(Center(:,1)));
-                Ei(:,2) = y.*exp(-1i*k.*(Center(:,1)));
-                Ei(:,3) = z.*exp(-1i*k.*(Center(:,1)));
+                Ei(:,1) = x.*exp(1i*k.*(Center(:,1)));
+                Ei(:,2) = y.*exp(1i*k.*(Center(:,1)));
+                Ei(:,3) = z.*exp(1i*k.*(Center(:,1)));
+            end
+            if Reflector
+                RefCoef = (1-n)/(1+n);
+                Ei(:,1) = Ei(:,1)+x.*exp(-1i*k.*(Center(:,1))).*RefCoef;
+                Ei(:,2) = Ei(:,2)+y.*exp(-1i*k.*(Center(:,1))).*RefCoef;
+                Ei(:,3) = Ei(:,3)+z.*exp(-1i*k.*(Center(:,1))).*RefCoef;
             end
             b1 = 1:length(EdgeList);
             b2 = 1:length(EdgeList);
@@ -600,7 +606,7 @@ classdef ArbitraryAntenna
 %                     GImpi = GImpix+GImpiy+GImpiz;
 %                     GIpmi = GIpmix+GIpmiy+GIpmiz;
 %                     GImmi = GImmix+GImmiy+GImmiz;
-                    
+                    if Reflector
                     GIppo = GIx(:,:,y)+GIy(:,:,y)+GIz(:,:,y);
                     GImpo = GIx(:,:,y)+GIy(:,:,y)+GIz(:,:,y);
                     GIpmo = GIx(:,:,y)+GIy(:,:,y)+GIz(:,:,y);
@@ -610,6 +616,7 @@ classdef ArbitraryAntenna
                     GImpi = GIx(:,:,h)+GIy(:,:,h)+GIz(:,:,h);
                     GIpmi = GIx(:,:,h)+GIy(:,:,h)+GIz(:,:,h);
                     GImmi = GIx(:,:,h)+GIy(:,:,h)+GIz(:,:,h);
+                    end
                     %Loop over outer triangles basis functions
                     for i = 1:length(PO)
                         % Intermediate loading of plus and minus functions
@@ -649,7 +656,6 @@ classdef ArbitraryAntenna
                                 (BasisLA(PO(i),2)*BasisLA(PI(j),2))...
                                 *sum((dot(zOP_.*GIppi, repmat(zIP,[Quad,1]).*GIppi,2)) /Quad)...
                                 + Z(PO(i), PI(j));
-                             
                             end
                         end
                         for j=1:length(MI)
@@ -668,7 +674,7 @@ classdef ArbitraryAntenna
                             (BasisLA(PO(i),2)*BasisLA(MI(j),2))/(4*pi)...
                             *sum((dot(zOP_ , repmat(zIM,[Quad,1]) ,2)/4+1/k^2).* gMPi/Quad)...
                             + Z(PO(i), MI(j));
-                            
+                        
                         if Reflector
                             Z(PO(i), MI(j)) = ...
                             (BasisLA(PO(i),2)*BasisLA(MI(j),2))...
@@ -681,7 +687,7 @@ classdef ArbitraryAntenna
                             + Z(PO(i), MI(j));
                         end
                         end  
-                        b1(PO(i),:) = sum(sum(Ei(y,:).*RhoP_(:,:,PO(i)).*BasisLA(PO(i),2)/2,2)/Quad);
+                        b1(PO(i)) = 1i/(w*mu)*sum(dot(repmat(Ei(y,:),Quad,1),RhoP_(:,:,PO(i)),2).*BasisLA(PO(i),2)/Quad)/2;
                     end
                     for i=1:length(MO)
                         zOM = (RhoM(MO(i),:));
@@ -702,7 +708,6 @@ classdef ArbitraryAntenna
                             (BasisLA(MO(i),2)*BasisLA(PI(j),2))/(4*pi)...
                             *sum((dot(zOM_, repmat(zIP,[Quad,1]),2)/4+1/k^2) .* gPMi/Quad)...
                             + Z(MO(i), PI(j));  
-          
                         if Reflector
                             Z(MO(i), PI(j)) = ...
                             (BasisLA(MO(i),2)*BasisLA(PI(j),2))/(4*pi)...
@@ -731,7 +736,6 @@ classdef ArbitraryAntenna
                             (BasisLA(MO(i),2)*BasisLA(MI(j),2))/(4*pi)...
                             *sum((dot(zOM_, repmat(zIM,[Quad,1]),2)/4-1/k^2) .* gMMi/Quad)...
                             + Z(MO(i), MI(j));
-            
                         if Reflector
                             Z(MO(i), MI(j)) = ...
                             (BasisLA(MO(i),2)*BasisLA(MI(j),2))...
@@ -744,11 +748,11 @@ classdef ArbitraryAntenna
                             + Z(MO(i), MI(j));    
                         end
                         end
-                        b2(MO(i),:) = sum(sum(Ei(y,:).*RhoM_(:,:,MO(i)).*BasisLA(MO(i),2)/2,2)/Quad);
+                        b2(MO(i)) = 1i/(w*mu)*sum(dot(repmat(Ei(y,:),Quad,1),RhoM_(:,:,MO(i)),2).*BasisLA(MO(i),2)/Quad)/2;
                     end      
                 end       
             end
-            b = b1+b2;
+            b = (b1+b2).';
             % Z\b is a newer faster version of inv(Z)*b
             a = Z\b;
         end
@@ -1176,6 +1180,34 @@ classdef ArbitraryAntenna
             title('EscPhi^2+EscTheta^2')
         end
         
+        function [Esc, EscPhi, EscTheta] = AngularFarFieldSurf(w, mu, k, r, Center, J, steps)
+            phi = linspace(-pi, 2*pi, steps)';
+            theta = linspace(-pi, 2*pi, steps)';
+            xH = [1, 0, 0];
+            yH = [0, 1, 0];
+            zH = [0, 0, 1];
+            phiH = -xH.*sin(phi)+yH.*cos(phi);
+            thetaH = (xH.*cos(phi)+yH.*sin(phi)).*cos(theta)-zH.*sin(theta);
+            rHat = (xH.*cos(phi)+yH.*sin(phi)).*sin(theta)+zH.*cos(theta);
+            EscTheta = zeros(steps);
+            EscPhi = zeros(steps);
+           for i=1:length(Center)
+                IntegralTerm = 1i*w*mu*(exp(1i*k*r)/(4*pi*r))...
+                *exp(-1i*k*sum(rHat.*Center(i,:),2)).*J(i,:); 
+                           
+                EscTheta = dot(thetaH,IntegralTerm,2) + EscTheta;
+            
+                EscPhi = dot(phiH,IntegralTerm,2) + EscPhi;
+            end
+            
+            Esc = EscPhi.^2+EscTheta.^2;
+            
+            figure(4)
+            plot(phi, abs(Esc).^2*r^2)
+            xlabel('Phi')
+            ylabel('E')
+            title('EscPhi^2+EscTheta^2')
+        end
         
         function [GIx, GIy, GIz, GItabzz,...
                     GItabzr,...
@@ -1189,6 +1221,7 @@ classdef ArbitraryAntenna
             SubTri = permute(SubTri,[2 1 3]);
             %% Soender
             k1i2=(2*pi/(lambda*n))^2;
+            epsL2=epsL2*eps1;
             
             kz1f=@(krho) sqrt(k0^2*eps1-krho.*krho);
             kzL2f=@(krho) sqrt(k0^2*epsL2-krho.*krho);
@@ -1203,8 +1236,11 @@ classdef ArbitraryAntenna
             dkrho_dalphaf=@(alpha) -sin(alpha)*ellipse_length/2+1i*ellipse_height*cos(alpha);
             
             rhomin = distx;
+%             rhomin = -ant_length/2-ant_width/2;
             rhomax = sqrt((ant_length)^2+(distx-ant_width)^2);
-            rhov1 = [rhomin rhomin+dx rhomin+dx*sqrt(2) rhomin+dx*2 rhomin+dx*sqrt(5) rhomin+dx*sqrt(8)];
+%             rhomax = ant_length/2+ant_width/2;
+%             rhov1 = [rhomin rhomin+dx rhomin+dx*sqrt(2) rhomin+dx*2 rhomin+dx*sqrt(5) rhomin+dx*sqrt(8)];
+            rhov1 = [0 dx dx*sqrt(2) dx*2 dx*sqrt(5) dx*sqrt(8)];
             
             if rhomax>dx*3
                 rhov2=linspace(dx*3,rhomax,ceil((rhomax-dx*3)/dx)+1);
@@ -1221,17 +1257,17 @@ classdef ArbitraryAntenna
             for jrho=1:Nrho
                 rho=rhotabv(jrho);
                 for jz=1:Nz*2-1
-                    zD=jz*dxM;
+                    z=jz*dx;
                     dJmf = @(krho) -besselj(1,krho*rho)./(krho*rho);
                     if jrho==1
                         dJmf = @(krho) -0.5;
                     end
                     Jmmf = @(krho) -0.5*(besselj(0,krho*rho)-besselj(2,krho*rho));
                     
-                    Gizzf = @(krho) 1i/(4*pi)*rpf(krho).*besselj(0,krho*rho).*(krho.^2)/k1i2.*exp(1i*kz1f(krho)*zD).*krho./kz1f(krho);
-                    Gizrf = @(krho) 1/(4*pi)*rpf(krho).*krho.*kz1f(krho)/k1i2.*(-besselj(1,krho*rho)).*exp(1i*kz1f(krho)*zD).*krho./kz1f(krho);
-                    Gippf = @(krho) 1i/(4*pi)*(rpf(krho).*dJmf(krho).*(kz1f(krho).^2)/k1i2-rsf(krho).*Jmmf(krho)).*exp(1i*kz1f(krho)*zD).*krho./kz1f(krho);
-                    Girrf = @(krho) 1i/(4*pi)*(rpf(krho).*Jmmf(krho).*(kz1f(krho).^2)/k1i2-rsf(krho).*dJmf(krho)).*exp(1i*kz1f(krho)*zD).*krho./kz1f(krho);
+                    Gizzf = @(krho) 1i/(4*pi)*rpf(krho).*besselj(0,krho*rho).*(krho.^2)/k1i2.*exp(1i*kz1f(krho)*z).*krho./kz1f(krho);
+                    Gizrf = @(krho) 1/(4*pi)*rpf(krho).*krho.*kz1f(krho)/k1i2.*(-besselj(1,krho*rho)).*exp(1i*kz1f(krho)*z).*krho./kz1f(krho);
+                    Gippf = @(krho) 1i/(4*pi)*(rpf(krho).*dJmf(krho).*(kz1f(krho).^2)/k1i2-rsf(krho).*Jmmf(krho)).*exp(1i*kz1f(krho)*z).*krho./kz1f(krho);
+                    Girrf = @(krho) 1i/(4*pi)*(rpf(krho).*Jmmf(krho).*(kz1f(krho).^2)/k1i2-rsf(krho).*dJmf(krho)).*exp(1i*kz1f(krho)*z).*krho./kz1f(krho);
   
                     % Integral going into the complex plane to avoid poles
                     Gzz = integral(@(alpha) Gizzf(krhof(alpha)).*dkrho_dalphaf(alpha), -pi, 0, 'ArrayValued', 1);
@@ -1249,39 +1285,38 @@ classdef ArbitraryAntenna
                     GItabzr(jrho,jz) = Gzr;
                     GItabpp(jrho,jz) = Gpp;
                     GItabrr(jrho,jz) = Grr;
-                    tab_z(jrho,jz) = zD;
+                    tab_z(jrho,jz) = z;
                     tab_r(jrho,jz) = rho;
                 end
             end
 
-             %% Conversion to cartesian components
-            
+            %% Conversion to cartesian components
             TempCenters = permute(Center, [3 2 1]);
-            TempCenters = repmat(TempCenters, [9 1 1]);
-            AllSubDists = TempCenters-SubTri;
+            TempCenters = repmat(TempCenters, [SubAmount(2)/3 1 1]);
+            AllSubDists = TempCenters+SubTri;
 
-            x = Center(:,1);
-            y = Center(:,2);
-            z = sum(AllSubDists.^2,2);
+            x = AllSubDists(:,1,:);
+            y = AllSubDists(:,2,:);
+            z = sum(AllSubDists(:,3,:).^2,2);
                  
             for i=1:SubAmount(2)/3
                 rho = sqrt(x.*x+y.*y);
                 phi = atan2(y,x);
 
-                Gzz = interp2(tab_z, tab_r, GItabzz, permute(z(i,:,:), [3 2 1]), rho, 'spline'); 
-                Gzr = interp2(tab_z, tab_r, GItabzr, permute(z(i,:,:), [3 2 1]), rho, 'spline'); 
-                Grr = interp2(tab_z, tab_r, GItabrr, permute(z(i,:,:), [3 2 1]), rho, 'spline'); 
-                Gpp = interp2(tab_z, tab_r, GItabpp, permute(z(i,:,:), [3 2 1]), rho, 'spline');                
+                Gzz = permute(interp2(tab_z, tab_r, GItabzz, permute(z(i,:,:), [3 2 1]), permute(rho(i,:,:), [3 2 1]), 'spline'), [3 2 1]); 
+                Gzr = permute(interp2(tab_z, tab_r, GItabzr, permute(z(i,:,:), [3 2 1]), permute(rho(i,:,:), [3 2 1]), 'spline'), [3 2 1]); 
+                Grr = permute(interp2(tab_z, tab_r, GItabrr, permute(z(i,:,:), [3 2 1]), permute(rho(i,:,:), [3 2 1]), 'spline'), [3 2 1]); 
+                Gpp = permute(interp2(tab_z, tab_r, GItabpp, permute(z(i,:,:), [3 2 1]), permute(rho(i,:,:), [3 2 1]), 'spline'), [3 2 1]);                
                 Grz = -Gzr;
-               
-                GIxx(i,:,:) = ((sin(phi)).^2).*Gpp+((cos(phi)).^2).*Grr;
-                GIxy(i,:,:) = sin(phi).*cos(phi).*(Grr-Gpp);
-                GIxz(i,:,:) = cos(phi).*Grz;
-                GIyx(i,:,:) = sin(phi).*cos(phi).*(Grr-Gpp);
-                GIyy(i,:,:) = ((cos(phi)).^2).*Gpp+((sin(phi)).^2).*Grr;
-                GIyz(i,:,:) = sin(phi).*Grz;
-                GIzx(i,:,:) = cos(phi).*Gzr;
-                GIzy(i,:,:) = sin(phi).*Gzr;
+                
+                GIxx(i,:,:) = ((sin(phi(i,:,:))).^2).*Gpp+((cos(phi(i,:,:))).^2).*Grr;
+                GIxy(i,:,:) = sin(phi(i,:,:)).*cos(phi(i,:,:)).*(Grr-Gpp);
+                GIxz(i,:,:) = cos(phi(i,:,:)).*Grz;
+                GIyx(i,:,:) = sin(phi(i,:,:)).*cos(phi(i,:,:)).*(Grr-Gpp);
+                GIyy(i,:,:) = ((cos(phi(i,:,:))).^2).*Gpp+((sin(phi(i,:,:))).^2).*Grr;
+                GIyz(i,:,:) = sin(phi(i,:,:)).*Grz;
+                GIzx(i,:,:) = cos(phi(i,:,:)).*Gzr;
+                GIzy(i,:,:) = sin(phi(i,:,:)).*Gzr;
                 GIzz(i,:,:) = Gzz;
             end
             GIxx = reshape(GIxx, SubAmount(2)/3, [],SubAmount(3));
@@ -1300,7 +1335,6 @@ classdef ArbitraryAntenna
             GIz = [GIzx GIzy GIzz];
         end
             
-        
         function [GIx, GIy, GIz] = SingleInterp(Center, SubTri, tab_z, tab_r, GItabzz, GItabzr, GItabrr, GItabpp)
           
             AllSubDists = Center+SubTri;
@@ -1335,6 +1369,5 @@ classdef ArbitraryAntenna
             GIz = [GIzx' GIzy' GIzz'];
                  end
         end
-    end
-% end
+end
 

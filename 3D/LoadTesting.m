@@ -4,8 +4,13 @@
 % stl = stlread('antennas/Dipole10cmT580.stl'); %ok
 % stl = stlread('antennas/Dipole10cmT180.stl');
 
+<<<<<<< HEAD
 % stl = stlread('antennas/Dipole10cmT264.stl');
 stl = stlread('antennas/Test4400.stl');
+=======
+% stl = stlread('antennas/test1050.stl');
+stl = stlread('antennas/AspecPrio/Dipole10cmT1152.stl');
+>>>>>>> df8cbc70ce8671e451c7aed588719be000778c28
 
 % stl = stlread('antennas/Dipole10cmT580.stl'); %ok
 % stl = stlread('antennas/Dipole10cmT722.stl'); %god
@@ -71,7 +76,11 @@ PointArea = xmax^2/steps;
 n = 3.9;
 epsR = 11.68;
 Reflector = 0;
+<<<<<<< HEAD
 FromAnt=0;
+=======
+FromAnt=0.003;
+>>>>>>> df8cbc70ce8671e451c7aed588719be000778c28
 xdist = radius/2+FromAnt;
 %% Visual check
 figure(1)
@@ -135,8 +144,8 @@ if vectorized
 else
 %     [Z, b, a] = ArbitraryAntenna.MoM(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k,  SubTri, 0, 1, 0, UseDipole, Ei);
     
-    [Z, b, a] = ArbitraryAntenna.MoMIG(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k,  SubTri, 0, 1, 0, UseDipole, Ei,...
-        xdist, Reflector, epsR, Length, radius, 1, 2, lambda, n, eps0);
+    [Z, b, a] = ArbitraryAntenna.MoMIG(w, mu0, t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k,  SubTri, 0, 1, 0, UseDipole, Ei,...
+        xdist, Reflector, epsR, Length, radius, .5, 3, lambda, n, eps0);
 end
 toc;
 %% Current calc in Triangle
