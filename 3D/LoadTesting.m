@@ -2,19 +2,18 @@
 
 % stl = stlread('antennas/Dipole10cmT264.stl');
 % stl = stlread('antennas/Dipole10cmT580.stl'); %ok
+
+% [p, t, N] = stlread('antennas/Dipole10cmT580.stl'); %ok
 % stl = stlread('antennas/Dipole10cmT180.stl');
 
-<<<<<<< HEAD
 % stl = stlread('antennas/Dipole10cmT264.stl');
-stl = stlread('antennas/Test4400.stl');
-=======
+% stl = stlread('antennas/Test4400.stl');
 % stl = stlread('antennas/test1050.stl');
-stl = stlread('antennas/AspecPrio/Dipole10cmT1152.stl');
->>>>>>> df8cbc70ce8671e451c7aed588719be000778c28
+% stl = stlread('antennas/AspecPrio/Dipole10cmT1152.stl');
 
 % stl = stlread('antennas/Dipole10cmT580.stl'); %ok
 % stl = stlread('antennas/Dipole10cmT722.stl'); %god
-% stl = stlread('antennas/Dipole10cmT744.stl'); %
+stl = stlread('antennas/Dipole10cmT744.stl'); %
 % stl = stlread('antennas/Dipole10cmT904.stl'); %
 % stl = stlread('antennas/Dipole10cmT924.stl'); %god
 % stl = stlread('antennas/Dipole10cmT1060.stl'); %god
@@ -76,11 +75,7 @@ PointArea = xmax^2/steps;
 n = 3.9;
 epsR = 11.68;
 Reflector = 0;
-<<<<<<< HEAD
-FromAnt=0;
-=======
 FromAnt=0.003;
->>>>>>> df8cbc70ce8671e451c7aed588719be000778c28
 xdist = radius/2+FromAnt;
 %% Visual check
 figure(1)
@@ -108,11 +103,18 @@ fprintf('\n')
 disp('Calculating areals for triangles')
 [Area, Center] = ArbitraryAntenna.TriangleAreas(p, t);
 toc;
+
 %% SubTri
 tic;
 fprintf('\n')
 disp('Calculating areals for subtriangles')
 [SubTri] = ArbitraryAntenna.SubTriangles(p, t, Center, SubSubTri);
+toc;
+%% Lift
+tic;
+fprintf('\n')
+disp('Lifting subtriangles and center points')
+[Center, SubTri] = ArbitraryAntenna.CenterLift(Center, SubTri);
 toc;
 %% Basis Function setup
 tic;
