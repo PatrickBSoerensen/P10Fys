@@ -1,4 +1,4 @@
-% close all
+close all
 %% First batch
 % load('conv/ConvFirstBatch/ConvSlow.mat')
 % load('conv/ConvFirstBatch/ConvSlowSub.mat')

@@ -29,6 +29,7 @@
     ellipse_height = k0*0.2;
     krhof=@(alpha) (1+cos(alpha))*ellipse_length/2+1i*ellipse_height*sin(alpha);
     dkrho_dalphaf=@(alpha) -sin(alpha)*ellipse_length/2+1i*ellipse_height*cos(alpha);
+    
     rhomin=0; rhomax=sqrt(strip_length^2+strip_width^2);
     rhov1=[0 dx dx*sqrt(2) dx*2 dx*sqrt(5) dx*sqrt(8)];
     if rhomax>dx*3
@@ -82,7 +83,7 @@
      % Conversion to cartesian components
      
      for jx=-(Nx-1):(Nx-1)
-        x=jx*dx
+        x=jx*dx;
         for jy=-(Ny-1):(Ny-1)
             y=jy*dx;
             for jz=1:Nz*2-1

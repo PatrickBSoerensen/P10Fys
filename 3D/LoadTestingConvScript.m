@@ -5,7 +5,6 @@ ExyCrossX = [];
 ExzCrossZ =[];
 ESC = [];
 
-
 stl1 = stlread('antennas/Dipole10cmT264.stl');
 stl2 = stlread('antennas/Dipole10cmT580.stl'); %ok
 stl3 = stlread('antennas/Dipole10cmT722.stl'); %god
