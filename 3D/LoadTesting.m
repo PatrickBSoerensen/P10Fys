@@ -62,7 +62,6 @@ SubSubTri = 0;
 sub = 0;
 % if 1 use fast (but more inacurate) MoM
 vectorized = 0;
-InTest = 0;
 % Emmision parameters and size of plottet area
 normalize = 1;
 PlotComp = 0;
@@ -81,11 +80,6 @@ xdist = radius/2+FromAnt;
 figure(1)
 plot3(p(:,1),p(:,2),p(:,3),'*')
 axis image
-toc;
-figure(2)
-plot3(Center(:,1),Center(:,2),Center(:,3),'*')
-axis image
-hold on
 toc;
 %% constants
 eps0=8.854187817*10^-12; %F/m
@@ -108,7 +102,11 @@ fprintf('\n')
 disp('Calculating areals for triangles')
 [Area, Center] = ArbitraryAntenna.TriangleAreas(p, t);
 toc;
-
+figure(2)
+plot3(Center(:,1),Center(:,2),Center(:,3),'*')
+axis image
+hold on
+toc;
 %% SubTri
 tic;
 fprintf('\n')
@@ -151,11 +149,11 @@ tic;
 fprintf('\n')
 disp('MoM')
 if vectorized
-    [Z, a, b ] = ArbitraryAntenna.MoMVectorized(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k, SubTri, 0, 1, 0, UseDipole, Ei);
+    [Z, a, b ] = ArbitraryAntenna.MoMVectorized(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k, SubTri, 0, 1, 0, UseDipole, Ei);
 else
 %     [Z, b, a] = ArbitraryAntenna.MoM(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k,  SubTri, 0, 1, 0, UseDipole, Ei);
     
-    [Z, b, a] = ArbitraryAntenna.MoMIG(w, mu0, t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k,  SubTri, 0, 1, 0, UseDipole, Ei,...
+    [Z, b, a] = ArbitraryAntenna.MoMIGTest(w, mu0, p, t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k,  SubTri, 0, 1, 0, UseDipole, Ei,...
         xdist, Reflector, epsR, Length, radius, .5, 3, lambda, n, eps0);
 end
 toc;
