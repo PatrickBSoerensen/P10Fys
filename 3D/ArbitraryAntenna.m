@@ -842,14 +842,14 @@ classdef ArbitraryAntenna
             
             [PlusTri, MinusTri] = ArbitraryAntenna.PMTri(t, EdgeList);
             for n=1:length(t)
-                Plus     =find(PlusTri-n==0);
-                Minus    =find(MinusTri-n==0);
+                Plus     =  find(PlusTri-n==0);
+                Minus    =  find(MinusTri-n==0);
                 
                 for y=1:length(Plus)
-                    Jface(n,:) = a(Plus(y))*BasisLA(Plus(y),1)*RhoP(Plus(y),:)/2 + Jface(n,:);    
+                    Jface(n,:) = a(Plus(y))*BasisLA(Plus(y),1)*RhoP(Plus(y),:) + Jface(n,:);    
                 end
                 for y=1:length(Minus)
-                    Jface(n,:) = a(Minus(y))*BasisLA(Minus(y),3)*RhoM(Minus(y),:)/2 + Jface(n,:);    
+                    Jface(n,:) = a(Minus(y))*BasisLA(Minus(y),3)*RhoM(Minus(y),:) + Jface(n,:);    
                 end    
             end
         end
