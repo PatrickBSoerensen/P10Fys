@@ -975,7 +975,7 @@
                            
                                 Z(PO(i), PI(j)) = ...
                                 1i*k*(BasisLA(PO(i),2)*BasisLA(PI(j),2))/(4*pi)...
-                                *(FirstSum+SecondSum)...
+                                *(FirstSum * SecondSum)...
                                 + Z(PO(i), PI(j));
                             
                                 % Analytical terms
@@ -989,7 +989,7 @@
                            
                             Z(PO(i), PI(j)) = ...
                             (BasisLA(PO(i),2)*BasisLA(PI(j),2))/(4*pi)...
-                            *(FirstSum+SecondSum)+ Z(PO(i), PI(j));
+                            *(FirstSum * SecondSum)+ Z(PO(i), PI(j));
 
                             if Reflector
                                 Z(PO(i), PI(j)) = ...
@@ -1021,7 +1021,7 @@
                                 
                                 Z(PO(i), MI(j)) = ...
                                 1i*k*(BasisLA(PO(i),2)*BasisLA(MI(j),2))/(4*pi)...
-                                *(FirstSum+SecondSum)...
+                                *(FirstSum * SecondSum)...
                                 + Z(PO(i), MI(j));
                             
 %                                 Analytical terms
@@ -1034,7 +1034,7 @@
                             SecondSum = sum((dot(repmat(zOP_,[Quad,1]) , zIMRep ,2)/4+1/k^2) .*gMPi/Quad);
                             Z(PO(i), MI(j)) = ...
                             (BasisLA(PO(i),2)*BasisLA(MI(j),2))/(4*pi)...
-                            *(FirstSum  + SecondSum)...
+                            *(FirstSum * SecondSum)...
                             + Z(PO(i), MI(j));
                                 
                         if Reflector
@@ -1056,18 +1056,19 @@
                         zOM = (RhoM(MO(i),:));
                         zOM_ = (RhoM_(:,:,MO(i)));
                         zOMRep = [];
-                                for RepEveryOne = 1:9 
-                                    zOMRep = [zOMRep; repmat(zOM_(RepEveryOne,:),9,1)];
-                                end
+                        for RepEveryOne = 1:9 
+                            zOMRep = [zOMRep; repmat(zOM_(RepEveryOne,:),9,1)];
+                        end
                           
                         for j=1:length(PI)
-                           
                             zIP = (RhoP(PI(j),:));
                             zIP_ = (RhoP_(:,:,PI(j)));   
-                             zIPRep = [];
-                                for RepEveryOne = 1:9 
-                                    zIPRep = [zIPRep; repmat(zIP_(RepEveryOne,:),9,1)];
-                                end
+                            
+                            zIPRep = [];
+                            for RepEveryOne = 1:9 
+                                zIPRep = [zIPRep; repmat(zIP_(RepEveryOne,:),9,1)];
+                            end
+                                
                             gPMi = exp(1i.*k.*OoI)./OoI;
                             gMPo = exp(1i.*k.*IoO)./IoO;
                                 
@@ -1078,7 +1079,7 @@
                             SecondSum = sum((dot(repmat(zOM_,[Quad,1]), zIPRep,2)/4+1/k^2) /Quad);
                                 Z(MO(i), PI(j)) = ...
                                 1i*k*(BasisLA(MO(i),2)*BasisLA(PI(j),2))/(4*pi)...
-                                *(FirstSum+SecondSum)...
+                                *(FirstSum * SecondSum)...
                                 + Z(MO(i), PI(j));
                             
 %                                 Analytical terms
@@ -1092,7 +1093,7 @@
                                 
                             Z(MO(i), PI(j)) = ...
                             (BasisLA(MO(i),2)*BasisLA(PI(j),2))/(4*pi)...
-                            *(FirstSum + SecondSum)...
+                            *(FirstSum * SecondSum)...
                             + Z(MO(i), PI(j));
                             
                         if Reflector
@@ -1111,10 +1112,12 @@
                         for j=1:length(MI)
                             zIM = (RhoM(MI(j),:));
                             zIM_ = (RhoM_(:,:,MI(j)));   
+                            
                             zIMRep = [];
-                                for RepEveryOne = 1:9 
-                                    zIMRep = [zIMRep; repmat(zIM_(RepEveryOne,:),9,1)];
-                                end
+                            for RepEveryOne = 1:9 
+                                zIMRep = [zIMRep; repmat(zIM_(RepEveryOne,:),9,1)];
+                            end
+                            
                             gMMo = exp(1i.*k.*IoO)./IoO;
                             gMMi = exp(1i.*k.*OoI)./OoI;
                             
@@ -1126,7 +1129,7 @@
                             SecondSum = sum((dot(repmat(zOM_,[Quad,1]),zIMRep,2)/4-1/k^2) /Quad);
                             Z(MO(i), MI(j)) = ...
                             1i*k*(BasisLA(MO(i),2)*BasisLA(MI(j),2))/(4*pi)...
-                            *(FirstSum+SecondSum)...
+                            *(FirstSum * SecondSum)...
                             + Z(MO(i), MI(j));
                             
 %                             Analytical
@@ -1139,7 +1142,7 @@
                             SecondSum = sum((dot(repmat(zOM_,[Quad,1]), zIMRep,2)/4-1/k^2).* gMMi /Quad);
                             Z(MO(i), MI(j)) = ...
                             (BasisLA(MO(i),2)*BasisLA(MI(j),2))/(4*pi)...
-                            *(FirstSum  + SecondSum )...
+                            *(FirstSum * SecondSum )...
                             + Z(MO(i), MI(j));
                             
                         if Reflector
