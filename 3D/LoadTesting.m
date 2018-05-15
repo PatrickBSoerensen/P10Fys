@@ -1,11 +1,15 @@
 %% load STL file into matlab
 
-% stl = stlread('antennas/Dipole10cmT264.stl');
+stl = stlread('antennas/Dipole10cmT264.stl');
 % stl = stlread('antennas/Dipole10cmT580.stl'); %ok
+
+% [p, t, N] = stlread('antennas/Dipole10cmT580.stl'); %ok
 % stl = stlread('antennas/Dipole10cmT180.stl');
 
+% stl = stlread('antennas/Dipole10cmT264.stl');
+% stl = stlread('antennas/Test4400.stl');
 % stl = stlread('antennas/test1050.stl');
-stl = stlread('antennas/AspecPrio/Dipole10cmT1152.stl');
+% stl = stlread('antennas/AspecPrio/Dipole10cmT1152.stl');
 
 % stl = stlread('antennas/Dipole10cmT580.stl'); %ok
 % stl = stlread('antennas/Dipole10cmT722.stl'); %god
@@ -78,6 +82,11 @@ figure(1)
 plot3(p(:,1),p(:,2),p(:,3),'*')
 axis image
 toc;
+figure(2)
+plot3(Center(:,1),Center(:,2),Center(:,3),'*')
+axis image
+hold on
+toc;
 %% constants
 eps0=8.854187817*10^-12; %F/m
 mu0=4*pi*10^-7; %N/A^2
@@ -99,11 +108,22 @@ fprintf('\n')
 disp('Calculating areals for triangles')
 [Area, Center] = ArbitraryAntenna.TriangleAreas(p, t);
 toc;
+
 %% SubTri
 tic;
 fprintf('\n')
 disp('Calculating areals for subtriangles')
 [SubTri] = ArbitraryAntenna.SubTriangles(p, t, Center, SubSubTri);
+toc;
+%% Lift
+tic;
+fprintf('\n')
+disp('Lifting subtriangles and center points')
+[Center, SubTri] = ArbitraryAntenna.CenterLift(Center, SubTri);
+
+figure(2)
+plot3(Center(:,1),Center(:,2),Center(:,3),'*')
+axis image
 toc;
 %% Basis Function setup
 tic;

@@ -36,7 +36,7 @@ classdef ArbitraryAntenna
                 p(i,4) = i;
             end
             % Removes any empty points i.e. duplicates
-            p( ~any(p(:,1:3),2), : ) = []; 
+            p( ~any(p(:,1:3),2), : ) = [];
             
             % Updates vertices in t matrix with new index after removing
             % duplicate points from p
@@ -94,10 +94,59 @@ classdef ArbitraryAntenna
                 Center(m,:) = sum(p(t(m,:),:))/3;
             end
             % Area of Triangles
-            L1 = p(t(:,2),:)-p(t(:,1),:);
-            L2 = p(t(:,3),:)-p(t(:,1),:);
-        
+            L1 = p(t(:,1),:)-p(t(:,2),:);
+            L2 = p(t(:,1),:)-p(t(:,3),:);
             Atot = sqrt(sum((cross(L1,L2)).^2,2))/2;
+        end
+        
+        function [Center, SubTriRet] = CenterLift(Center, SubTri)
+            ForRe = size(SubTri);
+            for k=1:length(Center)
+                    CenterToMove=Center(k,:);
+                    SubTriToMove=reshape(SubTri(:,:,k), 3, [])';
+                    R=0.0015;
+                if Center(k,2) >=0.05 
+                    % part of spherical surface
+                    CenterOfSphere = [0, 0.05, 0];
+                    Normal = CenterToMove-CenterOfSphere;
+                    n=sqrt(Normal(1)^2+Normal(2)^2+Normal(3)^2);
+                    Normal = Normal/n;
+                    Center(k,:) = CenterOfSphere+Normal*R;
+                    
+                    Normal = SubTriToMove-CenterOfSphere;
+                    n=sqrt(Normal(:,1).^2+Normal(:,2).^2+Normal(:,3).^2);
+                    Normal = Normal./n;
+                    SubTriRet(:,:,k) = CenterOfSphere+Normal*R;
+                elseif Center(k,2) <=-0.05
+                    % part of spherical surface
+                    CenterOfSphere = [0, -0.05, 0];
+                    Normal = CenterToMove-CenterOfSphere;
+                    n=sqrt(Normal(1)^2+Normal(2)^2+Normal(3)^2);
+                    Normal = Normal/n;
+                    Center(k,:) = CenterOfSphere+Normal*R;
+                    
+                    Normal = SubTriToMove-CenterOfSphere;
+                    n=sqrt(Normal(:,1).^2+Normal(:,2).^2+Normal(:,3).^2);
+                    Normal = Normal./n;
+                    SubTriRet(:,:,k) = CenterOfSphere+Normal*R;
+                else
+                    % Part of Cylinder
+                    CenterOfCylinder = [0, CenterToMove(:,2), 0];
+                    Normal = CenterToMove-CenterOfCylinder;
+                    n=sqrt(Normal(1)^2+Normal(2)^2+Normal(3)^2);
+                    Normal = Normal/n;
+                    Center(k,:) = CenterOfCylinder+Normal*R;
+                    
+                    clear CenterOfCylinder
+                    CenterOfCylinder(:,2) = SubTriToMove(:,2);
+                    CenterOfCylinder(:,1) = 0;
+                    CenterOfCylinder(:,3) = 0;
+                    Normal = SubTriToMove-CenterOfCylinder;
+                    n=sqrt(Normal(:,1).^2+Normal(:,2).^2+Normal(:,3).^2);
+                    Normal = Normal./n;
+                    SubTriRet(:,:,k) = CenterOfCylinder+Normal*R;
+                end
+            end
         end
         
         function [SubTri] = SubTriangles(p, t, Center, itt)
@@ -309,7 +358,7 @@ classdef ArbitraryAntenna
                     % Evaluating the basis function in centres of
                     % subtriangles
                     SubP = SubTri(:,:,m);
-                    SubP = reshape(SubP, 3, []).';
+%                     SubP = reshape(SubP, 3, []).';
                     RhoP_(:,:,TP) = BasisP(SubP);
                 end
                 for i=1:length(Minus)
@@ -321,7 +370,7 @@ classdef ArbitraryAntenna
                     % Evaluating the basis function in centres of
                     % subtriangles
                     SubM = SubTri(:,:,m);
-                    SubM = reshape(SubM, 3, []).';
+%                     SubM = reshape(SubM, 3, []).';
                     RhoM_(:,:,TM) = BasisM(SubM);
                 end        
             end
@@ -330,10 +379,10 @@ classdef ArbitraryAntenna
         function [PlusTri, MinusTri] = PMTri(t, EdgeList)
             for y=1:length(EdgeList)
                 %Finding the points of the plus and minus triangle
-                FaceEdge(1:2) = EdgeList(y,1:2);
-                FaceEdgeP = [FaceEdge EdgeList(y,3)];
+                Edge(1:2) = EdgeList(y,1:2);
+                FaceEdgeP = [Edge EdgeList(y,3)];
                 FaceEdgeP = sort(FaceEdgeP,2);
-                FaceEdgeM = [FaceEdge EdgeList(y,4)];
+                FaceEdgeM = [Edge EdgeList(y,4)];
                 FaceEdgeM = sort(FaceEdgeM,2);
                 % Finding the index of plus and minus triangles for
                 % the current basis for the outer
@@ -553,19 +602,21 @@ classdef ArbitraryAntenna
             end
                         
             SubAmount = size(SubTri);
-            Quad = SubAmount(2)/3;
+            Quad = SubAmount(1)
+            
+%             Quad = SubAmount(2)/3;
             % Outer loop over triangles
             for y=1:length(t)
                 PO = find(PlusTri - y ==0);
                 MO = find(MinusTri - y ==0);
                 % Inner triangle loop
-                SPO = reshape(SubTri(:,:,y),3,[]).';
-                SMO = reshape(SubTri(:,:,y),3,[]).';
+                SPO = SubTri(:,:,y);%,3,[]reshape().';
+                SMO = SubTri(:,:,y);%reshape(,3,[]).';
                 for h=1:length(t)
                     PI = find(PlusTri - h ==0);
                     MI = find(MinusTri - h ==0);
-                    SPI = reshape(SubTri(:,:,h),3,[]).';
-                    SMI = reshape(SubTri(:,:,h),3,[]).';
+                    SPI = SubTri(:,:,h);%reshape(,3,[]).';
+                    SMI = SubTri(:,:,h);% reshape(,3,[]).';
                     
                     ppo = sqrt(sum((Center(y,:)-SPI).^2,2));
                     mpo = sqrt(sum((Center(y,:)-SPI).^2,2));
@@ -577,6 +628,7 @@ classdef ArbitraryAntenna
                     pmi = sqrt(sum((Center(h,:)-SMO).^2,2));
                     mmi = sqrt(sum((Center(h,:)-SMO).^2,2));
                      
+                    if Reflector
 %                     GIppo = sqrt(sum(ArbitraryAntenna.SingleInterp(Center(y,:), SPI, tab_z, tab_r, GItabzz, GItabzr, GItabrr, GItabpp).^2,2));
 %                     GImpo = sqrt(sum(ArbitraryAntenna.SingleInterp(Center(y,:), SPI, tab_z, tab_r, GItabzz, GItabzr, GItabrr, GItabpp).^2,2));
 %                     GIpmo = sqrt(sum(ArbitraryAntenna.SingleInterp(Center(y,:), SMI, tab_z, tab_r, GItabzz, GItabzr, GItabrr, GItabpp).^2,2));
@@ -606,16 +658,16 @@ classdef ArbitraryAntenna
 %                     GImpi = GImpix+GImpiy+GImpiz;
 %                     GIpmi = GIpmix+GIpmiy+GIpmiz;
 %                     GImmi = GImmix+GImmiy+GImmiz;
-                    if Reflector
-                    GIppo = GIx(:,:,y)+GIy(:,:,y)+GIz(:,:,y);
-                    GImpo = GIx(:,:,y)+GIy(:,:,y)+GIz(:,:,y);
-                    GIpmo = GIx(:,:,y)+GIy(:,:,y)+GIz(:,:,y);
-                    GImmo = GIx(:,:,y)+GIy(:,:,y)+GIz(:,:,y);
+
+                        GIppo = GIx(:,:,y)+GIy(:,:,y)+GIz(:,:,y);
+                        GImpo = GIx(:,:,y)+GIy(:,:,y)+GIz(:,:,y);
+                        GIpmo = GIx(:,:,y)+GIy(:,:,y)+GIz(:,:,y);
+                        GImmo = GIx(:,:,y)+GIy(:,:,y)+GIz(:,:,y);
                     
-                    GIppi = GIx(:,:,h)+GIy(:,:,h)+GIz(:,:,h);
-                    GImpi = GIx(:,:,h)+GIy(:,:,h)+GIz(:,:,h);
-                    GIpmi = GIx(:,:,h)+GIy(:,:,h)+GIz(:,:,h);
-                    GImmi = GIx(:,:,h)+GIy(:,:,h)+GIz(:,:,h);
+                        GIppi = GIx(:,:,h)+GIy(:,:,h)+GIz(:,:,h);
+                        GImpi = GIx(:,:,h)+GIy(:,:,h)+GIz(:,:,h);
+                        GIpmi = GIx(:,:,h)+GIy(:,:,h)+GIz(:,:,h);
+                        GImmi = GIx(:,:,h)+GIy(:,:,h)+GIz(:,:,h);
                     end
                     %Loop over outer triangles basis functions
                     for i = 1:length(PO)
@@ -855,7 +907,7 @@ classdef ArbitraryAntenna
         end
         
         function [Exy, Exz, Ezy, xrange, yrange, zrange, Exyx, Exzx, Eyzx, Exyy, Exzy, Eyzy, Exyz, Exzz, Eyzz] = EField(Center, w, mu, k0, J,...
-                xmin, xmax, zmin, zmax, ymin, ymax, steps, Area, Reflect, xsurf, n, lambda)
+                xmin, xmax,  ymin, ymax,zmin, zmax, steps, Area, Reflect, xsurf, n, lambda)
        
             kR = 2*pi/(lambda*n);
             xrange = linspace(xmin, xmax, steps);
@@ -1216,7 +1268,7 @@ classdef ArbitraryAntenna
                     tab_z,...
                     tab_r] = IDGreens(k0, distx, ant_length, ant_width, dx, Nz, lambda, n, epsL2, eps1, Center, SubTri)
                 
-            SubAmount = size(SubTri);
+            SubAmount = size(SubTri)
             SubTri = reshape(SubTri, 3, [], SubAmount(3));
             SubTri = permute(SubTri,[2 1 3]);
             %% Soender
