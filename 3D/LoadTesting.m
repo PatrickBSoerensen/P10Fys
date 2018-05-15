@@ -1,10 +1,10 @@
 %% load STL file into matlab
 
-% stl = stlread('antennas/Dipole10cmT264.stl');
+stl = stlread('antennas/Dipole10cmT264.stl');
 % stl = stlread('antennas/Dipole10cmT580.stl'); %ok
 
 % [p, t, N] = stlread('antennas/Dipole10cmT580.stl'); %ok
-stl = stlread('antennas/Dipole10cmT180.stl');
+% stl = stlread('antennas/Dipole10cmT180.stl');
 
 % stl = stlread('antennas/Dipole10cmT264.stl');
 % stl = stlread('antennas/Test4400.stl');
@@ -81,11 +81,6 @@ figure(1)
 plot3(p(:,1),p(:,2),p(:,3),'*')
 axis image
 toc;
-figure(2)
-plot3(Center(:,1),Center(:,2),Center(:,3),'*')
-axis image
-hold on
-toc;
 %% constants
 eps0=8.854187817*10^-12; %F/m
 mu0=4*pi*10^-7; %N/A^2
@@ -107,7 +102,11 @@ fprintf('\n')
 disp('Calculating areals for triangles')
 [Area, Center] = ArbitraryAntenna.TriangleAreas(p, t);
 toc;
-
+figure(2)
+plot3(Center(:,1),Center(:,2),Center(:,3),'*')
+axis image
+hold on
+toc;
 %% SubTri
 tic;
 fprintf('\n')
@@ -154,7 +153,7 @@ if vectorized
 else
 %     [Z, b, a] = ArbitraryAntenna.MoM(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k,  SubTri, 0, 1, 0, UseDipole, Ei);
     
-    [Z, b, a] = ArbitraryAntenna.MoMIG(w, mu0, p, t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k,  SubTri, 0, 1, 0, UseDipole, Ei,...
+    [Z, b, a] = ArbitraryAntenna.MoMIGTest(w, mu0, p, t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k,  SubTri, 0, 1, 0, UseDipole, Ei,...
         xdist, Reflector, epsR, Length, radius, .5, 3, lambda, n, eps0);
 end
 toc;
