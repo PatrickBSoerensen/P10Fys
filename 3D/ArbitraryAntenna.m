@@ -1,4 +1,4 @@
-classdef ArbitraryAntenna
+ classdef ArbitraryAntenna
     %ARBRITARYANTENNA MoM method for Arbitary antenna with flat triangle mesh
     %   Detailed explanation goes here
     
@@ -105,47 +105,48 @@ classdef ArbitraryAntenna
                     CenterToMove=Center(k,:);
                     SubTriToMove=reshape(SubTri(:,:,k), 3, [])';
                     R=0.0015;
-                if Center(k,2) >=0.05 
-                    % part of spherical surface
-                    CenterOfSphere = [0, 0.05, 0];
-                    Normal = CenterToMove-CenterOfSphere;
-                    n=sqrt(Normal(1)^2+Normal(2)^2+Normal(3)^2);
-                    Normal = Normal/n;
-                    Center(k,:) = CenterOfSphere+Normal*R;
-                    
-                    Normal = SubTriToMove-CenterOfSphere;
-                    n=sqrt(Normal(:,1).^2+Normal(:,2).^2+Normal(:,3).^2);
-                    Normal = Normal./n;
-                    SubTriRet(:,:,k) = CenterOfSphere+Normal*R;
-                elseif Center(k,2) <=-0.05
-                    % part of spherical surface
-                    CenterOfSphere = [0, -0.05, 0];
-                    Normal = CenterToMove-CenterOfSphere;
-                    n=sqrt(Normal(1)^2+Normal(2)^2+Normal(3)^2);
-                    Normal = Normal/n;
-                    Center(k,:) = CenterOfSphere+Normal*R;
-                    
-                    Normal = SubTriToMove-CenterOfSphere;
-                    n=sqrt(Normal(:,1).^2+Normal(:,2).^2+Normal(:,3).^2);
-                    Normal = Normal./n;
-                    SubTriRet(:,:,k) = CenterOfSphere+Normal*R;
-                else
-                    % Part of Cylinder
-                    CenterOfCylinder = [0, CenterToMove(:,2), 0];
-                    Normal = CenterToMove-CenterOfCylinder;
-                    n=sqrt(Normal(1)^2+Normal(2)^2+Normal(3)^2);
-                    Normal = Normal/n;
-                    Center(k,:) = CenterOfCylinder+Normal*R;
-                    
-                    clear CenterOfCylinder
-                    CenterOfCylinder(:,2) = SubTriToMove(:,2);
-                    CenterOfCylinder(:,1) = 0;
-                    CenterOfCylinder(:,3) = 0;
-                    Normal = SubTriToMove-CenterOfCylinder;
-                    n=sqrt(Normal(:,1).^2+Normal(:,2).^2+Normal(:,3).^2);
-                    Normal = Normal./n;
-                    SubTriRet(:,:,k) = CenterOfCylinder+Normal*R;
-                end
+                    SubTriRet(:,:,k) = reshape(SubTri(:,:,k), 3, [])';
+%                 if Center(k,2) >=0.05 
+%                     % part of spherical surface
+%                     CenterOfSphere = [0, 0.05, 0];
+%                     Normal = CenterToMove-CenterOfSphere;
+%                     n=sqrt(Normal(1)^2+Normal(2)^2+Normal(3)^2);
+%                     Normal = Normal/n;
+%                     Center(k,:) = CenterOfSphere+Normal*R;
+%                     
+%                     Normal = SubTriToMove-CenterOfSphere;
+%                     n=sqrt(Normal(:,1).^2+Normal(:,2).^2+Normal(:,3).^2);
+%                     Normal = Normal./n;
+%                     SubTriRet(:,:,k) = CenterOfSphere+Normal*R;
+%                 elseif Center(k,2) <=-0.05
+%                     % part of spherical surface
+%                     CenterOfSphere = [0, -0.05, 0];
+%                     Normal = CenterToMove-CenterOfSphere;
+%                     n=sqrt(Normal(1)^2+Normal(2)^2+Normal(3)^2);
+%                     Normal = Normal/n;
+%                     Center(k,:) = CenterOfSphere+Normal*R;
+%                     
+%                     Normal = SubTriToMove-CenterOfSphere;
+%                     n=sqrt(Normal(:,1).^2+Normal(:,2).^2+Normal(:,3).^2);
+%                     Normal = Normal./n;
+%                     SubTriRet(:,:,k) = CenterOfSphere+Normal*R;
+%                 else
+%                     % Part of Cylinder
+%                     CenterOfCylinder = [0, CenterToMove(:,2), 0];
+%                     Normal = CenterToMove-CenterOfCylinder;
+%                     n=sqrt(Normal(1)^2+Normal(2)^2+Normal(3)^2);
+%                     Normal = Normal/n;
+%                     Center(k,:) = CenterOfCylinder+Normal*R;
+%                     
+%                     clear CenterOfCylinder
+%                     CenterOfCylinder(:,2) = SubTriToMove(:,2);
+%                     CenterOfCylinder(:,1) = 0;
+%                     CenterOfCylinder(:,3) = 0;
+%                     Normal = SubTriToMove-CenterOfCylinder;
+%                     n=sqrt(Normal(:,1).^2+Normal(:,2).^2+Normal(:,3).^2);
+%                     Normal = Normal./n;
+%                     SubTriRet(:,:,k) = CenterOfCylinder+Normal*R;
+%                 end
             end
         end
         
@@ -572,7 +573,38 @@ classdef ArbitraryAntenna
             a = Z\b;
         end
         
-        function [Z, b, a] = MoMIG(w, mu, t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k, SubTri, x, y, z, Point, Ei,...
+        function [Vertices, Edges] = Simplex(p,t)
+            TotTri = length(t);
+            Area = zeros(TotTri,3);
+            Center = zeros(TotTri,3);
+
+            for m=1:TotTri
+                % Finding center of triangle
+                Center(m,:) = sum(p(t(m,:),:))/3;
+                % Area of subtriangle 1 for simplex coordinates
+                L1 = p(t(m,1),:)-Center(m,:);
+                L2 = p(t(m,3),:)-p(t(m,1),:);
+                Area(m,1) = sqrt(sum((cross(L1,L2)).^2,2))/2;
+
+                % Area of subtriangle 2 for simplex coordinates
+                L2 = p(t(m,2),:)-p(t(m,1),:);
+                Area(m,2) = sqrt(sum((cross(L1,L2)).^2,2))/2;
+
+                % Area of subtriangle 3 for simplex coordinates
+                L1 = p(t(m,2),:)-Center(m,:);
+                L2 = p(t(m,3),:)-p(t(m,2),:);
+                Area(m,3) = sqrt(sum((cross(L1,L2)).^2,2))/2;
+            end
+            % Area of actual triangles
+            L1 = p(t(:,2),:)-p(t(:,1),:);
+            L2 = p(t(:,3),:)-p(t(:,1),:);
+            Atot = sqrt(sum((cross(L1,L2)).^2,2))/2;
+            
+            % Area ratio of subtriangles to total area
+            Area = Area./Atot;
+        end
+        
+        function [Z, b, a] = MoMIG(w, mu, p, t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k, SubTri, x, y, z, Point, Ei,...
                 distx, Reflector, InEps, strip_length, strip_width, dx, Nz, lambda, n, eps1)
             % alocating space
             Z = zeros(length(EdgeList),length(EdgeList))+1i*zeros(length(EdgeList),length(EdgeList));
@@ -592,19 +624,17 @@ classdef ArbitraryAntenna
             [PlusTri, MinusTri] = ArbitraryAntenna.PMTri(t, EdgeList);
             
             if Reflector
-            [GIx, GIy, GIz, GItabzz,...
-                    GItabzr,...
-                    GItabpp,...
-                    GItabrr,...
-                    tab_z,...
-                    tab_r] = ...
-                ArbitraryAntenna.IDGreens(k, distx, strip_length, strip_width, dx, Nz, lambda, n, InEps, eps1, Center, SubTri);
+            [GIx, GIy, GIz] = ArbitraryAntenna.IDGreens(k, distx, strip_length, strip_width, dx, Nz, lambda, n, InEps, eps1, Center, SubTri);
             end
                         
             SubAmount = size(SubTri);
-            Quad = SubAmount(1)
+            Quad = SubAmount(1);
+            ArbitraryAntenna.Simplex(p,t);
+            [SelfP, SelfM] = ...
+                ArbitraryAntenna.NearTriangleZ(p,t,EdgeList);
+
             
-%             Quad = SubAmount(2)/3;
+           %             Quad = SubAmount(2)/3;
             % Outer loop over triangles
             for y=1:length(t)
                 PO = find(PlusTri - y ==0);
@@ -627,38 +657,8 @@ classdef ArbitraryAntenna
                     mpi = sqrt(sum((Center(h,:)-SPO).^2,2));
                     pmi = sqrt(sum((Center(h,:)-SMO).^2,2));
                     mmi = sqrt(sum((Center(h,:)-SMO).^2,2));
-                     
-                    if Reflector
-%                     GIppo = sqrt(sum(ArbitraryAntenna.SingleInterp(Center(y,:), SPI, tab_z, tab_r, GItabzz, GItabzr, GItabrr, GItabpp).^2,2));
-%                     GImpo = sqrt(sum(ArbitraryAntenna.SingleInterp(Center(y,:), SPI, tab_z, tab_r, GItabzz, GItabzr, GItabrr, GItabpp).^2,2));
-%                     GIpmo = sqrt(sum(ArbitraryAntenna.SingleInterp(Center(y,:), SMI, tab_z, tab_r, GItabzz, GItabzr, GItabrr, GItabpp).^2,2));
-%                     GImmo = sqrt(sum(ArbitraryAntenna.SingleInterp(Center(y,:), SMI, tab_z, tab_r, GItabzz, GItabzr, GItabrr, GItabpp).^2,2));
-%                     
-%                     GIppi = sqrt(sum(ArbitraryAntenna.SingleInterp(Center(h,:), SPO, tab_z, tab_r, GItabzz, GItabzr, GItabrr, GItabpp).^2,2));
-%                     GImpi = sqrt(sum(ArbitraryAntenna.SingleInterp(Center(h,:), SPO, tab_z, tab_r, GItabzz, GItabzr, GItabrr, GItabpp).^2,2));
-%                     GIpmi = sqrt(sum(ArbitraryAntenna.SingleInterp(Center(h,:), SMO, tab_z, tab_r, GItabzz, GItabzr, GItabrr, GItabpp).^2,2));
-%                     GImmi = sqrt(sum(ArbitraryAntenna.SingleInterp(Center(h,:), SMO, tab_z, tab_r, GItabzz, GItabzr, GItabrr, GItabpp).^2,2));
                     
-%                     [GIppox, GIppoy, GIppoz] = ArbitraryAntenna.SingleInterp(Center(y,:), SPI, tab_z, tab_r, GItabzz, GItabzr, GItabrr, GItabpp);
-%                     [GImpox, GImpoy, GImpoz] = ArbitraryAntenna.SingleInterp(Center(y,:), SPI, tab_z, tab_r, GItabzz, GItabzr, GItabrr, GItabpp);
-%                     [GIpmox, GIpmoy, GIpmoz] = ArbitraryAntenna.SingleInterp(Center(y,:), SMI, tab_z, tab_r, GItabzz, GItabzr, GItabrr, GItabpp);
-%                     [GImmox, GImmoy, GImmoz] = ArbitraryAntenna.SingleInterp(Center(y,:), SMI, tab_z, tab_r, GItabzz, GItabzr, GItabrr, GItabpp);
-%                     
-%                     [GIppix, GIppiy, GIppiz] = ArbitraryAntenna.SingleInterp(Center(h,:), SPO, tab_z, tab_r, GItabzz, GItabzr, GItabrr, GItabpp);
-%                     [GImpix, GImpiy, GImpiz] = ArbitraryAntenna.SingleInterp(Center(h,:), SPO, tab_z, tab_r, GItabzz, GItabzr, GItabrr, GItabpp);
-%                     [GIpmix, GIpmiy, GIpmiz] = ArbitraryAntenna.SingleInterp(Center(h,:), SMO, tab_z, tab_r, GItabzz, GItabzr, GItabrr, GItabpp);
-%                     [GImmix, GImmiy, GImmiz] = ArbitraryAntenna.SingleInterp(Center(h,:), SMO, tab_z, tab_r, GItabzz, GItabzr, GItabrr, GItabpp);
-                    
-%                     GIppo = GIppox+GIppoy+GIppoz;
-%                     GImpo = GImpox+GImpoy+GImpoz;
-%                     GIpmo = GIpmox+GIpmoy+GIpmoz;
-%                     GImmo = GImmox+GImmoy+GImmoz;
-%                     
-%                     GIppi = GIppix+GIppiy+GIppiz;
-%                     GImpi = GImpix+GImpiy+GImpiz;
-%                     GIpmi = GIpmix+GIpmiy+GIpmiz;
-%                     GImmi = GImmix+GImmiy+GImmiz;
-
+                     if Reflector
                         GIppo = GIx(:,:,y)+GIy(:,:,y)+GIz(:,:,y);
                         GImpo = GIx(:,:,y)+GIy(:,:,y)+GIz(:,:,y);
                         GIpmo = GIx(:,:,y)+GIy(:,:,y)+GIz(:,:,y);
@@ -687,7 +687,24 @@ classdef ArbitraryAntenna
                             
                             gPPo = exp(1i.*k.*ppo)./ppo;
                             gPPi = exp(1i.*k.*ppi)./ppi;
+                            if y==h
+                                %Quadrature friendly with exp(ikr)/r = 1i*k
+                                Z(PO(i), PI(j)) = ...
+                                1i*k*(BasisLA(PO(i),2)*BasisLA(PI(j),2))/(4*pi)...
+                                *sum((dot(repmat(zOP,[Quad,1]), zIP_,2)/4-1/k^2)/Quad)...
+                                + Z(PO(i), PI(j));
                             
+                                Z(PO(i), PI(j)) = ...
+                                (BasisLA(PO(i),2)*BasisLA(PI(j),2))/(4*pi)...
+                                *sum((dot(zOP_, repmat(zIP,[Quad,1]),2)/4-1/k^2) /Quad)...
+                                + Z(PO(i), PI(j));
+                                % Analytical terms
+                                   Z(PO(i), PI(j)) = ...
+                                (BasisLA(PO(i),2)*BasisLA(PI(j),2))/(4*pi)...
+                                *(SelfP(PO(i))+SelfP(PI(j))+I2(y)) + Z(PO(i), PI(j));
+                                
+                                else
+                                
                             Z(PO(i), PI(j)) = ...
                             (BasisLA(PO(i),2)*BasisLA(PI(j),2))/(4*pi)...
                             *sum((dot(repmat(zOP,[Quad,1]), zIP_,2)/4-1/k^2) .* gPPo/Quad)...
@@ -709,6 +726,7 @@ classdef ArbitraryAntenna
                                 *sum((dot(zOP_.*GIppi, repmat(zIP,[Quad,1]).*GIppi,2)) /Quad)...
                                 + Z(PO(i), PI(j));
                             end
+                            end
                         end
                         for j=1:length(MI)
                             zIM = (RhoM(MI(j),:));
@@ -716,7 +734,24 @@ classdef ArbitraryAntenna
                             
                             gPMo = exp(1i.*k.*pmo)./pmo;
                             gMPi = exp(1i.*k.*mpi)./mpi;
+                            if y==h
+                                %Quadrature friendly with exp(ikr)/r = 1i*k
+                                Z(PO(i), MI(j)) = ...
+                                1i*k*(BasisLA(PO(i),2)*BasisLA(MI(j),2))/(4*pi)...
+                                *sum((dot(repmat(zOP,[Quad,1]), zIM_ ,2)/4+1/k^2) /Quad)...
+                                + Z(PO(i), MI(j));
                             
+                                Z(PO(i), MI(j)) = ...
+                                1i*k*(BasisLA(PO(i),2)*BasisLA(MI(j),2))/(4*pi)...
+                                *sum((dot(zOP_ , repmat(zIM,[Quad,1]) ,2)/4+1/k^2)/Quad)...
+                                + Z(PO(i), MI(j));
+                                % Analytical terms
+                            
+                                Z(PO(i), MI(j)) = ...
+                                (BasisLA(PO(i),2)*BasisLA(MI(j),2))/(4*pi)...
+                                *(SelfP(PO(i))+SelfM(MI(j))+I2(y))+ Z(PO(i), MI(j));
+                            
+                            else
                             Z(PO(i), MI(j)) = ...
                             (BasisLA(PO(i),2)*BasisLA(MI(j),2))/(4*pi)...
                             *sum((dot(repmat(zOP,[Quad,1]), zIM_ ,2)/4+1/k^2) .* gPMo/Quad)...
@@ -738,7 +773,8 @@ classdef ArbitraryAntenna
                             *sum((dot(zOP_.*GImpi, repmat(zIM,[Quad,1]).*GImpi,2)) /Quad)...
                             + Z(PO(i), MI(j));
                         end
-                        end  
+                            end  
+                        end
                         b1(PO(i)) = 1i/(w*mu)*sum(dot(repmat(Ei(y,:),Quad,1),RhoP_(:,:,PO(i)),2).*BasisLA(PO(i),2)/Quad)/2;
                     end
                     for i=1:length(MO)
@@ -751,6 +787,25 @@ classdef ArbitraryAntenna
                             
                             gPMi = exp(1i.*k.*pmi)./pmi;
                             gMPo = exp(1i.*k.*mpo)./mpo;
+                            if y==h
+                                %Quadrature friendly with exp(ikr)/r = 1i*k
+                                Z(MO(i), PI(j)) = ...
+                                1i*k*(BasisLA(MO(i),2)*BasisLA(PI(j),2))/(4*pi)...
+                                *sum((dot(repmat(zOM,[Quad,1]), zIP_,2)/4+1/k^2) /Quad)...
+                                + Z(MO(i), PI(j));
+                            
+                                Z(MO(i), PI(j)) = ...
+                                1i*k*(BasisLA(MO(i),2)*BasisLA(PI(j),2))/(4*pi)...
+                                *sum((dot(zOM_, repmat(zIP,[Quad,1]),2)/4+1/k^2) /Quad)...
+                                + Z(MO(i), PI(j));
+                                % Analytical terms
+                                                              
+                                 Z(MO(i), PI(j)) = ...
+                                (BasisLA(MO(i),2)*BasisLA(PI(j),2))/(4*pi)...
+                                *(SelfM(MO(i))+SelfP(PI(j))+I2(y))+ Z(MO(i), PI(j));
+                            
+                            
+                            else
                             Z(MO(i), PI(j)) = ...
                             (BasisLA(MO(i),2)*BasisLA(PI(j),2))/(4*pi)...
                             *sum((dot(repmat(zOM,[Quad,1]), zIP_,2)/4+1/k^2) .* gMPo/Quad)...
@@ -771,6 +826,7 @@ classdef ArbitraryAntenna
                             *sum((dot(zOM_.*GIpmi, repmat(zIP,[Quad,1]).*GIpmi,2)) /Quad)...
                             + Z(MO(i), PI(j));   
                         end
+                            end
                         end
                         for j=1:length(MI)
                             zIM = (RhoM(MI(j),:));
@@ -778,7 +834,22 @@ classdef ArbitraryAntenna
                             
                             gMMo = exp(1i.*k.*mmo)./mmo;
                             gMMi = exp(1i.*k.*mmi)./mmi;
-           
+                        if h==y
+                            %Quadrature
+                            Z(MO(i), MI(j)) = ...
+                            1i*k*(BasisLA(MO(i),2)*BasisLA(MI(j),2))/(4*pi)...
+                            *sum((dot(repmat(zOM,[Quad,1]), zIM_,2)/4-1/k^2) /Quad)...
+                            + Z(MO(i), MI(j));
+                            
+                            Z(MO(i), MI(j)) = ...
+                            1i*k*(BasisLA(MO(i),2)*BasisLA(MI(j),2))/(4*pi)...
+                            *sum((dot(zOM_, repmat(zIM,[Quad,1]),2)/4-1/k^2) /Quad)...
+                            + Z(MO(i), MI(j));
+                            % Analytical
+                            Z(MO(i), MI(j)) = ...
+                            (BasisLA(MO(i),2)*BasisLA(MI(j),2))/(4*pi)...
+                            *(SelfM(MO(i))+SelfM(MI(j))+I2(y)) + Z(MO(i), MI(j));
+                        else
                             Z(MO(i), MI(j)) = ...
                             (BasisLA(MO(i),2)*BasisLA(MI(j),2))/(4*pi)...
                             *sum((dot(repmat(zOM,[Quad,1]), zIM_,2)/4-1/k^2) .* gMMo/Quad)...
@@ -799,6 +870,7 @@ classdef ArbitraryAntenna
                             *sum((dot(zOM_.* GImmi, repmat(zIM,[Quad,1]).* GImmi,2)) /Quad)...
                             + Z(MO(i), MI(j));    
                         end
+           end
                         end
                         b2(MO(i)) = 1i/(w*mu)*sum(dot(repmat(Ei(y,:),Quad,1),RhoM_(:,:,MO(i)),2).*BasisLA(MO(i),2)/Quad)/2;
                     end      
@@ -813,7 +885,7 @@ classdef ArbitraryAntenna
             % alocating space
             Z = zeros(length(EdgeList),length(EdgeList))+1i*zeros(length(EdgeList),length(EdgeList));
             TotTri = length(t);
-            SubTri = permute(reshape(SubTri, 3, [], TotTri),[2 1 3]);
+%             SubTri = permute(reshape(SubTri, 3, [], TotTri),[2 1 3]);
             SubAmount = size(SubTri);
             if ~Point
             Ei = zeros(size(t));
@@ -844,10 +916,10 @@ classdef ArbitraryAntenna
                 Index=1:TotTri;
                 Index(y)=[];
                 g(:,:,Index) = exp(1i*k*R(:,:,Index))./R(:,:,Index);
-                g(:,:,y)     = I2(y);
+                g(:,:,y)     = 1i*k*I2(y);
                 
                 g1(:,:,Index) = exp(1i*k*R1(:,:,Index))./R1(:,:,Index);
-                g1(:,:,y)     = I2(y);
+                g1(:,:,y)     = 1i*k*I2(y);
            
                 gP=g(:,:,PlusTri);           %[9 1 EdgesTotal]
                 gM=g(:,:,MinusTri);          %[9 1 EdgesTotal]
@@ -1261,12 +1333,7 @@ classdef ArbitraryAntenna
             title('EscPhi^2+EscTheta^2')
         end
         
-        function [GIx, GIy, GIz, GItabzz,...
-                    GItabzr,...
-                    GItabpp,...
-                    GItabrr,...
-                    tab_z,...
-                    tab_r] = IDGreens(k0, distx, ant_length, ant_width, dx, Nz, lambda, n, epsL2, eps1, Center, SubTri)
+        function [GIx, GIy, GIz] = IDGreens(k0, distx, ant_length, ant_width, dx, Nz, lambda, n, epsL2, eps1, Center, SubTri)
                 
             SubAmount = size(SubTri)
             SubTri = reshape(SubTri, 3, [], SubAmount(3));
@@ -1386,40 +1453,70 @@ classdef ArbitraryAntenna
             GIzz = reshape(GIzz, SubAmount(2)/3,[],SubAmount(3));
             GIz = [GIzx GIzy GIzz];
         end
-            
-        function [GIx, GIy, GIz] = SingleInterp(Center, SubTri, tab_z, tab_r, GItabzz, GItabzr, GItabrr, GItabpp)
-          
-            AllSubDists = Center+SubTri;
-
-            x = Center(1);
-            y = Center(2);
-            z = sum(AllSubDists.^2,2);
-                           
-            rho = sqrt(x.*x+y.*y);
-            phi = atan2(y,x);
+        
+        
+        function [SelfP, SelfM] = NearTriangleZ(p, t, EdgeList)
+            for j=1:2
+            for i=1:length(EdgeList)
+                v1 = p(EdgeList(i,1),:);
+                v2 = p(EdgeList(i,2),:);
+                if j ==1
+                v3 = p(EdgeList(i,3),:);
+                elseif j==2
+                v3 = p(EdgeList(i,4),:);
+                end
+                vm = v3;
+                vn = v3;
                 
-                Gzz = interp2(tab_z, tab_r, GItabzz, z, rho, 'spline'); 
-                Gzr = interp2(tab_z, tab_r, GItabzr, z, rho, 'spline'); 
-                Grr = interp2(tab_z, tab_r, GItabrr, z, rho, 'spline'); 
-                Gpp = interp2(tab_z, tab_r, GItabpp, z, rho, 'spline');                
-                Grz = -Gzr;
-               
-                GIxx(:,:,:) = ((sin(phi)).^2).*Gpp+((cos(phi)).^2).*Grr;
-                GIxy(:,:,:) = sin(phi).*cos(phi).*(Grr-Gpp);
-                GIxz(:,:,:) = cos(phi).*Grz;
-                GIyx(:,:,:) = sin(phi).*cos(phi).*(Grr-Gpp);
-                GIyy(:,:,:) = ((cos(phi)).^2).*Gpp+((sin(phi)).^2).*Grr;
-                GIyz(:,:,:) = sin(phi).*Grz;
-                GIzx(:,:,:) = cos(phi).*Gzr;
-                GIzy(:,:,:) = sin(phi).*Gzr;
-                GIzz(:,:,:) = Gzz;
-   
-            GIx = [GIxx' GIxy' GIxz'];
-                    
-            GIy = [GIyx' GIyy' GIyz'];
-                    
-            GIz = [GIzx' GIzy' GIzz'];
-                 end
+                a = dot((v1-v3),(v1-v3),2); b = dot((v1-v3),(v1-v2),2); c = dot((v1-v2),(v1-v2),2);
+                
+                a11 = dot(v1,v1,2); a12 = dot(v1,v2,2); a13 = dot(v1,v3,2);
+                a22 = dot(v2,v2,2); a23 = dot(v2,v3,2); a33 = dot(v3,v3,2);
+                a1n = dot(v1,vn,2); a1m = dot(v1,vm,2); a2n = dot(v2,vn,2);
+                a2m = dot(v2,vm,2); a3n = dot(v3,vn,2); a3m = dot(v3,vm,2);
+                amn = dot(vm,vn,2);
+                
+                T1 = a11-2*a12+a22;     T2 = a11-a13-a12+a23;   T3 = a11-2*a13+a33;
+                T4 = a11-a12-a13+a23;   T5 = -a11+a1n+a12-a2n;  T6 = -a11+a1n+a13-a3n;
+                T7 = -a11+a1m+a12-a2m;  T8 = -a11+a1m+a13-a3m;  T9 = a11-a1n-a1m+amn;
+                   
+                I11(i) = log((b+sqrt(a).*sqrt(c))./(b-c-sqrt(c).*sqrt(a-2*b+c)))./(40*sqrt(c))...
+                          + log((-b+c+sqrt(c).*sqrt(a-2*b+c)./(-b+sqrt(a).*sqrt(c))))./(40*sqrt(c))...
+                          + (sqrt(a).*sqrt(a-2*b+c)-sqrt(c).*sqrt(a-2*b+c))./(60*(a-2*b+c).^(3/2))...
+                          + ((2*a-5*b+3*c).*log((a-b+sqrt(a).*sqrt(a-2*b+c).*(c-b+sqrt(c).*sqrt(a-2*b+c)))) ...
+                          ./(b-a+sqrt(a).*sqrt(a-2*b+c).*(b-c+sqrt(c).*sqrt(a-2*b+c))))./(120*(a-2*b+c).^(3/2))...
+                          +(-sqrt(a).*sqrt(c)+sqrt(a).*sqrt(a-2*b+c))./(60*a.^(3/2))...
+                          + ((2*a+b).*log(((b+sqrt(a).*sqrt(c)).*(a-b+sqrt(a).*sqrt(a-2*b+c)))...
+                          ./((-b+sqrt(a).*sqrt(c)).*(-a+b+sqrt(a).*sqrt(a-2*b+c)))))./(120*a.^(3/2));
+                      
+                I12(i) = log((b+sqrt(a).*sqrt(c))./(b-c+sqrt(c).*sqrt(a-2*b+c)))./(120*sqrt(c))...
+                          + log((a-b+sqrt(a).*sqrt(a-2*b+c))./(-b+sqrt(a).*sqrt(c)))./(120*sqrt(a))...
+                          + (-sqrt(a).*sqrt(a-2*b+c)+sqrt(c).*sqrt(a-2*b+c))./(120*(a-2*b+c).^(3/2))...
+                          + (2*a-3*b+c).*log((a-b+sqrt(a).*sqrt(a-2*b+c))./(b-c+sqrt(c).*sqrt(a-2*b+c)))./(120*(a-2*b+c).^(3/2))...
+                          + (sqrt(a).*sqrt(a-2*b+c)-sqrt(c).*sqrt(a-2*b+c))./(120*(a-2*b+c).^(3/2))...
+                          + (a-3*b+2*c).*log((-b+c+sqrt(c).*sqrt(a-2*b+c))./(-a+b+sqrt(a).*sqrt(a-2*b+c)))./(120*(a-2*b+c).^(3/2))...
+                          + (-3*sqrt(a).*sqrt(c)+3*sqrt(c).*sqrt(a-2*b+c))./(120*(c).^(3/2))...
+                          + (3*b+2*c).*log((-b+c+sqrt(c).*sqrt(a-2*b+c))./(-b+sqrt(a).*sqrt(c)))./(120*c.^(3/2))...
+                          + (-3*sqrt(a).*sqrt(c)+3*sqrt(a).*sqrt(a-2*b+c))./(120*(c).^(3/2))...
+                          + (2*a+3*b).*log((b+sqrt(a).*sqrt(c))./(-a+b+sqrt(a).*sqrt(a-2*b+c)))./(120*a.^(3/2));
+                   
+                I(i)  = (-log((-b+sqrt(a).*sqrt(c))./(a-b+sqrt(a).*sqrt(a-2*b+c))))./(24*sqrt(a))...
+                        + (log((b+sqrt(a).*sqrt(c))./(b-c+sqrt(c).*sqrt(a-2*b+c))))./(24*sqrt(c))...
+                        + (-sqrt(a).*sqrt(c)+sqrt(a).*sqrt(a-2*b+c))./(24*a.^(3/2))...
+                        + (a+b).*log((b+sqrt(a).*sqrt(c)./(-a+b+sqrt(a).*sqrt(a-2*b+c))))./(24*a.^(3/2))...
+                        + (log((a-b+sqrt(a).*sqrt(a-2*b+c))./(b-c+sqrt(c).*sqrt(a-2*b+c))))./(24*sqrt(a-2*b+c))...
+                        - (log((b+sqrt(a).*sqrt(c))./(-b+c+sqrt(c).*sqrt(a-2*b+c))))./(12*sqrt(c)) ...
+                        + (sqrt(a).*sqrt(a-2*b+c)-sqrt(c).*sqrt(a-2*b+c))./(24*(a-2*b+c).^(3/2))...
+                        + ((a-3*b+2*c).*log((-b+c+sqrt(c).*sqrt(a-2*b+c))./(-a+b+sqrt(a).*sqrt(a-2*b+c))))./(24*(a-2*b+c).^(3/2));
+            end
+            if j==1
+            SelfP = -(I11*T1+I11*T3+(I12*T2+I12*T4)+(I*T5+I*T6+I*T7+I*T8+T9));
+            elseif j==2
+            SelfM = I11*T1+I11*T3+(I12*T2+I12*T4)+(I*T5+I*T6+I*T7+I*T8+T9);
+            end
+            end
+        end
+
         end
 end
 
