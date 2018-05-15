@@ -1,9 +1,8 @@
 %% load STL file into matlab
 
-stl = stlread('antennas/Dipole10cmT264.stl');
-% stl = stlread('antennas/Dipole10cmT580.stl'); %ok
+% stl = stlread('antennas/Dipole10cmT264.stl');
+stl = stlread('antennas/Dipole10cmT580.stl'); %ok
 
-% [p, t, N] = stlread('antennas/Dipole10cmT580.stl'); %ok
 % stl = stlread('antennas/Dipole10cmT180.stl');
 
 % stl = stlread('antennas/Dipole10cmT264.stl');
@@ -151,10 +150,10 @@ disp('MoM')
 if vectorized
     [Z, a, b ] = ArbitraryAntenna.MoMVectorized(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k, SubTri, 0, 1, 0, UseDipole, Ei);
 else
-%     [Z, b, a] = ArbitraryAntenna.MoM(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k,  SubTri, 0, 1, 0, UseDipole, Ei);
+    [Z, b, a] = ArbitraryAntenna.MoM(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k,  SubTri, 0, 1, 0, UseDipole, Ei);
     
-    [Z, b, a] = ArbitraryAntenna.MoMIGTest(w, mu0, p, t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k,  SubTri, 0, 1, 0, UseDipole, Ei,...
-        xdist, Reflector, epsR, Length, radius, .5, 3, lambda, n, eps0);
+%     [Z, b, a] = ArbitraryAntenna.MoMIGTest(w, mu0, p, t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k,  SubTri, 0, 1, 0, UseDipole, Ei,...
+%         xdist, Reflector, epsR, Length, radius, .5, 3, lambda, n, eps0);
 end
 toc;
 %% Current calc in Triangle

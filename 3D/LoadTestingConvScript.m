@@ -57,7 +57,7 @@ epsR = 11.68;
 Reflector = 1;
 xdist = radius/2+0;
 
-FileName= 'ConSlowWave264-1922WaveIndirectOnAntSurf';
+FileName= 'ConSlow264-1922WaveHopefully';
 
 %% Loop
 for convloop=1:7
@@ -128,6 +128,12 @@ fprintf('\n')
 disp('Calculating areals for subtriangles')
 [SubTri] = ArbitraryAntenna.SubTriangles(p, t, Center, SubSubTri);
 toc;
+%% Lift
+tic;
+fprintf('\n')
+disp('Lifting subtriangles and center points')
+[Center, SubTri] = ArbitraryAntenna.CenterLift(Center, SubTri);
+
 %% Basis Function setup
 tic;
 fprintf('\n')
@@ -156,10 +162,10 @@ disp('MoM')
 if vectorized
     [Z, a, b ] = ArbitraryAntenna.MoMVectorized(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k, SubTri, 0, 1, 0, UseDipole, Ei);
 else
-%     [Z, b, a] = ArbitraryAntenna.MoM(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k,  SubTri, 0, 1, 0, UseDipole, Ei);
+    [Z, b, a] = ArbitraryAntenna.MoM(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k,  SubTri, 0, 1, 0, UseDipole, Ei);
 
-    [Z, b, a] = ArbitraryAntenna.MoMIG(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k,  SubTri, 0, 1, 0, UseDipole, Ei,...
-        xdist, Reflector, epsR, Length, radius, 2, 50, lambda, n, eps0);
+%     [Z, b, a] = ArbitraryAntenna.MoMIG(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k,  SubTri, 0, 1, 0, UseDipole, Ei,...
+%         xdist, Reflector, epsR, Length, radius, 2, 50, lambda, n, eps0);
 end
 toc;
 %% Current calc in Triangle
