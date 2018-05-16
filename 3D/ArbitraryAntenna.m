@@ -442,147 +442,8 @@
                 Ei(:,2) = w^2*mu.*(Gyx .* p(1) + Gyy .* p(2) + Gyz .* p(3));
                 Ei(:,3) = w^2*mu.*(Gzx .* p(1) + Gzy .* p(2) + Gzz .* p(3));
             end
-            end
-        
-        function [Z, b, a] = MoM(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k, SubTri, x, y, z, Point, Ei)
-            % alocating space
-            Z = zeros(length(EdgeList),length(EdgeList))+1i*zeros(length(EdgeList),length(EdgeList));
-            if ~Point
-                Ei(:,1) = x.*exp(-1i*k.*(Center(:,2)));
-                Ei(:,2) = y.*exp(-1i*k.*(Center(:,1)));
-                Ei(:,3) = z.*exp(-1i*k.*(Center(:,1)));
-            end
-            b1 = 1:length(EdgeList);
-            b2 = 1:length(EdgeList);
-            [PlusTri, MinusTri] = ArbitraryAntenna.PMTri(t, EdgeList);
-            
-            SubAmount = size(SubTri);
-            Quad = SubAmount(1);
-            % Outer loop over triangles
-            for y=1:length(t)
-                PO = find(PlusTri - y ==0);
-                MO = find(MinusTri - y ==0);
-                % Inner triangle loop
-                SO = SubTri(:,:,y);
-                for h=1:length(t)
-                    PI = find(PlusTri - h ==0);
-                    MI = find(MinusTri - h ==0);
-                    SI = SubTri(:,:,h);
-                               
-                    IoO = sqrt(sum((Center(y,:)-SI).^2,2));
-                           
-                    OoI = sqrt(sum((Center(h,:)-SO).^2,2));
-                    %Loop over outer triangles basis functions
-                    for i = 1:length(PO)
-                        % Intermediate loading of plus and minus functions
-                        % evaluated in center points, _ denotes sub
-                        % triangle
-                        zMP = (RhoP(PO(i),:));
-                        zMP_ = (RhoP_(:,:,PO(i)));
-                        % Subtriangles for the inner triangles basis
-                        % functions
-                        for j = 1:length(PI)
-                            % Intermediate loading of plus and minus functions
-                            % evaluated in center points, _ denotes sub
-                            % triangle
-                            zNP = (RhoP(PI(j),:));
-                            zNP_ = (RhoP_(:,:,PI(j)));           
-                            gPPo = exp(1i.*k.*IoO)./IoO;
-                            gPPi = exp(1i.*k.*OoI)./OoI;
-                            if y==h
-                                Z(PO(i), PI(j)) = ...
-                                (BasisLA(PO(i),2)*BasisLA(PI(j),2))/(4*pi)...
-                                *sum((dot(repmat(zMP,[Quad,1]), zNP_,2)/4-1/k^2 ...
-                                + dot(zMP_, repmat(zNP,[Quad,1]),2)/4-1/k^2) .* (1i*k+I2(y)))/Quad...
-                                + Z(PO(i), PI(j));
-                            
-                            else
-                                Z(PO(i), PI(j)) = ...
-                                (BasisLA(PO(i),2)*BasisLA(PI(j),2))/(4*pi)...
-                                *sum((dot(repmat(zMP,[Quad,1]), zNP_,2)/4-1/k^2) .* gPPo ...
-                                +(dot(zMP_, repmat(zNP,[Quad,1]),2)/4-1/k^2) .* gPPi)/Quad...
-                                + Z(PO(i), PI(j));
-                            
-                            end
-                        end
-                        for j=1:length(MI)
-                            zNM = (RhoM(MI(j),:));
-                            zNM_ = (RhoM_(:,:,MI(j)));         
-                            
-                                gPMo = exp(1i.*k.*IoO)./IoO;
-                                gMPi = exp(1i.*k.*OoI)./OoI;
-                                if y==h
-                                 Z(PO(i), MI(j)) = ...
-                                (BasisLA(PO(i),2)*BasisLA(MI(j),2))/(4*pi)...
-                                *sum((dot(repmat(zMP,[Quad,1]), zNM_ ,2)/4+1/k^2 ...
-                                +dot(zMP_, repmat(zNM,[Quad,1]),2)/4+1/k^2).* (1i*k+I2(y)))/Quad...
-                                + Z(PO(i), MI(j));
-                                
-                            else
-                                Z(PO(i), MI(j)) = ...
-                                (BasisLA(PO(i),2)*BasisLA(MI(j),2))/(4*pi)...
-                                *sum((dot(repmat(zMP,[Quad,1]), zNM_ ,2)/4+1/k^2) .* gPMo...
-                                + (dot(zMP_, repmat(zNM,[Quad,1]),2)/4+1/k^2) .* gMPi)/Quad...
-                                + Z(PO(i), MI(j));
-                                
-                                end  
-                        end
-                        b1(PO(i),:) = sum(sum(Ei(y,:).*RhoP_(:,:,PO(i)).*BasisLA(PO(i),2)/2,2)/Quad);
-                    end
-                    for i=1:length(MO)
-                        zMM = (RhoM(MO(i),:));
-                        zMM_ = (RhoM_(:,:,MO(i)));
-                        for j=1:length(PI)
-                            zNP = (RhoP(PI(j),:));
-                            zNP_ = (RhoP_(:,:,PI(j)));
-                            
-                                gPMi = exp(1i.*k.*OoI)./OoI;
-                                gMPo = exp(1i.*k.*IoO)./IoO;
-                                   if y==h
-                                 Z(MO(i), PI(j)) = ...
-                                (BasisLA(MO(i),2)*BasisLA(PI(j),2))/(4*pi)...
-                                *sum((dot(repmat(zMM,[Quad,1]), zNP_,2)/4+1/k^2 +...
-                                dot(zMM_, repmat(zNP,[Quad,1]),2)/4+1/k^2).* (1i*k+I2(y)))/Quad...
-                                + Z(MO(i), PI(j));
-                            else
-                                Z(MO(i), PI(j)) = ...
-                                (BasisLA(MO(i),2)*BasisLA(PI(j),2))/(4*pi)...
-                                *sum((dot(repmat(zMM,[Quad,1]), zNP_,2)/4+1/k^2) .* gMPo ...
-                                + (dot(zMM_, repmat(zNP,[Quad,1]),2)/4+1/k^2) .* gPMi)/Quad...
-                                + Z(MO(i), PI(j));
-                                   end
-                        end
-                        for j=1:length(MI)
-                            zNM = (RhoM(MI(j),:));
-                            zNM_ = (RhoM_(:,:,MI(j))); 
-                            
-                                gMMo = exp(1i.*k.*IoO)./IoO;
-                                gMMi = exp(1i.*k.*OoI)./OoI;
-                                    if y==h
-                                Z(MO(i), MI(j)) = ...
-                               (BasisLA(MO(i),2)*BasisLA(MI(j),2))/(4*pi)...
-                                *sum((dot(repmat(zMM,[Quad,1]), zNM_,2)/4-1/k^2 ...
-                                +dot(zMM_, repmat(zNM,[Quad,1]),2)/4-1/k^2).* (1i*k+I2(y)))/Quad...
-                                + Z(MO(i), MI(j));
-                            
-                            else
-                                Z(MO(i), MI(j)) = ...
-                                (BasisLA(MO(i),2)*BasisLA(MI(j),2))/(4*pi)...
-                                *sum((dot(repmat(zMM,[Quad,1]),zNM_,2)/4-1/k^2) .* gMMo...
-                                +(dot(zMM_, repmat(zNM,[Quad,1]),2)/4-1/k^2) .* gMMi)/Quad...
-                                + Z(MO(i), MI(j));
-                            
-                                    end
-                        end
-                        b2(MO(i),:) = sum(sum(Ei(y,:).*RhoM_(:,:,MO(i)).*BasisLA(MO(i),2)/2,2)/Quad);
-                    end      
-                end       
-            end
-            b = b1+b2;
-            % Z\b is a newer faster version of inv(Z)*b
-            a = Z\b;
         end
-        
+            
         function [Vertices, Edges] = Simplex(p,t)
             TotTri = length(t);
             Area = zeros(TotTri,3);
@@ -614,6 +475,294 @@
             Area = Area./Atot;
         end
         
+        function [Z, b, a] = MoM(w, mu, p, t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k, SubTri, x, y, z, Point, Ei)
+            % alocating space
+            Z = zeros(length(EdgeList),length(EdgeList))+1i*zeros(length(EdgeList),length(EdgeList));
+            if ~Point
+                Ei(:,1) = x.*exp(-1i*k.*(Center(:,2)));
+                Ei(:,2) = y.*exp(-1i*k.*(Center(:,1)));
+                Ei(:,3) = z.*exp(-1i*k.*(Center(:,1)));
+            end
+            b1 = 1:length(EdgeList);
+            b2 = 1:length(EdgeList);
+            [PlusTri, MinusTri] = ArbitraryAntenna.PMTri(t, EdgeList);
+            [SelfTerm] = ArbitraryAntenna.NearTriangleZ(p, t, EdgeList, I2);
+            
+            SubAmount = size(SubTri);
+            Quad = SubAmount(1);
+            % Outer loop over triangles
+            for y=1:length(t)
+                PO = find(PlusTri - y ==0);
+                MO = find(MinusTri - y ==0);
+                SO = SubTri(:,:,y);
+                % Inner triangle loop
+                for h=1:length(t)
+                    PI = find(PlusTri - h ==0);
+                    MI = find(MinusTri - h ==0);
+                    SI = SubTri(:,:,h);
+                               
+                    IoO = sqrt(sum((Center(y,:)-SI).^2,2));
+                           
+                    OoI = sqrt(sum((Center(h,:)-SO).^2,2));
+                    %Loop over outer triangles basis functions
+                    for i = 1:length(PO)
+                        % Intermediate loading of plus and minus functions
+                        % evaluated in center points, _ denotes sub
+                        % triangle
+                        zMP = (RhoP(PO(i),:));
+                        zMP_ = (RhoP_(:,:,PO(i)));
+                        % Subtriangles for the inner triangles basis
+                        % functions
+                        for j = 1:length(PI)
+                            % Intermediate loading of plus and minus functions
+                            % evaluated in center points, _ denotes sub
+                            % triangle
+                            zNP = (RhoP(PI(j),:));
+                            zNP_ = (RhoP_(:,:,PI(j)));           
+                            gPPo = exp(1i.*k.*IoO)./IoO;
+                            gPPi = exp(1i.*k.*OoI)./OoI;
+                            if y==h
+                                Z(PO(i), PI(j)) = ...
+                                (BasisLA(PO(i),2)*BasisLA(PI(j),2))/(4*pi)...
+                                *sum((dot(repmat(zMP,[Quad,1]), zNP_,2)/4-1/k^2) .* 1i*k...
+                                +(dot(zMP_, repmat(zNP,[Quad,1]),2)/4-1/k^2) .* 1i*k )/Quad ...
+                                + Z(PO(i), PI(j));
+                            
+                                Z(PO(i), PI(j)) = ...
+                                (BasisLA(PO(i),2)*BasisLA(PI(j),2))/(4*pi)...
+                                * (SelfTerm(y) - I2(y)/k^2) + Z(PO(i), PI(j));
+                            else
+                                Z(PO(i), PI(j)) = ...
+                                (BasisLA(PO(i),2)*BasisLA(PI(j),2))/(4*pi)...
+                                *sum((dot(repmat(zMP,[Quad,1]), zNP_,2)/4-1/k^2) .* gPPo ...
+                                +(dot(zMP_, repmat(zNP,[Quad,1]),2)/4-1/k^2) .* gPPi)/Quad ...
+                                + Z(PO(i), PI(j));    
+                            end
+                        end
+                        for j=1:length(MI)
+                            zNM = (RhoM(MI(j),:));
+                            zNM_ = (RhoM_(:,:,MI(j)));         
+                            
+                                gPMo = exp(1i.*k.*IoO)./IoO;
+                                gMPi = exp(1i.*k.*OoI)./OoI;
+                                if y==h
+                                Z(PO(i), MI(j)) = ...
+                                (BasisLA(PO(i),2)*BasisLA(MI(j),2))/(4*pi)...
+                                *sum((dot(repmat(zMP,[Quad,1]), zNM_ ,2)/4+1/k^2) .* 1i*k...
+                                + (dot(zMP_, repmat(zNM,[Quad,1]),2)/4+1/k^2) .* 1i*k)/Quad^2 ...
+                                + Z(PO(i), MI(j));
+                            
+                                Z(PO(i), MI(j)) = ...
+                                (BasisLA(PO(i),2)*BasisLA(MI(j),2))/(4*pi)...
+                                *(SelfTerm(y)+I2(y)/k^2) + Z(PO(i), MI(j));
+                                else
+                                Z(PO(i), MI(j)) = ...
+                                (BasisLA(PO(i),2)*BasisLA(MI(j),2))/(4*pi)...
+                                *sum((dot(repmat(zMP,[Quad,1]), zNM_ ,2)/4+1/k^2) .* gPMo...
+                                + (dot(zMP_, repmat(zNM,[Quad,1]),2)/4+1/k^2) .* gMPi)/Quad...
+                                + Z(PO(i), MI(j));
+                                end  
+                        end
+                       b1(PO(i)) = 1i/(w*mu)*sum(dot(repmat(Ei(y,:),Quad,1),RhoP_(:,:,PO(i)),2).*BasisLA(PO(i),2)/Quad)/2;
+                    end
+                    for i=1:length(MO)
+                        zMM = (RhoM(MO(i),:));
+                        zMM_ = (RhoM_(:,:,MO(i)));
+                        for j=1:length(PI)
+                            zNP = (RhoP(PI(j),:));
+                            zNP_ = (RhoP_(:,:,PI(j)));
+                            
+                            gPMi = exp(1i.*k.*OoI)./OoI;
+                            gMPo = exp(1i.*k.*IoO)./IoO;
+                                   if y==h
+                                       
+                                Z(MO(i), PI(j)) = ...
+                                (BasisLA(MO(i),2)*BasisLA(PI(j),2))/(4*pi)...
+                                *sum((dot(repmat(zMM,[Quad,1]), zNP_,2)/4+1/k^2) .* 1i*k ... 
+                                + (dot(zMM_, repmat(zNP,[Quad,1]),2)/4+1/k^2) .* 1i*k )/Quad^2 ...
+                                + Z(MO(i), PI(j));
+                            
+                                 Z(MO(i), PI(j)) = ...
+                                (BasisLA(MO(i),2)*BasisLA(PI(j),2))/(4*pi)...
+                                *(SelfTerm(y) + I2(y)/k^2)...
+                                + Z(MO(i), PI(j));
+                            else
+                                Z(MO(i), PI(j)) = ...
+                                (BasisLA(MO(i),2)*BasisLA(PI(j),2))/(4*pi)...
+                                *sum((dot(repmat(zMM,[Quad,1]), zNP_,2)/4+1/k^2) .* gMPo ...
+                                + (dot(zMM_, repmat(zNP,[Quad,1]),2)/4+1/k^2) .* gPMi)/Quad...
+                                + Z(MO(i), PI(j));
+                                   end
+                        end
+                        for j=1:length(MI)
+                            zNM = (RhoM(MI(j),:));
+                            zNM_ = (RhoM_(:,:,MI(j))); 
+                            
+                                gMMo = exp(1i.*k.*IoO)./IoO;
+                                gMMi = exp(1i.*k.*OoI)./OoI;
+                            if y==h
+                                Z(MO(i), MI(j)) = ...
+                                (BasisLA(MO(i),2)*BasisLA(MI(j),2))/(4*pi)...
+                                *sum((dot(repmat(zMM,[Quad,1]),zNM_,2)/4-1/k^2) .* 1i*k...
+                                +(dot(zMM_, repmat(zNM,[Quad,1]),2)/4-1/k^2) .* 1i*k)/Quad^2 ...
+                                + Z(MO(i), MI(j));
+                            
+                                Z(MO(i), MI(j)) = ...
+                                (BasisLA(MO(i),2)*BasisLA(MI(j),2))/(4*pi)...
+                                 *(SelfTerm(y) - I2(y)/k^2)   + Z(MO(i), MI(j));
+                                
+                            else
+                                Z(MO(i), MI(j)) = ...
+                                (BasisLA(MO(i),2)*BasisLA(MI(j),2))/(4*pi)...
+                                *sum((dot(repmat(zMM,[Quad,1]),zNM_,2)/4-1/k^2) .* gMMo...
+                                +(dot(zMM_, repmat(zNM,[Quad,1]),2)/4-1/k^2) .* gMMi)/Quad...
+                                + Z(MO(i), MI(j));
+                            
+                            end
+                        end
+                        b2(MO(i)) = 1i/(w*mu)*sum(dot(repmat(Ei(y,:),Quad,1),RhoM_(:,:,MO(i)),2).*BasisLA(MO(i),2)/Quad)/2;
+                    end      
+                end       
+            end
+            b = (b1+b2).';
+            % Z\b is a newer faster version of inv(Z)*b
+            a = Z\b;
+        end
+        
+        function [Z, b, a] = MoMBackUp(w, mu, t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k, SubTri, x, y, z, Point, Ei)
+           
+            Z = zeros(length(EdgeList),length(EdgeList))+1i*zeros(length(EdgeList),length(EdgeList));
+            if ~Point
+                Ei(:,1) = x.*exp(-1i*k.*(Center(:,2)));
+                Ei(:,2) = y.*exp(-1i*k.*(Center(:,1)));
+                Ei(:,3) = z.*exp(-1i*k.*(Center(:,1)));
+            end
+            b1 = 1:length(EdgeList); b1(:)=0;
+            b2 = 1:length(EdgeList); b2(:)=0;
+            [PlusTri, MinusTri] = ArbitraryAntenna.PMTri(t, EdgeList);
+            
+            SubAmount = size(SubTri);
+            Quad = SubAmount(1);
+            for y=1:length(t)
+                PO = find(PlusTri - y ==0);
+                MO = find(MinusTri - y ==0);
+                SO = SubTri(:,:,y);
+                for h=1:length(t)
+                    PI = find(PlusTri - h ==0);
+                    MI = find(MinusTri - h ==0);
+                    SI = SubTri(:,:,h);
+                               
+                    IoO = sqrt(sum((Center(y,:)-SI).^2,2));
+                    OoI = sqrt(sum((Center(h,:)-SO).^2,2));
+                    
+                    %Loop over outer triangles basis functions
+                    for i = 1:length(PO)
+                        % Intermediate loading of plus and minus functions
+                        % evaluated in center points, _ denotes sub
+                        % triangle
+                        zMP = (RhoP(PO(i),:));
+                        zMP_ = (RhoP_(:,:,PO(i)));
+                        % Subtriangles for the inner triangles basis
+                        % functions
+                        for j = 1:length(PI)
+                            % Intermediate loading of plus and minus functions
+                            % evaluated in center points, _ denotes sub
+                            % triangle
+                            zNP = (RhoP(PI(j),:));
+                            zNP_ = (RhoP_(:,:,PI(j)));           
+                            gPPo = exp(1i.*k.*IoO)./IoO;
+                            gPPi = exp(1i.*k.*OoI)./OoI;
+                            if y==h
+                                Z(PO(i), PI(j)) = ...
+                                (BasisLA(PO(i),2)*BasisLA(PI(j),2))/(4*pi)...
+                                *sum((dot(repmat(zMP,[Quad,1]), zNP_,2)/4-1/k^2 ...
+                                + dot(zMP_, repmat(zNP,[Quad,1]),2)/4-1/k^2) .* (1i*k*I2(y)))/Quad ...
+                                + Z(PO(i), PI(j));             
+                            else
+                                Z(PO(i), PI(j)) = ...
+                                (BasisLA(PO(i),2)*BasisLA(PI(j),2))/(4*pi)...
+                                *sum((dot(repmat(zMP,[Quad,1]), zNP_,2)/4-1/k^2) .* gPPo ...
+                                +(dot(zMP_, repmat(zNP,[Quad,1]),2)/4-1/k^2) .* gPPi)/Quad...
+                                + Z(PO(i), PI(j));              
+                            end
+                        end
+                        for j=1:length(MI)
+                            zNM = (RhoM(MI(j),:));
+                            zNM_ = (RhoM_(:,:,MI(j)));         
+                            
+                                gPMo = exp(1i.*k.*IoO)./IoO;
+                                gMPi = exp(1i.*k.*OoI)./OoI;
+                                if y==h
+                                 Z(PO(i), MI(j)) = ...
+                                (BasisLA(PO(i),2)*BasisLA(MI(j),2))/(4*pi)...
+                                *sum((dot(repmat(zMP,[Quad,1]), zNM_ ,2)/4+1/k^2 ...
+                                +dot(zMP_, repmat(zNM,[Quad,1]),2)/4+1/k^2).* (1i*k*I2(y)))/Quad ...
+                                + Z(PO(i), MI(j));
+                                
+                            else
+                                Z(PO(i), MI(j)) = ...
+                                (BasisLA(PO(i),2)*BasisLA(MI(j),2))/(4*pi)...
+                                *sum((dot(repmat(zMP,[Quad,1]), zNM_ ,2)/4+1/k^2) .* gPMo...
+                                + (dot(zMP_, repmat(zNM,[Quad,1]),2)/4+1/k^2) .* gMPi)/Quad...
+                                + Z(PO(i), MI(j));
+                                
+                                end  
+                        end
+                        b1(PO(i)) = 1i/(w*mu)*sum(dot(repmat(Ei(y,:),Quad,1),RhoP_(:,:,PO(i)),2).*BasisLA(PO(i),2)/Quad)/2 + b1(PO(i));
+                    end
+                    for i=1:length(MO)
+                        zMM = (RhoM(MO(i),:));
+                        zMM_ = (RhoM_(:,:,MO(i)));
+                        for j=1:length(PI)
+                            zNP = (RhoP(PI(j),:));
+                            zNP_ = (RhoP_(:,:,PI(j)));
+                            
+                                gPMi = exp(1i.*k.*OoI)./OoI;
+                                gMPo = exp(1i.*k.*IoO)./IoO;
+                                   if y==h
+                                 Z(MO(i), PI(j)) = ...
+                                (BasisLA(MO(i),2)*BasisLA(PI(j),2))/(4*pi)...
+                                *sum((dot(repmat(zMM,[Quad,1]), zNP_,2)/4+1/k^2 +...
+                                dot(zMM_, repmat(zNP,[Quad,1]),2)/4+1/k^2).* (1i*k*I2(y)))/Quad  ...
+                                + Z(MO(i), PI(j));
+                            else
+                                Z(MO(i), PI(j)) = ...
+                                (BasisLA(MO(i),2)*BasisLA(PI(j),2))/(4*pi)...
+                                *sum((dot(repmat(zMM,[Quad,1]), zNP_,2)/4+1/k^2) .* gMPo ...
+                                + (dot(zMM_, repmat(zNP,[Quad,1]),2)/4+1/k^2) .* gPMi)/Quad...
+                                + Z(MO(i), PI(j));
+                                   end
+                        end
+                        for j=1:length(MI)
+                            zNM = (RhoM(MI(j),:));
+                            zNM_ = (RhoM_(:,:,MI(j))); 
+                            
+                                gMMo = exp(1i.*k.*IoO)./IoO;
+                                gMMi = exp(1i.*k.*OoI)./OoI; 
+                            if y==h
+                                Z(MO(i), MI(j)) = ...
+                               (BasisLA(MO(i),2)*BasisLA(MI(j),2))/(4*pi)...
+                                *sum((dot(repmat(zMM,[Quad,1]), zNM_,2)/4-1/k^2 ...
+                                +dot(zMM_, repmat(zNM,[Quad,1]),2)/4-1/k^2).* (1i*k*I2(y)))/Quad  ...
+                                + Z(MO(i), MI(j));
+                            else
+                                Z(MO(i), MI(j)) = ...
+                                (BasisLA(MO(i),2)*BasisLA(MI(j),2))/(4*pi)...
+                                *sum((dot(repmat(zMM,[Quad,1]),zNM_,2)/4-1/k^2) .* gMMo...
+                                +(dot(zMM_, repmat(zNM,[Quad,1]),2)/4-1/k^2) .* gMMi)/Quad...
+                                + Z(MO(i), MI(j));
+                            end
+                        end
+                        b2(MO(i)) = 1i/(w*mu)*sum(dot(repmat(Ei(y,:),Quad,1),RhoM_(:,:,MO(i)),2).*BasisLA(MO(i),2)/Quad)/2 + b2(MO(i));
+                    end      
+                end       
+            end
+            b = (b1+b2).';
+            % Z\b is a newer faster version of inv(Z)*b
+            a = Z\b;
+        end
+        
+     
         function [Z, b, a] = MoMIG(w, mu, p, t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k, SubTri, x, y, z, Point, Ei,...
                 distx, Reflector, InEps, strip_length, strip_width, dx, Nz, lambda, n, eps1)
             % alocating space
@@ -879,7 +1028,7 @@
                         end
            end
                         end
-                        b2(MO(i)) = 1i/(w*mu)*sum(dot(repmat(Ei(y,:),Quad,1),RhoM_(:,:,MO(i)),2).*BasisLA(MO(i),2)/Quad)/2;
+                 b2(MO(i)) = 1i/(w*mu)*sum(dot(repmat(Ei(y,:),Quad,1),RhoM_(:,:,MO(i)),2).*BasisLA(MO(i),2)/Quad)/2;
                     end      
                 end       
             end
@@ -888,7 +1037,7 @@
             a = Z\b;
         end
         
-     function [Z, b, a] = MoMIGTest(w, mu, p, t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k, SubTri, x, y, z, Point, Ei,...
+        function [Z, b, a] = MoMIGTest(w, mu, p, t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k, SubTri, x, y, z, Point, Ei,...
                 distx, Reflector, InEps, strip_length, strip_width, dx, Nz, lambda, n, eps1)
             % alocating space
             Z = zeros(length(EdgeList),length(EdgeList))+1i*zeros(length(EdgeList),length(EdgeList));
@@ -903,9 +1052,10 @@
                 Ei(:,2) = Ei(:,2)+y.*exp(-1i*k.*(Center(:,1))).*RefCoef;
                 Ei(:,3) = Ei(:,3)+z.*exp(-1i*k.*(Center(:,1))).*RefCoef;
             end
-            b1 = 1:length(EdgeList);
-            b2 = 1:length(EdgeList);
+            b1 = 1:length(EdgeList); b1(:) =0;
+            b2 = 1:length(EdgeList); b2(:) = 0;
             [PlusTri, MinusTri] = ArbitraryAntenna.PMTri(t, EdgeList);
+            [SelfTerm] = ArbitraryAntenna.NearTriangleZ(p, t, EdgeList, I2);
             
             if Reflector
             [GIx, GIy, GIz] = ArbitraryAntenna.IDGreens(k, distx, strip_length, strip_width, dx, Nz, lambda, n, InEps, eps1, Center, SubTri);
@@ -913,19 +1063,17 @@
                         
             SubAmount = size(SubTri);
             Quad = SubAmount(1);
-            ArbitraryAntenna.Simplex(p,t);
-            [SelfP, SelfM] = ArbitraryAntenna.NearTriangleZ(p,t,EdgeList);
     
             % Outer loop over triangles
             for y=1:length(t)
                 PO = find(PlusTri - y ==0);
                 MO = find(MinusTri - y ==0);
                 % Inner triangle loop
-                SO = SubTri(:,:,y);%,3,[]reshape().';
+                SO = SubTri(:,:,y);
                 for h=1:length(t)
                     PI = find(PlusTri - h ==0);
                     MI = find(MinusTri - h ==0);
-                    SI = SubTri(:,:,h);%reshape(,3,[]).';
+                    SI = SubTri(:,:,h);
                     OuterRep = [];
                         for RepEveryOne = 1:9 
                             OuterRep = [OuterRep; repmat(SO(RepEveryOne,:),9,1)];
@@ -980,27 +1128,21 @@
                             
                             if y==h
                                 %Quadrature friendly with exp(ikr)/r = 1i*k
-                                FirstSum = sum((dot(zOPRep, repmat(zIP_,Quad,1),2)/4-1/k^2)/Quad);
-                                SecondSum = sum((dot(repmat(zOP_,[Quad,1]), zIPRep,2)/4-1/k^2) /Quad);
-                           
-                                Z(PO(i), PI(j)) = ...
-                                1i*k*(BasisLA(PO(i),2)*BasisLA(PI(j),2))/(4*pi)...
-                                *(FirstSum + SecondSum)...
-                                + Z(PO(i), PI(j));
-                            
-                                % Analytical terms
                                 Z(PO(i), PI(j)) = ...
                                 (BasisLA(PO(i),2)*BasisLA(PI(j),2))/(4*pi)...
-                                *(SelfP(PO(i))+SelfP(PI(j))+I2(y)) + Z(PO(i), PI(j));
-                                
+                                *sum((dot(zOPRep, repmat(zIP_,[Quad,1]),2)/4-1/k^2) .* 1i*k )/(Quad^2) ...
+                                + Z(PO(i), PI(j));
+                            
+                                Z(PO(i), PI(j)) = ...
+                                (BasisLA(PO(i),2)*BasisLA(PI(j),2))/(4*pi)...
+                                * (SelfTerm(y) - I2(y)/k^2) + Z(PO(i), PI(j));
                                 else
-                            FirstSum = sum((dot(zOPRep, repmat(zIP_,[Quad,1]),2)/4-1/k^2).*gPPo/Quad);
-                            SecondSum = sum((dot(repmat(zOP_,[Quad,1]), zIPRep,2)/4-1/k^2).*gPPi/Quad);
-                           
+                                                           
                             Z(PO(i), PI(j)) = ...
                             (BasisLA(PO(i),2)*BasisLA(PI(j),2))/(4*pi)...
-                            *(FirstSum + SecondSum)+ Z(PO(i), PI(j));
+                            *sum((dot(zOPRep, repmat(zIP_,[Quad,1]),2)/4-1/k^2).*gPPo)/Quad^2+ Z(PO(i), PI(j));
 
+                            end
                             if Reflector
                                 Z(PO(i), PI(j)) = ...
                                 (BasisLA(PO(i),2)*BasisLA(PI(j),2))...
@@ -1011,7 +1153,6 @@
                                 (BasisLA(PO(i),2)*BasisLA(PI(j),2))...
                                 *sum((dot(zOP_.*GIppi, repmat(zIP,[Quad,1]).*GIppi,2)) /Quad)...
                                 + Z(PO(i), PI(j));
-                            end
                             end
                         end
                         for j=1:length(MI)
@@ -1025,28 +1166,22 @@
                             gMPi = exp(1i.*k.*OoI)./OoI;
                             
                             if y==h
-%                                 Quadrature friendly with exp(ikr)/r = 1i*k
-                                FirstSum = sum((dot(zOPRep, repmat(zIM_,[Quad,1]) ,2)/4+1/k^2) /Quad);
-                                SecondSum = sum((dot(repmat(zOP_ ,[Quad,1]), zIMRep ,2)/4+1/k^2)/Quad);        
-                                
-                                Z(PO(i), MI(j)) = ...
-                                1i*k*(BasisLA(PO(i),2)*BasisLA(MI(j),2))/(4*pi)...
-                                *(FirstSum + SecondSum)...
+                               Z(PO(i), MI(j)) = ...
+                                (BasisLA(PO(i),2)*BasisLA(MI(j),2))/(4*pi)...
+                                *sum((dot(zOPRep, repmat(zIM_,[Quad,1]) ,2)/4+1/k^2) .* 1i*k)/Quad^2 ...
                                 + Z(PO(i), MI(j));
                             
-%                                 Analytical terms
                                 Z(PO(i), MI(j)) = ...
                                 (BasisLA(PO(i),2)*BasisLA(MI(j),2))/(4*pi)...
-                                *(SelfP(PO(i))+SelfM(MI(j))+I2(y))+ Z(PO(i), MI(j));
+                                *(SelfTerm(y)+I2(y)/k^2) + Z(PO(i), MI(j));
                             else
                                 
-                            FirstSum = sum((dot(zOPRep, repmat(zIM_,[Quad,1]) ,2)/4+1/k^2) .*gPMo /Quad);
-                            SecondSum = sum((dot(repmat(zOP_,[Quad,1]) , zIMRep ,2)/4+1/k^2) .*gMPi/Quad);
                             Z(PO(i), MI(j)) = ...
                             (BasisLA(PO(i),2)*BasisLA(MI(j),2))/(4*pi)...
-                            *(FirstSum + SecondSum)...
+                            *sum((dot(zOPRep, repmat(zIM_,[Quad,1]) ,2)/4+1/k^2) .*gPMo)/Quad^2 ...
                             + Z(PO(i), MI(j));
                                 
+                            end  
                         if Reflector
                             Z(PO(i), MI(j)) = ...
                             (BasisLA(PO(i),2)*BasisLA(MI(j),2))...
@@ -1058,9 +1193,8 @@
                             *sum((dot(zOP_.*GImpi, repmat(zIM,[Quad,1]).*GImpi,2)) /Quad)...
                             + Z(PO(i), MI(j));
                         end
-                            end  
                         end
-                        b1(PO(i)) = 1i/(w*mu)*sum(dot(repmat(Ei(y,:),Quad,1),RhoP_(:,:,PO(i)),2).*BasisLA(PO(i),2)/Quad)/2;
+                        b1(PO(i)) = 1i/(w*mu)*sum(dot(repmat(Ei(y,:),Quad,1),RhoP_(:,:,PO(i)),2).*BasisLA(PO(i),2)/2)/Quad + b1(PO(i));
                     end
                     for i=1:length(MO)
                         zOM = (RhoM(MO(i),:));
@@ -1083,29 +1217,23 @@
                             gMPo = exp(1i.*k.*IoO)./IoO;
                                 
                             if y==h
-%                                 Quadrature friendly with exp(ikr)/r = 1i*k
-                            
-                            FirstSum = sum((dot(zOMRep, repmat(zIP_,[Quad,1]),2)/4+1/k^2) /Quad);
-                            SecondSum = sum((dot(repmat(zOM_,[Quad,1]), zIPRep,2)/4+1/k^2) /Quad);
-                                Z(MO(i), PI(j)) = ...
-                                1i*k*(BasisLA(MO(i),2)*BasisLA(PI(j),2))/(4*pi)...
-                                *(FirstSum + SecondSum)...
-                                + Z(MO(i), PI(j));
-                            
-%                                 Analytical terms
-                                                              
                                  Z(MO(i), PI(j)) = ...
                                 (BasisLA(MO(i),2)*BasisLA(PI(j),2))/(4*pi)...
-                                *(SelfM(MO(i))+SelfP(PI(j))+I2(y))+ Z(MO(i), PI(j));                            
+                                *sum((dot(zOMRep,repmat( zIP_,[Quad,1]),2)/4+1/k^2) .* 1i*k)/Quad^2 ...
+                                + Z(MO(i), PI(j));
+                            
+                                 Z(MO(i), PI(j)) = ...
+                                (BasisLA(MO(i),2)*BasisLA(PI(j),2))/(4*pi)...
+                                *(SelfTerm(y) + I2(y)/k^2)...
+                                + Z(MO(i), PI(j));
                             else
-                            FirstSum = sum((dot(zOMRep, repmat(zIP_,[Quad,1]),2)/4+1/k^2).* gMPo /Quad);
-                            SecondSum = sum((dot(repmat(zOM_,[Quad,1]), zIPRep,2)/4+1/k^2) .* gPMi/Quad);
                                 
                             Z(MO(i), PI(j)) = ...
                             (BasisLA(MO(i),2)*BasisLA(PI(j),2))/(4*pi)...
-                            *(FirstSum + SecondSum)...
+                            *sum((dot(zOMRep, repmat(zIP_,[Quad,1]),2)/4+1/k^2).* gMPo )/Quad^2 ...
                             + Z(MO(i), PI(j));
                             
+                            end
                         if Reflector
                             Z(MO(i), PI(j)) = ...
                             (BasisLA(MO(i),2)*BasisLA(PI(j),2))/(4*pi)...
@@ -1117,7 +1245,6 @@
                             *sum((dot(zOM_.*GIpmi, repmat(zIP,[Quad,1]).*GIpmi,2)) /Quad)...
                             + Z(MO(i), PI(j));   
                         end
-                            end
                         end
                         for j=1:length(MI)
                             zIM = (RhoM(MI(j),:));
@@ -1131,30 +1258,21 @@
                             gMMo = exp(1i.*k.*IoO)./IoO;
                             gMMi = exp(1i.*k.*OoI)./OoI;
                             
-                              
                         if h==y
-%                             Quadrature
-
-                            FirstSum = sum((dot(zOMRep, repmat(zIM_,[Quad,1]),2)/4-1/k^2) /Quad);
-                            SecondSum = sum((dot(repmat(zOM_,[Quad,1]),zIMRep,2)/4-1/k^2) /Quad);
                             Z(MO(i), MI(j)) = ...
-                            1i*k*(BasisLA(MO(i),2)*BasisLA(MI(j),2))/(4*pi)...
-                            *(FirstSum + SecondSum)...
-                            + Z(MO(i), MI(j));
+                                (BasisLA(MO(i),2)*BasisLA(MI(j),2))/(4*pi)...
+                                *sum((dot(zOMRep,repmat(zIM_,[Quad,1]),2)/4-1/k^2) .* 1i*k)/Quad^2 ...
+                                + Z(MO(i), MI(j));
                             
-%                             Analytical
-                            Z(MO(i), MI(j)) = ...
-                            (BasisLA(MO(i),2)*BasisLA(MI(j),2))/(4*pi)...
-                            *(SelfM(MO(i))+SelfM(MI(j))+I2(y)) + Z(MO(i), MI(j));
+                                Z(MO(i), MI(j)) = ...
+                                (BasisLA(MO(i),2)*BasisLA(MI(j),2))/(4*pi)...
+                                 *(SelfTerm(y) - I2(y)/k^2)   + Z(MO(i), MI(j));
                         else
-                            
-                            FirstSum = sum((dot(zOMRep,repmat( zIM_,[Quad,1]),2)/4-1/k^2) .* gMMo /Quad);
-                            SecondSum = sum((dot(repmat(zOM_,[Quad,1]), zIMRep,2)/4-1/k^2).* gMMi /Quad);
                             Z(MO(i), MI(j)) = ...
                             (BasisLA(MO(i),2)*BasisLA(MI(j),2))/(4*pi)...
-                            *(FirstSum + SecondSum )...
-                            + Z(MO(i), MI(j));
-                            
+                            *sum( (dot(zOMRep,repmat( zIM_,[Quad,1]),2)/4-1/k^2) .* gMMo)/Quad^2 ...
+                            + Z(MO(i), MI(j));    
+                        end
                         if Reflector
                             Z(MO(i), MI(j)) = ...
                             (BasisLA(MO(i),2)*BasisLA(MI(j),2))...
@@ -1166,9 +1284,9 @@
                             *sum((dot(zOM_.* GImmi, repmat(zIM,[Quad,1]).* GImmi,2)) /Quad)...
                             + Z(MO(i), MI(j));    
                         end
-           end
+           
                         end
-                        b2(MO(i)) = 1i/(w*mu)*sum(dot(repmat(Ei(y,:),Quad,1),RhoM_(:,:,MO(i)),2).*BasisLA(MO(i),2)/Quad)/2;
+                        b2(MO(i)) = 1i/(w*mu)*sum(dot(repmat(Ei(y,:),Quad,1),RhoM_(:,:,MO(i)),2).*BasisLA(MO(i),2)/2)/Quad + b2(MO(i));
                     end      
                 end       
             end
@@ -1750,66 +1868,145 @@
             GIz = [GIzx GIzy GIzz];
         end
         
-        function [SelfP, SelfM] = NearTriangleZ(p, t, EdgeList)
-            for j=1:2
-            for i=1:length(EdgeList)
-                v1 = p(EdgeList(i,1),:);
-                v2 = p(EdgeList(i,2),:);
-                if j ==1
-                    v3 = p(EdgeList(i,3),:);
-                elseif j==2
-                    v3 = p(EdgeList(i,4),:);
+        function [SelfTerm] = NearTriangleZ(p, t, EdgeList, I2)
+            SelfTerm = 1:length(I2);
+            SelfTerm(:) = 0; 
+            [PlusTri, MinusTri] = ArbitraryAntenna.PMTri(t, EdgeList);
+            for i=1:length(t)
+                Plus = find(PlusTri - i == 0);
+                Minus = find(MinusTri - i == 0);
+                
+                PlusPermut = EdgeList(Plus,:);
+                MinusPermut = EdgeList(Minus,:);
+%% Skrald
+%                 for j = 1:3
+%                     vm = p(t(i,j),:);
+%                     for k =1:3
+%                     vn = p(t(i,k),:);
+% 
+%                     a = dot((v1-v3),(v1-v3),2);
+%                     b = dot((v1-v3),(v1-v2),2);
+%                     c = dot((v1-v2),(v1-v2),2);
+%                 
+%                     a11 = dot(v1, v1, 2); a12 = dot(v1, v2, 2); a13 = dot(v1, v3, 2);
+%                     a22 = dot(v2, v2, 2); a23 = dot(v2, v3, 2); a33 = dot(v3, v3, 2);
+%                     a1n = dot(v1, vn, 2); a1m = dot(v1, vm, 2); a2n = dot(v2, vn, 2);
+%                     a2m = dot(v2, vm, 2); a3n = dot(v3, vn, 2); a3m = dot(v3, vm, 2);
+%                     amn = dot(vm, vn, 2);
+%                 
+%                     T1 = a11-2*a12+a22;     T2 = a11-a13-a12+a23;   T3 = a11-2*a13+a33;
+%                     T4 = a11-a12-a13+a23;   T5 = -a11+a1n+a12-a2n;  T6 = -a11+a1n+a13-a3n;
+%                     T7 = -a11+a1m+a12-a2m;  T8 = -a11+a1m+a13-a3m;  T9 = a11-a1n-a1m+amn;
+% 
+%                     l1 = sqrt(c); l2 = sqrt(a); l3 = sqrt(a-2*b+c);
+%                 
+%                     ln1 = log(((l1+l2)^2-l3^2)/(l2^2-(l3-l1)^2));
+%                     ln2 = log(((l2+l3)^2-l1^2)/(l3^2-(l1-l2)^2));
+%                     ln3 = log(((l3+l1)^2-l2^2)/(l1^2-(l2-l3)^2));
+% 
+%                     I11 = 1/(20*l1)*ln1 + (l1^2+5*l2^2-l3^2)/(120*l2^3)*ln2...
+%                     +(l1^2-l2^2+5*l3^2)/(120*l3^3)*ln3+(l3-l1)/(60*l2^2)+(l2-l1)/60*l3^2;
+% 
+%                     I12 = (3*l1^2+l2^2-l3^2)/(80*l1^2)*ln1+(l1^2+3*l2^2-l3^2)/(80*l2^3)*ln2...
+%                     +1/(40*l3)*ln3+(l3-l2)/(40*l1^2)+(l3-l1)/(40*l2^2);
+% 
+%                     I = 1/(8*l2)*ln1 + (l1^2+5*l2^2-l3^2)/(48*l2^3)*ln2...
+%                     +(l1^2-l2^2+5*l3^2)/(48*l3^3)*ln3 + (l3-l1)/(24*l2^2)+(l2-l1)/(24*l3^2);
+%                 
+%                 if sum(PlusPermut(:,3)-t(i,j) == 0) && sum(PlusPermut(:,3)-t(i,k) == 0) 
+%                     SelfTerm(i) = (I11*T1+I11*T3+I12*T2+I12*T4+I*T5+I*T6+I*T7+I*T8+T9*I2(i)*0.33^4) + SelfTerm(i);
+%                 elseif sum(MinusPermut(:,4)-t(i,j) == 0) && sum(MinusPermut(:,4)-t(i,k) == 0)
+%                     SelfTerm(i) = (I11*T1+I11*T3+I12*T2+I12*T4+I*T5+I*T6+I*T7+I*T8+T9*I2(i)*0.33^4) + SelfTerm(i);
+%                 elseif sum(MinusPermut(:,4)-t(i,j) == 0) && sum(PlusPermut(:,3)-t(i,k) == 0)
+%                     SelfTerm(i) = -(I11*T1+I11*T3+I12*T2+I12*T4+I*T5+I*T6+I*T7+I*T8+T9*I2(i)*0.33^4) + SelfTerm(i);
+%                 elseif sum(PlusPermut(:,3)-t(i,j) == 0) && sum(MinusPermut(:,4)-t(i,k) == 0)
+%                     SelfTerm(i) = -(I11*T1+I11*T3+I12*T2+I12*T4+I*T5+I*T6+I*T7+I*T8+T9*I2(i)*0.33^4) + SelfTerm(i);
+%                 end
+%                     end
+%                 end
+%%
+                for j = 1:length(Plus)
+                    
+                v1 = p(PlusPermut(j,1),:);
+                v2 = p(PlusPermut(j,2),:);
+                v3 = p(PlusPermut(j,3),:);
+                
+                    vm = p(PlusPermut(j,3),:);
+                    vn = p(PlusPermut(j,3),:);
+
+                    a = dot((v1-v3),(v1-v3),2);
+                    b = dot((v1-v3),(v1-v2),2);
+                    c = dot((v1-v2),(v1-v2),2);
+                
+                    a11 = dot(v1, v1, 2); a12 = dot(v1, v2, 2); a13 = dot(v1, v3, 2);
+                    a22 = dot(v2, v2, 2); a23 = dot(v2, v3, 2); a33 = dot(v3, v3, 2);
+                    a1n = dot(v1, vn, 2); a1m = dot(v1, vm, 2); a2n = dot(v2, vn, 2);
+                    a2m = dot(v2, vm, 2); a3n = dot(v3, vn, 2); a3m = dot(v3, vm, 2);
+                    amn = dot(vm, vn, 2);
+                
+                    T1 = a11-2*a12+a22;     T2 = a11-a13-a12+a23;   T3 = a11-2*a13+a33;
+                    T4 = a11-a12-a13+a23;   T5 = -a11+a1n+a12-a2n;  T6 = -a11+a1n+a13-a3n;
+                    T7 = -a11+a1m+a12-a2m;  T8 = -a11+a1m+a13-a3m;  T9 = a11-a1n-a1m+amn;
+
+                    l1 = sqrt(c); l2 = sqrt(a); l3 = sqrt(a-2*b+c);
+                
+                    ln1 = log(((l1+l2)^2-l3^2)/(l2^2-(l3-l1)^2));
+                    ln2 = log(((l2+l3)^2-l1^2)/(l3^2-(l1-l2)^2));
+                    ln3 = log(((l3+l1)^2-l2^2)/(l1^2-(l2-l3)^2));
+
+                    I11 = 1/(20*l1)*ln1 + (l1^2+5*l2^2-l3^2)/(120*l2^3)*ln2...
+                    +(l1^2-l2^2+5*l3^2)/(120*l3^3)*ln3+(l3-l1)/(60*l2^2)+(l2-l1)/60*l3^2;
+
+                    I12 = (3*l1^2+l2^2-l3^2)/(80*l1^2)*ln1+(l1^2+3*l2^2-l3^2)/(80*l2^3)*ln2...
+                    +1/(40*l3)*ln3+(l3-l2)/(40*l1^2)+(l3-l1)/(40*l2^2);
+
+                    I = 1/(8*l2)*ln1 + (l1^2+5*l2^2-l3^2)/(48*l2^3)*ln2...
+                    +(l1^2-l2^2+5*l3^2)/(48*l3^3)*ln3 + (l3-l1)/(24*l2^2)+(l2-l1)/(24*l3^2);
+                
+                    SelfTerm(i) = I11*T1+I11*T3+I12*T2+I12*T4+I*T5+I*T6+I*T7+I*T8+T9*I2(i) ;
                 end
-                vm = v3;
-                vn = v3;
+                for j = 1:length(Minus)
+                    
+                v1 = p(MinusPermut(j,1),:);
+                v2 = p(MinusPermut(j,2),:);
+                v3 = p(MinusPermut(j,3),:);
+                    vm = p(MinusPermut(j,4),:);
+                    vn = p(MinusPermut(j,4),:);
+
+                    a = dot((v1-v3),(v1-v3),2);
+                    b = dot((v1-v3),(v1-v2),2);
+                    c = dot((v1-v2),(v1-v2),2);
                 
-                a = dot((v1-v3),(v1-v3),2); b = dot((v1-v3),(v1-v2),2); c = dot((v1-v2),(v1-v2),2);
+                    a11 = dot(v1, v1, 2); a12 = dot(v1, v2, 2); a13 = dot(v1, v3, 2);
+                    a22 = dot(v2, v2, 2); a23 = dot(v2, v3, 2); a33 = dot(v3, v3, 2);
+                    a1n = dot(v1, vn, 2); a1m = dot(v1, vm, 2); a2n = dot(v2, vn, 2);
+                    a2m = dot(v2, vm, 2); a3n = dot(v3, vn, 2); a3m = dot(v3, vm, 2);
+                    amn = dot(vm, vn, 2);
                 
-                a11 = dot(v1, v1, 2); a12 = dot(v1, v2, 2); a13 = dot(v1, v3, 2);
-                a22 = dot(v2, v2, 2); a23 = dot(v2, v3, 2); a33 = dot(v3, v3, 2);
-                a1n = dot(v1, vn, 2); a1m = dot(v1, vm, 2); a2n = dot(v2, vn, 2);
-                a2m = dot(v2, vm, 2); a3n = dot(v3, vn, 2); a3m = dot(v3, vm, 2);
-                amn = dot(vm, vn, 2);
+                    T1 = a11-2*a12+a22;     T2 = a11-a13-a12+a23;   T3 = a11-2*a13+a33;
+                    T4 = a11-a12-a13+a23;   T5 = -a11+a1n+a12-a2n;  T6 = -a11+a1n+a13-a3n;
+                    T7 = -a11+a1m+a12-a2m;  T8 = -a11+a1m+a13-a3m;  T9 = a11-a1n-a1m+amn;
+
+                    l1 = sqrt(c); l2 = sqrt(a); l3 = sqrt(a-2*b+c);
                 
-                T1 = a11-2*a12+a22;     T2 = a11-a13-a12+a23;   T3 = a11-2*a13+a33;
-                T4 = a11-a12-a13+a23;   T5 = -a11+a1n+a12-a2n;  T6 = -a11+a1n+a13-a3n;
-                T7 = -a11+a1m+a12-a2m;  T8 = -a11+a1m+a13-a3m;  T9 = a11-a1n-a1m+amn;
-                   
-                I11 = log((b+sqrt(a).*sqrt(c))./(b-c-sqrt(c).*sqrt(a-2*b+c)))./(40*sqrt(c))...
-                          + log((-b+c+sqrt(c).*sqrt(a-2*b+c)./(-b+sqrt(a).*sqrt(c))))./(40*sqrt(c))...
-                          + (sqrt(a).*sqrt(a-2*b+c)-sqrt(c).*sqrt(a-2*b+c))./(60*(a-2*b+c).^(3/2))...
-                          + ((2*a-5*b+3*c).*log((a-b+sqrt(a).*sqrt(a-2*b+c).*(c-b+sqrt(c).*sqrt(a-2*b+c)))) ...
-                          ./(b-a+sqrt(a).*sqrt(a-2*b+c).*(b-c+sqrt(c).*sqrt(a-2*b+c))))./(120*(a-2*b+c).^(3/2))...
-                          +(-sqrt(a).*sqrt(c)+sqrt(a).*sqrt(a-2*b+c))./(60*a.^(3/2))...
-                          + ((2*a+b).*log(((b+sqrt(a).*sqrt(c)).*(a-b+sqrt(a).*sqrt(a-2*b+c)))...
-                          ./((-b+sqrt(a).*sqrt(c)).*(-a+b+sqrt(a).*sqrt(a-2*b+c)))))./(120*a.^(3/2));
-                      
-                I12 = log((b+sqrt(a).*sqrt(c))./(b-c+sqrt(c).*sqrt(a-2*b+c)))./(120*sqrt(c))...
-                          + log((a-b+sqrt(a).*sqrt(a-2*b+c))./(-b+sqrt(a).*sqrt(c)))./(120*sqrt(a))...
-                          + (-sqrt(a).*sqrt(a-2*b+c)+sqrt(c).*sqrt(a-2*b+c))./(120*(a-2*b+c).^(3/2))...
-                          + (2*a-3*b+c).*log((a-b+sqrt(a).*sqrt(a-2*b+c))./(b-c+sqrt(c).*sqrt(a-2*b+c)))./(120*(a-2*b+c).^(3/2))...
-                          + (sqrt(a).*sqrt(a-2*b+c)-sqrt(c).*sqrt(a-2*b+c))./(120*(a-2*b+c).^(3/2))...
-                          + (a-3*b+2*c).*log((-b+c+sqrt(c).*sqrt(a-2*b+c))./(-a+b+sqrt(a).*sqrt(a-2*b+c)))./(120*(a-2*b+c).^(3/2))...
-                          + (-3*sqrt(a).*sqrt(c)+3*sqrt(c).*sqrt(a-2*b+c))./(120*(c).^(3/2))...
-                          + (3*b+2*c).*log((-b+c+sqrt(c).*sqrt(a-2*b+c))./(-b+sqrt(a).*sqrt(c)))./(120*c.^(3/2))...
-                          + (-3*sqrt(a).*sqrt(c)+3*sqrt(a).*sqrt(a-2*b+c))./(120*(c).^(3/2))...
-                          + (2*a+3*b).*log((b+sqrt(a).*sqrt(c))./(-a+b+sqrt(a).*sqrt(a-2*b+c)))./(120*a.^(3/2));
-                   
-                I  = (-log((-b+sqrt(a).*sqrt(c))./(a-b+sqrt(a).*sqrt(a-2*b+c))))./(24*sqrt(a))...
-                        + (log((b+sqrt(a).*sqrt(c))./(b-c+sqrt(c).*sqrt(a-2*b+c))))./(24*sqrt(c))...
-                        + (-sqrt(a).*sqrt(c)+sqrt(a).*sqrt(a-2*b+c))./(24*a.^(3/2))...
-                        + (a+b).*log((b+sqrt(a).*sqrt(c)./(-a+b+sqrt(a).*sqrt(a-2*b+c))))./(24*a.^(3/2))...
-                        + (log((a-b+sqrt(a).*sqrt(a-2*b+c))./(b-c+sqrt(c).*sqrt(a-2*b+c))))./(24*sqrt(a-2*b+c))...
-                        - (log((b+sqrt(a).*sqrt(c))./(-b+c+sqrt(c).*sqrt(a-2*b+c))))./(12*sqrt(c)) ...
-                        + (sqrt(a).*sqrt(a-2*b+c)-sqrt(c).*sqrt(a-2*b+c))./(24*(a-2*b+c).^(3/2))...
-                        + ((a-3*b+2*c).*log((-b+c+sqrt(c).*sqrt(a-2*b+c))./(-a+b+sqrt(a).*sqrt(a-2*b+c))))./(24*(a-2*b+c).^(3/2));
-            
-            if j==1
-            SelfP(i) = -(I11*T1+I11*T3+(I12*T2+I12*T4)+(I*T5+I*T6+I*T7+I*T8+T9));
-            elseif j==2
-            SelfM(i) = I11*T1+I11*T3+(I12*T2+I12*T4)+(I*T5+I*T6+I*T7+I*T8+T9);
-            end
-            end
+                    ln1 = log(((l1+l2)^2-l3^2)/(l2^2-(l3-l1)^2));
+                    ln2 = log(((l2+l3)^2-l1^2)/(l3^2-(l1-l2)^2));
+                    ln3 = log(((l3+l1)^2-l2^2)/(l1^2-(l2-l3)^2));
+
+                    I11 = 1/(20*l1)*ln1 + (l1^2+5*l2^2-l3^2)/(120*l2^3)*ln2...
+                    +(l1^2-l2^2+5*l3^2)/(120*l3^3)*ln3+(l3-l1)/(60*l2^2)+(l2-l1)/60*l3^2;
+
+                    I12 = (3*l1^2+l2^2-l3^2)/(80*l1^2)*ln1+(l1^2+3*l2^2-l3^2)/(80*l2^3)*ln2...
+                    +1/(40*l3)*ln3+(l3-l2)/(40*l1^2)+(l3-l1)/(40*l2^2);
+
+                    I = 1/(8*l2)*ln1 + (l1^2+5*l2^2-l3^2)/(48*l2^3)*ln2...
+                    +(l1^2-l2^2+5*l3^2)/(48*l3^3)*ln3 + (l3-l1)/(24*l2^2)+(l2-l1)/(24*l3^2);
+                
+                    SelfTerm(i) = I11*T1+I11*T3+I12*T2+I12*T4+I*T5+I*T6+I*T7+I*T8+T9*I2(i) ;
+                end
+                if ~isempty(PlusPermut) && ~isempty(MinusPermut)
+                    SelfTerm(i) = -SelfTerm(i);
+                end
             end
         end
 
