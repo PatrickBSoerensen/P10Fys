@@ -651,24 +651,19 @@
                     PI = find(PlusTri - h ==0);
                     MI = find(MinusTri - h ==0);
                     SI = SubTri(:,:,h);
-                               
                     IoO = sqrt(sum((Center(y,:)-SI).^2,2));
                     OoI = sqrt(sum((Center(h,:)-SO).^2,2));
-                    
-                    %Loop over outer triangles basis functions
+
                     for i = 1:length(PO)
-                        % Intermediate loading of plus and minus functions
-                        % evaluated in center points, _ denotes sub
-                        % triangle
                         zMP = (RhoP(PO(i),:));
+                        zMPR = repmat(zMP, Quad,1);
                         zMP_ = (RhoP_(:,:,PO(i)));
-                        % Subtriangles for the inner triangles basis
-                        % functions
                         for j = 1:length(PI)
                             % Intermediate loading of plus and minus functions
                             % evaluated in center points, _ denotes sub
                             % triangle
                             zNP = (RhoP(PI(j),:));
+                            zNPR = repmat(zNP, Quad,1);
                             zNP_ = (RhoP_(:,:,PI(j)));           
                             gPPo = exp(1i.*k.*IoO)./IoO;
                             gPPi = exp(1i.*k.*OoI)./OoI;
@@ -681,43 +676,44 @@
 %                             else
                                 Z(PO(i), PI(j)) = ...
                                 (BasisLA(PO(i),2)*BasisLA(PI(j),2))/(4*pi)...
-                                *sum((dot(repmat(zMP,[Quad,1]), zNP_,2)/4-1/k^2) .* gPPo ...
-                                +(dot(zMP_, repmat(zNP,[Quad,1]),2)/4-1/k^2) .* gPPi)/Quad...
+                                *sum((dot(zMPR, zNP_,2)/4-1/k^2) .* gPPo ...
+                                +(dot(zMP_, zNPR,2)/4-1/k^2) .* gPPi)/Quad...
                                 + Z(PO(i), PI(j));              
 %                             end
                         end
                         for j=1:length(MI)
                             zNM = (RhoM(MI(j),:));
+                            zNMR = repmat(zNM, Quad,1);
                             zNM_ = (RhoM_(:,:,MI(j)));         
                             
-                                gPMo = exp(1i.*k.*IoO)./IoO;
-                                gMPi = exp(1i.*k.*OoI)./OoI;
+                            gPMo = exp(1i.*k.*IoO)./IoO;
+                            gMPi = exp(1i.*k.*OoI)./OoI;
 %                                 if y==h
 %                                  Z(PO(i), MI(j)) = ...
 %                                 (BasisLA(PO(i),2)*BasisLA(MI(j),2))/(4*pi)...
 %                                 *sum((dot(repmat(zMP,[Quad,1]), zNM_ ,2)/4+1/k^2 ...
 %                                 +dot(zMP_, repmat(zNM,[Quad,1]),2)/4+1/k^2).* (1i*k*I2(y)))/Quad ...
 %                                 + Z(PO(i), MI(j));
-%                                 
 %                             else
                                 Z(PO(i), MI(j)) = ...
                                 (BasisLA(PO(i),2)*BasisLA(MI(j),2))/(4*pi)...
-                                *sum((dot(repmat(zMP,[Quad,1]), zNM_ ,2)/4+1/k^2) .* gPMo...
-                                + (dot(zMP_, repmat(zNM,[Quad,1]),2)/4+1/k^2) .* gMPi)/Quad...
+                                *sum((dot(zMPR, zNM_ ,2)/4+1/k^2) .* gPMo...
+                                + (dot(zMP_, zNMR,2)/4+1/k^2) .* gMPi)/Quad...
                                 + Z(PO(i), MI(j));
-                                
-%                                 end  
+%                                 end 
                         end
                     end
                     for i=1:length(MO)
                         zMM = (RhoM(MO(i),:));
+                        zMMR = repmat(zMM, Quad,1);
                         zMM_ = (RhoM_(:,:,MO(i)));
                         for j=1:length(PI)
                             zNP = (RhoP(PI(j),:));
+                            zNPR = repmat(zNP, Quad,1);
                             zNP_ = (RhoP_(:,:,PI(j)));
                             
-                                gPMi = exp(1i.*k.*OoI)./OoI;
-                                gMPo = exp(1i.*k.*IoO)./IoO;
+                            gPMi = exp(1i.*k.*OoI)./OoI;
+                            gMPo = exp(1i.*k.*IoO)./IoO;
 %                                    if y==h
 %                                  Z(MO(i), PI(j)) = ...
 %                                 (BasisLA(MO(i),2)*BasisLA(PI(j),2))/(4*pi)...
@@ -727,13 +723,14 @@
 %                             else
                                 Z(MO(i), PI(j)) = ...
                                 (BasisLA(MO(i),2)*BasisLA(PI(j),2))/(4*pi)...
-                                *sum((dot(repmat(zMM,[Quad,1]), zNP_,2)/4+1/k^2) .* gMPo ...
-                                + (dot(zMM_, repmat(zNP,[Quad,1]),2)/4+1/k^2) .* gPMi)/Quad...
+                                *sum((dot(zMMR, zNP_,2)/4+1/k^2) .* gMPo ...
+                                + (dot(zMM_, zNPR,2)/4+1/k^2) .* gPMi)/Quad...
                                 + Z(MO(i), PI(j));
 %                                    end
                         end
                         for j=1:length(MI)
                             zNM = (RhoM(MI(j),:));
+                            zNMR = repmat(zNM, Quad,1);
                             zNM_ = (RhoM_(:,:,MI(j))); 
                             
                                 gMMo = exp(1i.*k.*IoO)./IoO;
@@ -747,12 +744,12 @@
 %                             else
                                 Z(MO(i), MI(j)) = ...
                                 (BasisLA(MO(i),2)*BasisLA(MI(j),2))/(4*pi)...
-                                *sum((dot(repmat(zMM,[Quad,1]),zNM_,2)/4-1/k^2) .* gMMo...
-                                +(dot(zMM_, repmat(zNM,[Quad,1]),2)/4-1/k^2) .* gMMi)/Quad...
+                                *sum((dot(zMMR,zNM_,2)/4-1/k^2) .* gMMo...
+                                +(dot(zMM_, zNMR,2)/4-1/k^2) .* gMMi)/Quad...
                                 + Z(MO(i), MI(j));
 %                             end
                         end
-                      end      
+                    end      
                 end       
             end
             for y=1:length(t)
@@ -770,7 +767,120 @@
             a = Z\b;
         end
         
-     
+        function [Z, b, a] = MoMSergey(w, mu, t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k, SubTri, x, y, z, Point, Ei, eps0)
+           
+            Z = zeros(length(EdgeList),length(EdgeList))+1i*zeros(length(EdgeList),length(EdgeList));
+            if ~Point
+                Ei(:,1) = x.*exp(-1i*k.*(Center(:,2)));
+                Ei(:,2) = y.*exp(-1i*k.*(Center(:,1)));
+                Ei(:,3) = z.*exp(-1i*k.*(Center(:,1)));
+            end
+            b1 = 1:length(EdgeList); b1(:)=0;
+            b2 = 1:length(EdgeList); b2(:)=0;
+            [PlusTri, MinusTri] = ArbitraryAntenna.PMTri(t, EdgeList);
+            
+            SubAmount = size(SubTri);
+            Quad = SubAmount(1);
+            for y=1:length(t)
+                PO = find(PlusTri - y ==0);
+                MO = find(MinusTri - y ==0);
+                SO = SubTri(:,:,y);
+                for h=1:length(t)
+                    PI = find(PlusTri - h ==0);
+                    MI = find(MinusTri - h ==0);
+                    SI = SubTri(:,:,h);
+                    IoO = sqrt(sum((Center(y,:)-SI).^2,2));
+                    OoI = sqrt(sum((Center(h,:)-SO).^2,2));
+
+                    for i = 1:length(PO)
+                        zMP = (RhoP(PO(i),:));
+                        zMPR = repmat(zMP, Quad,1);
+                        zMP_ = (RhoP_(:,:,PO(i)));
+                        for j = 1:length(PI)
+                            % Intermediate loading of plus and minus functions
+                            % evaluated in center points, _ denotes sub
+                            % triangle
+                            zNP = (RhoP(PI(j),:));
+                            zNPR = repmat(zNP, Quad,1);
+                            zNP_ = (RhoP_(:,:,PI(j)));           
+                            gPPo = exp(1i.*k.*IoO)./IoO;
+                            gPPi = exp(1i.*k.*OoI)./OoI;
+                            
+                                AP = 1/(4*pi)*(BasisLA(PI(j),2)*sum(zNP.*gPPo)/(2*Quad));
+                                OhmP = -1/(4*pi*1i*w*eps0)*(BasisLA(PI(j),2)*sum(gPPo)/Quad);
+                                Z(PO(i), PI(j)) = ...
+                                BasisLA(PO(i),2)*(1i*w*dot(AP,zMP,2)/2) ...
+                                -OhmP + Z(PO(i), PI(j));
+                        end
+                        for j=1:length(MI)
+                            zNM = (RhoM(MI(j),:));
+                            zNMR = repmat(zNM, Quad,1);
+                            zNM_ = (RhoM_(:,:,MI(j)));         
+                            
+                            gPMo = exp(1i.*k.*IoO)./IoO;
+                            gMPi = exp(1i.*k.*OoI)./OoI;
+                            
+                             AM = 1/(4*pi)*(BasisLA(MI(j),2)*sum(zNM.*gPMo)/(2*Quad));
+                             OhmM = 1/(4*pi*1i*w*eps0)*(BasisLA(MI(j),2)*sum(gPMo)/Quad);
+                             
+                             Z(PO(i), MI(j)) =  ...
+                                BasisLA(PO(i),2)*(1i*w*dot(AM,zMP,2)/2) ...
+                                +OhmM + + Z(PO(i), MI(j));
+
+                        end
+                    end
+                    for i=1:length(MO)
+                        zMM = (RhoM(MO(i),:));
+                        zMMR = repmat(zMM, Quad,1);
+                        zMM_ = (RhoM_(:,:,MO(i)));
+                        for j=1:length(PI)
+                            zNP = (RhoP(PI(j),:));
+                            zNPR = repmat(zNP, Quad,1);
+                            zNP_ = (RhoP_(:,:,PI(j)));
+                            
+                            gPMi = exp(1i.*k.*OoI)./OoI;
+                            gMPo = exp(1i.*k.*IoO)./IoO;
+                            
+                                AP = 1/(4*pi)*(BasisLA(PI(j),2)*sum(zNP.*gMPo)/(2*Quad));
+                                OhmP = -1/(4*pi*1i*w*eps0)*(BasisLA(PI(j),2)*sum(gMPo)/Quad);
+                                Z(MO(i), PI(j)) = ...
+                                BasisLA(MO(i),2)*(1i*w*dot(AP,zMM,2)/2) ...
+                                -OhmP + Z(MO(i), PI(j));
+                        end
+                        for j=1:length(MI)
+                            zNM = (RhoM(MI(j),:));
+                            zNMR = repmat(zNM, Quad,1);
+                            zNM_ = (RhoM_(:,:,MI(j))); 
+                            
+                                gMMo = exp(1i.*k.*IoO)./IoO;
+                                gMMi = exp(1i.*k.*OoI)./OoI; 
+                                
+                                
+                               AM = 1/(4*pi)*(BasisLA(MI(j),2)*sum(zNM.*gMMo)/(2*Quad));
+                              OhmM = 1/(4*pi*1i*w*eps0)*(BasisLA(MI(j),2)*sum(gMMo)/Quad);
+                             
+                             Z(MO(i), MI(j)) =  ...
+                                BasisLA(MO(i),2)*(1i*w*dot(AM,zMM,2)/2) ...
+                                +OhmM + + Z(MO(i), MI(j));
+                        end
+                    end      
+                end       
+            end
+            for y=1:length(t)
+                PO = find(PlusTri - y ==0);
+                MO = find(MinusTri - y ==0);
+                for i=1:length(PO)
+                    b1(PO(i)) = -1i/(w*mu)*sum(dot(repmat(Ei(y,:),Quad,1),RhoP_(:,:,PO(i)),2).*BasisLA(PO(i),2)/Quad)/2 + b1(PO(i));
+                end
+                for i=1:length(MO)
+                    b2(MO(i)) = -1i/(w*mu)*sum(dot(repmat(Ei(y,:),Quad,1),RhoM_(:,:,MO(i)),2).*BasisLA(MO(i),2)/Quad)/2 + b2(MO(i));
+                end
+            end
+            b = (b1+b2).';
+            % Z\b is a newer faster version of inv(Z)*b
+            a = Z\b;
+        end
+ 
         function [Z, b, a] = MoMIG(w, mu, p, t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k, SubTri, x, y, z, Point, Ei,...
                 distx, Reflector, InEps, strip_length, strip_width, dx, Nz, lambda, n, eps1)
             % alocating space
