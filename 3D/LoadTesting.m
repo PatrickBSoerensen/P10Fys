@@ -1,9 +1,16 @@
 %% load STL file into matlab
 
 % stl = stlread('antennas/Dipole10cmT264.stl');
-% stl = stlread('antennas/Dipole10cmT580.stl'); %ok
+stl = stlread('antennas/Dipole10cmT580.stl'); %ok
+% Smool
+% stl = stlread('antennas/DipoleTEST.stl'); %ok
+% stl = stlread('antennas/Dipole10CM1372T.stl'); %ok
+%Smooler
+% stl = stlread('antennas/Dipole10cm2502T01mm.stl'); %ok
 
-stl = stlread('antennas/Dipole10cmT180.stl');
+% stl = stlread('antennas/Dipole10cm2502T.stl');
+% stl = stlread('antennas/Dipole100cm1560T.stl');
+% stl = stlread('antennas/Dipole10cmT180.stl');
 
 % stl = stlread('antennas/Dipole10cmT264.stl');
 % stl = stlread('antennas/Test4400.stl');
@@ -41,11 +48,13 @@ radius = 0.0015;
 Length = (maxmaxp-minp(maxaxis));
 %% Parameters
 % Controls amount of antenna
+% p(:,1) = p(:,1)+0.03;
+
 p1 = p;
-p2 = p;
-p3 = p;
-p4 = p;
-% p1(:,1) = p(:,1)-0.001;
+% p2 = p;
+% p3 = p;
+% p4 = p;
+% p1(:,1) = p(:,1)+0.003;
 % p2(:,1) = p(:,1)+0.01;
 % p2(:,2) = p(:,2)+0.05;
 % p3(:,1) = p(:,1)+0.02;
@@ -76,10 +85,12 @@ Reflector = 0;
 FromAnt=0.003;
 xdist = radius/2+FromAnt;
 %% Visual check
+if 0
 figure(1)
 plot3(p(:,1),p(:,2),p(:,3),'*')
 axis image
 toc;
+end
 %% constants
 eps0=8.854187817*10^-12; %F/m
 mu0=4*pi*10^-7; %N/A^2
@@ -117,11 +128,12 @@ tic;
 fprintf('\n')
 disp('Lifting subtriangles and center points')
 [Center, SubTri] = ArbitraryAntenna.CenterLift(Center, SubTri);
-
+if 0
 figure(2)
 plot3(Center(:,1),Center(:,2),Center(:,3),'*')
 axis image
 toc;
+end
 %% Basis Function setup
 tic;
 fprintf('\n')
@@ -185,7 +197,7 @@ colormap gray;
 colorbar;
 axis('equal');
 rotate3d
-
+asd
 %%
 [Esc, EscPhi, EscTheta] = ArbitraryAntenna.AngularFarField(w, mu0, k, 30, Center, Jface, 300);
 
@@ -222,141 +234,141 @@ Exy = Exy/max(max(Exy));
 Exz = Exz/max(max(Exz));
 Ezy = Ezy/max(max(Ezy));
 end
-%% Plotting E
-if PlotComp
-figure(4)
-pcolor(x, y, real(Exyx).')
-shading interp
-colorbar
-if normalize
-caxis([0 0.1])
-end
-xlabel('x');
-ylabel('y');
-title('xy plane- x comp');
-
-figure(5)
-pcolor(x, y, real(Exyy).')
-shading interp
-colorbar
-if normalize
-caxis([0 0.1])
-end
-xlabel('x');
-ylabel('y');
-title('xy plane - y comp');
-
-figure(6)
-pcolor(x, y, real(Exyz).')
-shading interp
-colorbar
-if normalize
-caxis([0 0.1])
-end
-xlabel('x');
-ylabel('y');
-title('xy plane - z comp');
-end
-
-figure(7)
-pcolor(x, y, abs(Exy)')    
-shading interp
-colorbar
-if normalize
-caxis([0 0.1])
-end
-xlabel('x');
-ylabel('y');
-title('xy plane E-size');
-%%
-if PlotComp
-figure(8)
-pcolor(x, z, real(Exzx).')
-shading interp
-colorbar
-if normalize
-caxis([0 0.1])
-end
-xlabel('x');
-ylabel('z');
-title('xz plane - x comp');
-
-figure(9)
-pcolor(x, z, real(Exzy).')
-shading interp
-colorbar
-if normalize
-caxis([0 0.1])
-end
-xlabel('x');
-ylabel('z');
-title('xz plane - y comp');
-
-figure(10)
-pcolor(x, z, real(Exzz).')
-shading interp
-colorbar
-if normalize
-caxis([0 0.1])
-end
-xlabel('x');
-ylabel('z');
-title('xz plane - z comp');
-end
-
-figure(11)
-pcolor(x, z, abs(Exz).')
-shading interp
-colorbar
-if normalize
-caxis([0 0.1])
-end
-xlabel('x');
-ylabel('z');
-title('xz  plane E-size');
-%% yz
-if PlotComp
-figure(12)
-pcolor(z, y, real(Eyzx).')
-shading interp
-colorbar
-if normalize
-caxis([0 0.1])
-end
-xlabel('z');
-ylabel('y');
-title('yz plane x-comp');
-
-figure(13)
-pcolor(z, y, real(Eyzy).')
-shading interp
-colorbar
-if normalize
-caxis([0 0.1])
-end
-xlabel('z');
-ylabel('y');
-title('yz plane y-comp');
-
-figure(14)
-pcolor(z, y, real(Eyzz).')
-shading interp
-colorbar
-if normalize
-caxis([0 0.1])
-end
-xlabel('z');
-ylabel('y');
-title('yz plane z-comp');
-end
-
-figure(15)
-pcolor(z, y, abs(Ezy)')
-shading interp
-colorbar
-if normalize
-caxis([0 0.1])
-end
-xlabel('z');
-ylabel('y');
-title('yz plane E-size');
+% %% Plotting E
+% if PlotComp
+% figure(4)
+% pcolor(x, y, real(Exyx).')
+% shading interp
+% colorbar
+% if normalize
+% caxis([0 0.1])
+% end
+% xlabel('x');
+% ylabel('y');
+% title('xy plane- x comp');
+% 
+% figure(5)
+% pcolor(x, y, real(Exyy).')
+% shading interp
+% colorbar
+% if normalize
+% caxis([0 0.1])
+% end
+% xlabel('x');
+% ylabel('y');
+% title('xy plane - y comp');
+% 
+% figure(6)
+% pcolor(x, y, real(Exyz).')
+% shading interp
+% colorbar
+% if normalize
+% caxis([0 0.1])
+% end
+% xlabel('x');
+% ylabel('y');
+% title('xy plane - z comp');
+% end
+% 
+% figure(7)
+% pcolor(x, y, abs(Exy)')    
+% shading interp
+% colorbar
+% if normalize
+% caxis([0 0.1])
+% end
+% xlabel('x');
+% ylabel('y');
+% title('xy plane E-size');
+% %%
+% if PlotComp
+% figure(8)
+% pcolor(x, z, real(Exzx).')
+% shading interp
+% colorbar
+% if normalize
+% caxis([0 0.1])
+% end
+% xlabel('x');
+% ylabel('z');
+% title('xz plane - x comp');
+% 
+% figure(9)
+% pcolor(x, z, real(Exzy).')
+% shading interp
+% colorbar
+% if normalize
+% caxis([0 0.1])
+% end
+% xlabel('x');
+% ylabel('z');
+% title('xz plane - y comp');
+% 
+% figure(10)
+% pcolor(x, z, real(Exzz).')
+% shading interp
+% colorbar
+% if normalize
+% caxis([0 0.1])
+% end
+% xlabel('x');
+% ylabel('z');
+% title('xz plane - z comp');
+% end
+% 
+% figure(11)
+% pcolor(x, z, abs(Exz).')
+% shading interp
+% colorbar
+% if normalize
+% caxis([0 0.1])
+% end
+% xlabel('x');
+% ylabel('z');
+% title('xz  plane E-size');
+% %% yz
+% if PlotComp
+% figure(12)
+% pcolor(z, y, real(Eyzx).')
+% shading interp
+% colorbar
+% if normalize
+% caxis([0 0.1])
+% end
+% xlabel('z');
+% ylabel('y');
+% title('yz plane x-comp');
+% 
+% figure(13)
+% pcolor(z, y, real(Eyzy).')
+% shading interp
+% colorbar
+% if normalize
+% caxis([0 0.1])
+% end
+% xlabel('z');
+% ylabel('y');
+% title('yz plane y-comp');
+% 
+% figure(14)
+% pcolor(z, y, real(Eyzz).')
+% shading interp
+% colorbar
+% if normalize
+% caxis([0 0.1])
+% end
+% xlabel('z');
+% ylabel('y');
+% title('yz plane z-comp');
+% end
+% 
+% figure(15)
+% pcolor(z, y, abs(Ezy)')
+% shading interp
+% colorbar
+% if normalize
+% caxis([0 0.1])
+% end
+% xlabel('z');
+% ylabel('y');
+% title('yz plane E-size');

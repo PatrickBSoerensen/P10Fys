@@ -105,48 +105,48 @@
                     CenterToMove=Center(k,:);
                     SubTriToMove=reshape(SubTri(:,:,k), 3, [])';
                     R=0.0015;
-%                     SubTriRet(:,:,k) = reshape(SubTri(:,:,k), 3, [])';
-                if Center(k,2) >=0.05 
-                    % part of spherical surface
-                    CenterOfSphere = [0, 0.05, 0];
-                    Normal = CenterToMove-CenterOfSphere;
-                    n=sqrt(Normal(1)^2+Normal(2)^2+Normal(3)^2);
-                    Normal = Normal/n;
-                    Center(k,:) = CenterOfSphere+Normal*R;
-                    
-                    Normal = SubTriToMove-CenterOfSphere;
-                    n=sqrt(Normal(:,1).^2+Normal(:,2).^2+Normal(:,3).^2);
-                    Normal = Normal./n;
-                    SubTriRet(:,:,k) = CenterOfSphere+Normal*R;
-                elseif Center(k,2) <=-0.05
-                    % part of spherical surface
-                    CenterOfSphere = [0, -0.05, 0];
-                    Normal = CenterToMove-CenterOfSphere;
-                    n=sqrt(Normal(1)^2+Normal(2)^2+Normal(3)^2);
-                    Normal = Normal/n;
-                    Center(k,:) = CenterOfSphere+Normal*R;
-                    
-                    Normal = SubTriToMove-CenterOfSphere;
-                    n=sqrt(Normal(:,1).^2+Normal(:,2).^2+Normal(:,3).^2);
-                    Normal = Normal./n;
-                    SubTriRet(:,:,k) = CenterOfSphere+Normal*R;
-                else
-                    % Part of Cylinder
-                    CenterOfCylinder = [0, CenterToMove(:,2), 0];
-                    Normal = CenterToMove-CenterOfCylinder;
-                    n=sqrt(Normal(1)^2+Normal(2)^2+Normal(3)^2);
-                    Normal = Normal/n;
-                    Center(k,:) = CenterOfCylinder+Normal*R;
-                    
-                    clear CenterOfCylinder
-                    CenterOfCylinder(:,2) = SubTriToMove(:,2);
-                    CenterOfCylinder(:,1) = 0;
-                    CenterOfCylinder(:,3) = 0;
-                    Normal = SubTriToMove-CenterOfCylinder;
-                    n=sqrt(Normal(:,1).^2+Normal(:,2).^2+Normal(:,3).^2);
-                    Normal = Normal./n;
-                    SubTriRet(:,:,k) = CenterOfCylinder+Normal*R;
-                end
+                    SubTriRet(:,:,k) = reshape(SubTri(:,:,k), 3, [])';
+%                 if Center(k,2) >=0.05 
+%                     % part of spherical surface
+%                     CenterOfSphere = [0, 0.05, 0];
+%                     Normal = CenterToMove-CenterOfSphere;
+%                     n=sqrt(Normal(1)^2+Normal(2)^2+Normal(3)^2);
+%                     Normal = Normal/n;
+%                     Center(k,:) = CenterOfSphere+Normal*R;
+%                     
+%                     Normal = SubTriToMove-CenterOfSphere;
+%                     n=sqrt(Normal(:,1).^2+Normal(:,2).^2+Normal(:,3).^2);
+%                     Normal = Normal./n;
+%                     SubTriRet(:,:,k) = CenterOfSphere+Normal*R;
+%                 elseif Center(k,2) <=-0.05
+%                     % part of spherical surface
+%                     CenterOfSphere = [0, -0.05, 0];
+%                     Normal = CenterToMove-CenterOfSphere;
+%                     n=sqrt(Normal(1)^2+Normal(2)^2+Normal(3)^2);
+%                     Normal = Normal/n;
+%                     Center(k,:) = CenterOfSphere+Normal*R;
+%                     
+%                     Normal = SubTriToMove-CenterOfSphere;
+%                     n=sqrt(Normal(:,1).^2+Normal(:,2).^2+Normal(:,3).^2);
+%                     Normal = Normal./n;
+%                     SubTriRet(:,:,k) = CenterOfSphere+Normal*R;
+%                 else
+%                     % Part of Cylinder
+%                     CenterOfCylinder = [0, CenterToMove(:,2), 0];
+%                     Normal = CenterToMove-CenterOfCylinder;
+%                     n=sqrt(Normal(1)^2+Normal(2)^2+Normal(3)^2);
+%                     Normal = Normal/n;
+%                     Center(k,:) = CenterOfCylinder+Normal*R;
+%                     
+%                     clear CenterOfCylinder
+%                     CenterOfCylinder(:,2) = SubTriToMove(:,2);
+%                     CenterOfCylinder(:,1) = 0;
+%                     CenterOfCylinder(:,3) = 0;
+%                     Normal = SubTriToMove-CenterOfCylinder;
+%                     n=sqrt(Normal(:,1).^2+Normal(:,2).^2+Normal(:,3).^2);
+%                     Normal = Normal./n;
+%                     SubTriRet(:,:,k) = CenterOfCylinder+Normal*R;
+%                 end
             end
         end
         
@@ -781,102 +781,134 @@
             
             SubAmount = size(SubTri);
             Quad = SubAmount(1);
-            for y=1:length(t)
-                PO = find(PlusTri - y ==0);
-                MO = find(MinusTri - y ==0);
-                SO = SubTri(:,:,y);
-                for h=1:length(t)
-                    PI = find(PlusTri - h ==0);
-                    MI = find(MinusTri - h ==0);
-                    SI = SubTri(:,:,h);
-                    IoO = sqrt(sum((Center(y,:)-SI).^2,2));
-                    OoI = sqrt(sum((Center(h,:)-SO).^2,2));
-
-                    for i = 1:length(PO)
-                        zMP = (RhoP(PO(i),:));
-                        zMPR = repmat(zMP, Quad,1);
-                        zMP_ = (RhoP_(:,:,PO(i)));
-                        for j = 1:length(PI)
-                            % Intermediate loading of plus and minus functions
-                            % evaluated in center points, _ denotes sub
-                            % triangle
-                            zNP = (RhoP(PI(j),:));
-                            zNPR = repmat(zNP, Quad,1);
-                            zNP_ = (RhoP_(:,:,PI(j)));           
-                            gPPo = exp(1i.*k.*IoO)./IoO;
-                            gPPi = exp(1i.*k.*OoI)./OoI;
-                            
-                                AP = 1/(4*pi)*(BasisLA(PI(j),2)*sum(zNP.*gPPo)/(2*Quad));
-                                OhmP = -1/(4*pi*1i*w*eps0)*(BasisLA(PI(j),2)*sum(gPPo)/Quad);
-                                Z(PO(i), PI(j)) = ...
-                                BasisLA(PO(i),2)*(1i*w*dot(AP,zMP,2)/2) ...
-                                -OhmP + Z(PO(i), PI(j));
-                        end
-                        for j=1:length(MI)
-                            zNM = (RhoM(MI(j),:));
-                            zNMR = repmat(zNM, Quad,1);
-                            zNM_ = (RhoM_(:,:,MI(j)));         
-                            
-                            gPMo = exp(1i.*k.*IoO)./IoO;
-                            gMPi = exp(1i.*k.*OoI)./OoI;
-                            
-                             AM = 1/(4*pi)*(BasisLA(MI(j),2)*sum(zNM.*gPMo)/(2*Quad));
-                             OhmM = 1/(4*pi*1i*w*eps0)*(BasisLA(MI(j),2)*sum(gPMo)/Quad);
-                             
-                             Z(PO(i), MI(j)) =  ...
-                                BasisLA(PO(i),2)*(1i*w*dot(AM,zMP,2)/2) ...
-                                +OhmM + + Z(PO(i), MI(j));
-
-                        end
-                    end
-                    for i=1:length(MO)
-                        zMM = (RhoM(MO(i),:));
-                        zMMR = repmat(zMM, Quad,1);
-                        zMM_ = (RhoM_(:,:,MO(i)));
-                        for j=1:length(PI)
-                            zNP = (RhoP(PI(j),:));
-                            zNPR = repmat(zNP, Quad,1);
-                            zNP_ = (RhoP_(:,:,PI(j)));
-                            
-                            gPMi = exp(1i.*k.*OoI)./OoI;
-                            gMPo = exp(1i.*k.*IoO)./IoO;
-                            
-                                AP = 1/(4*pi)*(BasisLA(PI(j),2)*sum(zNP.*gMPo)/(2*Quad));
-                                OhmP = -1/(4*pi*1i*w*eps0)*(BasisLA(PI(j),2)*sum(gMPo)/Quad);
-                                Z(MO(i), PI(j)) = ...
-                                BasisLA(MO(i),2)*(1i*w*dot(AP,zMM,2)/2) ...
-                                -OhmP + Z(MO(i), PI(j));
-                        end
-                        for j=1:length(MI)
-                            zNM = (RhoM(MI(j),:));
-                            zNMR = repmat(zNM, Quad,1);
-                            zNM_ = (RhoM_(:,:,MI(j))); 
-                            
-                                gMMo = exp(1i.*k.*IoO)./IoO;
-                                gMMi = exp(1i.*k.*OoI)./OoI; 
-                                
-                                
-                               AM = 1/(4*pi)*(BasisLA(MI(j),2)*sum(zNM.*gMMo)/(2*Quad));
-                              OhmM = 1/(4*pi*1i*w*eps0)*(BasisLA(MI(j),2)*sum(gMMo)/Quad);
-                             
-                             Z(MO(i), MI(j)) =  ...
-                                BasisLA(MO(i),2)*(1i*w*dot(AM,zMM,2)/2) ...
-                                +OhmM + + Z(MO(i), MI(j));
-                        end
-                    end      
-                end       
-            end
-            for y=1:length(t)
-                PO = find(PlusTri - y ==0);
-                MO = find(MinusTri - y ==0);
-                for i=1:length(PO)
-                    b1(PO(i)) = -1i/(w*mu)*sum(dot(repmat(Ei(y,:),Quad,1),RhoP_(:,:,PO(i)),2).*BasisLA(PO(i),2)/Quad)/2 + b1(PO(i));
-                end
-                for i=1:length(MO)
-                    b2(MO(i)) = -1i/(w*mu)*sum(dot(repmat(Ei(y,:),Quad,1),RhoM_(:,:,MO(i)),2).*BasisLA(MO(i),2)/Quad)/2 + b2(MO(i));
+            
+            for m=1:length(EdgeList)
+                    mPdist = sqrt(sum((Center(PlusTri(m),:)-SubTri(:,:,:)).^2,2));
+                    mMdist = sqrt(sum((Center(MinusTri(m),:)-SubTri(:,:,:)).^2,2));
+                    rhomP = RhoP(m,:);
+                    rhomM = RhoM(m,:);
+                for n=1:length(EdgeList)
+                    rhonP = RhoP(n,:);
+                    rhonM = RhoM(n,:);
+                gmPnP = exp(-1i*k*mPdist(:,:,PlusTri(n)))./mPdist(:,:,PlusTri(n));
+                gmMnP = exp(-1i*k*mMdist(:,:,PlusTri(n)))./mMdist(:,:,PlusTri(n));
+                
+                gmPnM = exp(-1i*k*mPdist(:,:,MinusTri(n)))./mPdist(:,:,MinusTri(n));
+                gmMnM = exp(-1i*k*mMdist(:,:,MinusTri(n)))./mMdist(:,:,MinusTri(n));
+                
+            AmnP = mu/(4*pi)*(BasisLA(n,2)*sum(rhonP.*gmPnP/(2*Quad))+BasisLA(n,2)*sum(rhonM.*gmPnM/(2*Quad)));
+            AmnM = mu/(4*pi)*(BasisLA(n,2)*sum(rhonP.*gmMnP/(2*Quad))+BasisLA(n,2)*sum(rhonM.*gmMnM/(2*Quad)));
+            
+            PhiP = -1/(4*pi*1i*w*eps0)*(BasisLA(n,2)*sum(gmPnP)/Quad-BasisLA(n,2)*sum(gmPnM)/Quad);
+            PhiM = -1/(4*pi*1i*w*eps0)*(BasisLA(n,2)*sum(gmMnP)/Quad-BasisLA(n,2)*sum(gmMnM)/Quad);
+            
+            Z(m,n) = BasisLA(m,2)*(1i*w*(dot(AmnP,rhomP)/2+dot(AmnM,rhomM)/2)+PhiM-PhiP);  
                 end
             end
-            b = (b1+b2).';
+            
+            b = BasisLA(:,2).*(dot(Ei(PlusTri,:),RhoP,2)/2+dot(Ei(MinusTri,:),RhoM,2)/2);
+    %%        
+%             for y=1:length(t)
+%                 POM = find(PlusTri - y ==0);
+%                 MOM = find(MinusTri - y ==0);
+%                 SOM = SubTri(:,:,y);
+%                 for h=1:length(t)
+%                     PIN = find(PlusTri - h ==0);
+%                     MIN = find(MinusTri - h ==0);
+%                     SIN = SubTri(:,:,h);
+%                     
+%                     Nmark = sqrt(sum((Center(y,:)-SIN).^2,2));
+%                     Mmark = sqrt(sum((Center(h,:)-SOM).^2,2));
+% 
+%                     for i = 1:length(POM)
+%                         zMP = (RhoP(POM(i),:));
+%                         zMPR = repmat(zMP, Quad,1);
+%                         zMP_ = (RhoP_(:,:,POM(i)));
+%                         for j = 1:length(PIN)
+%                             zNP = (RhoP(PIN(j),:));
+%                             zNPR = repmat(zNP, Quad,1);
+%                             zNP_ = (RhoP_(:,:,PIN(j)));           
+%                             gPPo = exp(1i.*k.*Nmark)./Nmark;
+%                             
+%                             gPPi = exp(1i.*k.*Mmark)./Mmark;
+%                             
+%                                 AP = mu/(4*pi)*(BasisLA(PIN(j),2)*sum(zNP.*gPPo)/(Quad));
+%                                 
+%                                 PhiP = -1/(4*pi*1i*w*eps0)*(BasisLA(PIN(j),2)*sum(gPPo)/Quad);
+%                                 
+%                                 Z(POM(i), PIN(j)) = ...
+%                                 BasisLA(POM(i),2)*(1i*w*dot(AP,zMP,2)/2 ...
+%                                 -PhiP) + Z(POM(i), PIN(j));
+%                         end
+%                         for j=1:length(MIN)
+%                             zNM = (RhoM(MIN(j),:));
+%                             zNMR = repmat(zNM, Quad,1);
+%                             zNM_ = (RhoM_(:,:,MIN(j)));         
+%                             
+%                             gPMo = exp(1i.*k.*Nmark)./Nmark;
+%                             gMPi = exp(1i.*k.*Mmark)./Mmark;
+%                             
+%                              AM = mu/(4*pi)*(BasisLA(MIN(j),2)*sum(zNM.*gPMo)/(Quad));
+%                              
+%                              PhiM = 1/(4*pi*1i*w*eps0)*(BasisLA(MIN(j),2)*sum(gPMo)/Quad);
+%                              
+%                              Z(POM(i), MIN(j)) =  ...
+%                                 BasisLA(POM(i),2)*(1i*w*dot(AM,zMP,2)/2 ...
+%                                 +PhiM )+  Z(POM(i), MIN(j));
+% 
+%                         end
+%                     end
+%                     for i=1:length(MOM)
+%                         zMM = (RhoM(MOM(i),:));
+%                         zMMR = repmat(zMM, Quad,1);
+%                         zMM_ = (RhoM_(:,:,MOM(i)));
+%                         for j=1:length(PIN)
+%                             zNP = (RhoP(PIN(j),:));
+%                             zNPR = repmat(zNP, Quad,1);
+%                             zNP_ = (RhoP_(:,:,PIN(j)));
+%                             
+%                             gMPo = exp(1i.*k.*Nmark)./Nmark;
+%                             gPMi = exp(1i.*k.*Mmark)./Mmark;
+%                             
+%                                 AP = mu/(4*pi)*(BasisLA(PIN(j),2)*sum(zNP.*gMPo)/(Quad));
+%                                 PhiP = -1/(4*pi*1i*w*eps0)*(BasisLA(PIN(j),2)*sum(gMPo)/Quad);
+%                                 Z(MOM(i), PIN(j)) = ...
+%                                 BasisLA(MOM(i),2)*(1i*w*dot(AP,zMM,2)/2 ...
+%                                 -PhiP ) + Z(MOM(i), PIN(j));
+%                         end
+%                         for j=1:length(MIN)
+%                             zNM = (RhoM(MIN(j),:));
+%                             zNMR = repmat(zNM, Quad,1);
+%                             zNM_ = (RhoM_(:,:,MIN(j))); 
+%                             
+%                                 gMMo = exp(1i.*k.*Nmark)./Nmark;
+%                                 gMMi = exp(1i.*k.*Mmark)./Mmark; 
+%                                 
+%                                 
+%                                AM = mu/(4*pi)*(BasisLA(MIN(j),2)*sum(zNM.*gMMo)/(Quad));
+%                               PhiM = 1/(4*pi*1i*w*eps0)*(BasisLA(MIN(j),2)*sum(gMMo)/Quad);
+%                              
+%                              Z(MOM(i), MIN(j)) =  ...
+%                                 BasisLA(MOM(i),2)*(1i*w*dot(AM,zMM,2)/2 ...
+%                                 +PhiM ) + Z(MOM(i), MIN(j));
+%                         end
+%                     end      
+%                 end       
+%             end
+            
+            
+%             for y=1:length(t)
+%                 POM = find(PlusTri - y ==0);
+%                 MOM = find(MinusTri - y ==0);
+%                 for i=1:length(POM)
+%                     b1(POM(i)) = dot(Ei(y,:),RhoP(POM(i),:),2).*BasisLA(POM(i),2)/2 + b1(POM(i));
+%                 end
+%                 for i=1:length(MOM)
+%                     b2(MOM(i)) = dot(Ei(y,:),RhoM(MOM(i),:),2).*BasisLA(MOM(i),2)/2 + b2(MOM(i));
+%                 end
+%             end
+            %%
+%             b = (b1+b2).';
             % Z\b is a newer faster version of inv(Z)*b
             a = Z\b;
         end
@@ -2128,6 +2160,20 @@
             end
         end
 
+        function [] = DistJPlot(Center, J)
+%             unq = unique(sqrt(Center(:,1).^2+Center(:,3).^2));
+unq = unique(Center(:,1));
+unq(1) = [];
+            figure(96)
+            hold on
+            for i=1:length(unqi)
+%                 index = find(sqrt(Center(:,1).^2+Center(:,3).^2)-unq(i) == 0);
+index = find(Center(:,1)-unq(i)==0);     
+if length(index)>10
+plot(Center(index,2),abs(J(index,2)),'*')
+end
+            end
+        end
         end
 end
 
