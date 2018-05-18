@@ -443,6 +443,28 @@
             end
         end
             
+        function [Ei] = VoltageFeed(t, Center, FeedPos, v, EdgeList, BasisLA) 
+            
+            [PlusTri, MinusTri] = ArbitraryAntenna.PMTri(t, EdgeList);
+            Ei = zeros(size(Center));
+            
+            %% Based on EdgeCenter
+            PlusCoords = Center(PlusTri, :);
+            MinusCoords = Center(MinusTri, :);
+            
+            EdgeCenter = (PlusCoords+MinusCoords)/2;
+            FeedEdges = abs(EdgeCenter(:,2))<=1e-18+FeedPos(2);
+            if isempty(FeedEdges)
+                FeedEdges = min(abs(EdgeCenter(:,2)));
+            end
+            
+%             v=v*BasisLA(FeedEdges,2);
+            
+            Ei(PlusTri(FeedEdges),2) = v;
+            Ei(MinusTri(FeedEdges),2) = v; 
+        end
+   
+        
         function [Vertices, Edges] = Simplex(p,t)
             TotTri = length(t);
             Area = zeros(TotTri,3);
@@ -806,109 +828,7 @@
             end
             
             b = BasisLA(:,2).*(dot(Ei(PlusTri,:),RhoP,2)/2+dot(Ei(MinusTri,:),RhoM,2)/2);
-    %%        
-%             for y=1:length(t)
-%                 POM = find(PlusTri - y ==0);
-%                 MOM = find(MinusTri - y ==0);
-%                 SOM = SubTri(:,:,y);
-%                 for h=1:length(t)
-%                     PIN = find(PlusTri - h ==0);
-%                     MIN = find(MinusTri - h ==0);
-%                     SIN = SubTri(:,:,h);
-%                     
-%                     Nmark = sqrt(sum((Center(y,:)-SIN).^2,2));
-%                     Mmark = sqrt(sum((Center(h,:)-SOM).^2,2));
-% 
-%                     for i = 1:length(POM)
-%                         zMP = (RhoP(POM(i),:));
-%                         zMPR = repmat(zMP, Quad,1);
-%                         zMP_ = (RhoP_(:,:,POM(i)));
-%                         for j = 1:length(PIN)
-%                             zNP = (RhoP(PIN(j),:));
-%                             zNPR = repmat(zNP, Quad,1);
-%                             zNP_ = (RhoP_(:,:,PIN(j)));           
-%                             gPPo = exp(1i.*k.*Nmark)./Nmark;
-%                             
-%                             gPPi = exp(1i.*k.*Mmark)./Mmark;
-%                             
-%                                 AP = mu/(4*pi)*(BasisLA(PIN(j),2)*sum(zNP.*gPPo)/(Quad));
-%                                 
-%                                 PhiP = -1/(4*pi*1i*w*eps0)*(BasisLA(PIN(j),2)*sum(gPPo)/Quad);
-%                                 
-%                                 Z(POM(i), PIN(j)) = ...
-%                                 BasisLA(POM(i),2)*(1i*w*dot(AP,zMP,2)/2 ...
-%                                 -PhiP) + Z(POM(i), PIN(j));
-%                         end
-%                         for j=1:length(MIN)
-%                             zNM = (RhoM(MIN(j),:));
-%                             zNMR = repmat(zNM, Quad,1);
-%                             zNM_ = (RhoM_(:,:,MIN(j)));         
-%                             
-%                             gPMo = exp(1i.*k.*Nmark)./Nmark;
-%                             gMPi = exp(1i.*k.*Mmark)./Mmark;
-%                             
-%                              AM = mu/(4*pi)*(BasisLA(MIN(j),2)*sum(zNM.*gPMo)/(Quad));
-%                              
-%                              PhiM = 1/(4*pi*1i*w*eps0)*(BasisLA(MIN(j),2)*sum(gPMo)/Quad);
-%                              
-%                              Z(POM(i), MIN(j)) =  ...
-%                                 BasisLA(POM(i),2)*(1i*w*dot(AM,zMP,2)/2 ...
-%                                 +PhiM )+  Z(POM(i), MIN(j));
-% 
-%                         end
-%                     end
-%                     for i=1:length(MOM)
-%                         zMM = (RhoM(MOM(i),:));
-%                         zMMR = repmat(zMM, Quad,1);
-%                         zMM_ = (RhoM_(:,:,MOM(i)));
-%                         for j=1:length(PIN)
-%                             zNP = (RhoP(PIN(j),:));
-%                             zNPR = repmat(zNP, Quad,1);
-%                             zNP_ = (RhoP_(:,:,PIN(j)));
-%                             
-%                             gMPo = exp(1i.*k.*Nmark)./Nmark;
-%                             gPMi = exp(1i.*k.*Mmark)./Mmark;
-%                             
-%                                 AP = mu/(4*pi)*(BasisLA(PIN(j),2)*sum(zNP.*gMPo)/(Quad));
-%                                 PhiP = -1/(4*pi*1i*w*eps0)*(BasisLA(PIN(j),2)*sum(gMPo)/Quad);
-%                                 Z(MOM(i), PIN(j)) = ...
-%                                 BasisLA(MOM(i),2)*(1i*w*dot(AP,zMM,2)/2 ...
-%                                 -PhiP ) + Z(MOM(i), PIN(j));
-%                         end
-%                         for j=1:length(MIN)
-%                             zNM = (RhoM(MIN(j),:));
-%                             zNMR = repmat(zNM, Quad,1);
-%                             zNM_ = (RhoM_(:,:,MIN(j))); 
-%                             
-%                                 gMMo = exp(1i.*k.*Nmark)./Nmark;
-%                                 gMMi = exp(1i.*k.*Mmark)./Mmark; 
-%                                 
-%                                 
-%                                AM = mu/(4*pi)*(BasisLA(MIN(j),2)*sum(zNM.*gMMo)/(Quad));
-%                               PhiM = 1/(4*pi*1i*w*eps0)*(BasisLA(MIN(j),2)*sum(gMMo)/Quad);
-%                              
-%                              Z(MOM(i), MIN(j)) =  ...
-%                                 BasisLA(MOM(i),2)*(1i*w*dot(AM,zMM,2)/2 ...
-%                                 +PhiM ) + Z(MOM(i), MIN(j));
-%                         end
-%                     end      
-%                 end       
-%             end
             
-            
-%             for y=1:length(t)
-%                 POM = find(PlusTri - y ==0);
-%                 MOM = find(MinusTri - y ==0);
-%                 for i=1:length(POM)
-%                     b1(POM(i)) = dot(Ei(y,:),RhoP(POM(i),:),2).*BasisLA(POM(i),2)/2 + b1(POM(i));
-%                 end
-%                 for i=1:length(MOM)
-%                     b2(MOM(i)) = dot(Ei(y,:),RhoM(MOM(i),:),2).*BasisLA(MOM(i),2)/2 + b2(MOM(i));
-%                 end
-%             end
-            %%
-%             b = (b1+b2).';
-            % Z\b is a newer faster version of inv(Z)*b
             a = Z\b;
         end
  

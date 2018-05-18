@@ -1,7 +1,7 @@
 %% load STL file into matlab
 
 % stl = stlread('antennas/Dipole10cmT264.stl');
-stl = stlread('antennas/Dipole10cmT580.stl'); %ok
+% stl = stlread('antennas/Dipole10cmT580.stl'); %ok
 
 % stl = stlread('antennas/Dipole0.1mm/Dipole10cm2502T01mm.stl');
 % Smool
@@ -21,7 +21,7 @@ stl = stlread('antennas/Dipole10cmT580.stl'); %ok
 
 % stl = stlread('antennas/Dipole10cmT580.stl'); %ok
 % stl = stlread('antennas/Dipole10cmT722.stl'); %god
-% stl = stlread('antennas/Dipole10cmT744.stl'); %
+stl = stlread('antennas/Dipole10cmT744.stl'); %
 % stl = stlread('antennas/Dipole10cmT904.stl'); %
 % stl = stlread('antennas/Dipole10cmT924.stl'); %god
 % stl = stlread('antennas/Dipole10cmT1060.stl'); %god
@@ -69,7 +69,7 @@ p1 = p;
 % % p(:,1) = p(:,1)+0.03;
 % Should source be dipole, if 0 a plane wave propagating in +x direction used
 UseDipole = 1;
-DipolePoint = [-lambda/15,0,0];
+DipolePoint = [0,0,0];%[-lambda/15,0,0];
 % If set to one use 81 sub triangles pr element, if 0 use 9
 SubSubTri = 0;
 sub = 0;
@@ -115,11 +115,6 @@ fprintf('\n')
 disp('Calculating areals for triangles')
 [Area, Center] = ArbitraryAntenna.TriangleAreas(p, t);
 toc;
-figure(2)
-plot3(Center(:,1),Center(:,2),Center(:,3),'*')
-axis image
-hold on
-toc;
 %% SubTri
 tic;
 fprintf('\n')
@@ -151,8 +146,8 @@ disp('Pre-Calculating self-coupling terms')
 I2 = ArbitraryAntenna.SelfTerm(p, t);
 toc;
 %% Calculating Dipole strength on antenna points
-[Ei] = ArbitraryAntenna.PointSource(w, mu0, k, Center, SubTri, sub, DipolePoint, [0,1,0]);
-
+% [Ei] = ArbitraryAntenna.PointSource(w, mu0, k, Center, SubTri, sub, DipolePoint, [0,1,0]);
+[Ei] = ArbitraryAntenna.VoltageFeed(t, Center, DipolePoint, 1, EdgeList, BasisLA);
 %% MoM
 tic;
 fprintf('\n')
@@ -189,7 +184,7 @@ for m=1:length(t)
     zthree(m,1:3) = p(N,3);
 end
 C=repmat(CurrentNorm1,1,3);
-figure(3)
+figure(2)
 h=fill3(xthree', ythree', zthree', C.', 'EdgeColor', 'none'); %linear scale
 colormap gray;
 colorbar;
@@ -206,7 +201,7 @@ disp('Calculating E-field')
 [Exy, Exz, Ezy, x, y, z, Exyx, Exzx, Eyzx, Exyy, Exzy, Eyzy, Exyz, Exzz, Eyzz] = ...
     ArbitraryAntenna.EField(Center, w, mu0, k, Jface, xmin, xmax, ymin, ymax, zmin, zmax, steps, Area, Reflector, xdist, n, lambda);
 toc;
-if UseDipole
+if 0%UseDipole
 fprintf('\n')
 disp('Setting up Dipole')
 [ExyD, ExzD, EzyD] = ...
