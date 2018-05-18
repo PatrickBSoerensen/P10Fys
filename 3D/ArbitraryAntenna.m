@@ -105,47 +105,47 @@
                     CenterToMove=Center(k,:);
                     SubTriToMove=reshape(SubTri(:,:,k), 3, [])';
                     SubTriRet(:,:,k) = reshape(SubTri(:,:,k), 3, [])';
-%                 if Center(k,2) >=0.05 
-%                     % part of spherical surface
-%                     CenterOfSphere = [0, 0.05, 0];
-%                     Normal = CenterToMove-CenterOfSphere;
-%                     n=sqrt(Normal(1)^2+Normal(2)^2+Normal(3)^2);
-%                     Normal = Normal/n;
-%                     Center(k,:) = CenterOfSphere+Normal*R;
-%                     
-%                     Normal = SubTriToMove-CenterOfSphere;
-%                     n=sqrt(Normal(:,1).^2+Normal(:,2).^2+Normal(:,3).^2);
-%                     Normal = Normal./n;
-%                     SubTriRet(:,:,k) = CenterOfSphere+Normal*R;
-%                 elseif Center(k,2) <=-0.05
-%                     % part of spherical surface
-%                     CenterOfSphere = [0, -0.05, 0];
-%                     Normal = CenterToMove-CenterOfSphere;
-%                     n=sqrt(Normal(1)^2+Normal(2)^2+Normal(3)^2);
-%                     Normal = Normal/n;
-%                     Center(k,:) = CenterOfSphere+Normal*R;
-%                     
-%                     Normal = SubTriToMove-CenterOfSphere;
-%                     n=sqrt(Normal(:,1).^2+Normal(:,2).^2+Normal(:,3).^2);
-%                     Normal = Normal./n;
-%                     SubTriRet(:,:,k) = CenterOfSphere+Normal*R;
-%                 else
-%                     % Part of Cylinder
-%                     CenterOfCylinder = [0, CenterToMove(:,2), 0];
-%                     Normal = CenterToMove-CenterOfCylinder;
-%                     n=sqrt(Normal(1)^2+Normal(2)^2+Normal(3)^2);
-%                     Normal = Normal/n;
-%                     Center(k,:) = CenterOfCylinder+Normal*R;
-%                     
-%                     clear CenterOfCylinder
-%                     CenterOfCylinder(:,2) = SubTriToMove(:,2);
-%                     CenterOfCylinder(:,1) = 0;
-%                     CenterOfCylinder(:,3) = 0;
-%                     Normal = SubTriToMove-CenterOfCylinder;
-%                     n=sqrt(Normal(:,1).^2+Normal(:,2).^2+Normal(:,3).^2);
-%                     Normal = Normal./n;
-%                     SubTriRet(:,:,k) = CenterOfCylinder+Normal*R;
-%                 end
+                if Center(k,2) >=0.05 
+                    % part of spherical surface
+                    CenterOfSphere = [0, 0.05, 0];
+                    Normal = CenterToMove-CenterOfSphere;
+                    n=sqrt(Normal(1)^2+Normal(2)^2+Normal(3)^2);
+                    Normal = Normal/n;
+                    Center(k,:) = CenterOfSphere+Normal*R;
+                    
+                    Normal = SubTriToMove-CenterOfSphere;
+                    n=sqrt(Normal(:,1).^2+Normal(:,2).^2+Normal(:,3).^2);
+                    Normal = Normal./n;
+                    SubTriRet(:,:,k) = CenterOfSphere+Normal*R;
+                elseif Center(k,2) <=-0.05
+                    % part of spherical surface
+                    CenterOfSphere = [0, -0.05, 0];
+                    Normal = CenterToMove-CenterOfSphere;
+                    n=sqrt(Normal(1)^2+Normal(2)^2+Normal(3)^2);
+                    Normal = Normal/n;
+                    Center(k,:) = CenterOfSphere+Normal*R;
+                    
+                    Normal = SubTriToMove-CenterOfSphere;
+                    n=sqrt(Normal(:,1).^2+Normal(:,2).^2+Normal(:,3).^2);
+                    Normal = Normal./n;
+                    SubTriRet(:,:,k) = CenterOfSphere+Normal*R;
+                else
+                    % Part of Cylinder
+                    CenterOfCylinder = [0, CenterToMove(:,2), 0];
+                    Normal = CenterToMove-CenterOfCylinder;
+                    n=sqrt(Normal(1)^2+Normal(2)^2+Normal(3)^2);
+                    Normal = Normal/n;
+                    Center(k,:) = CenterOfCylinder+Normal*R;
+                    
+                    clear CenterOfCylinder
+                    CenterOfCylinder(:,2) = SubTriToMove(:,2);
+                    CenterOfCylinder(:,1) = 0;
+                    CenterOfCylinder(:,3) = 0;
+                    Normal = SubTriToMove-CenterOfCylinder;
+                    n=sqrt(Normal(:,1).^2+Normal(:,2).^2+Normal(:,3).^2);
+                    Normal = Normal./n;
+                    SubTriRet(:,:,k) = CenterOfCylinder+Normal*R;
+                end
             end
         end
         

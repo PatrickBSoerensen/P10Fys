@@ -74,8 +74,8 @@ DipolePoint = [0,0,0];%[-lambda/15,0,0];
 % If set to one use 81 sub triangles pr element, if 0 use 9
 SubSubTri = 0;
 sub = 0;
-% if 1 use fast (but more inacurate) MoM
-vectorized = 0;
+% if 1 use fast MoM
+vectorized = 1;
 % Emmision parameters and size of plottet area
 normalize = 1;
 PlotComp = 0;
