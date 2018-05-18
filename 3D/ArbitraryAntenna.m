@@ -459,9 +459,9 @@
             end
             
 %             v=v*BasisLA(FeedEdges,2);
-            
-            Ei(PlusTri(FeedEdges),2) = v;
-            Ei(MinusTri(FeedEdges),2) = v; 
+            normfac= length(FeedEdges);
+            Ei(PlusTri(FeedEdges),2) = v/normfac;
+            Ei(MinusTri(FeedEdges),2) = v/normfac; 
         end
    
         
