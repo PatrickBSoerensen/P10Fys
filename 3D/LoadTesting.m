@@ -2,6 +2,8 @@
 
 % stl = stlread('antennas/Dipole10cmT264.stl');
 stl = stlread('antennas/Dipole10cmT580.stl'); %ok
+
+% stl = stlread('antennas/Dipole0.1mm/Dipole10cm2502T01mm.stl');
 % Smool
 % stl = stlread('antennas/DipoleTEST.stl'); %ok
 % stl = stlread('antennas/Dipole10CM1372T.stl'); %ok
@@ -41,11 +43,14 @@ fprintf('\n')
 disp('Removing duplicate points')
 [p, t] = ArbitraryAntenna.RemoveDuplicatePoints(stl);
 %% Calculating dimensions of dipole
+radiusdet = [1 1 1];
 minp = min(p);
 maxp = max(p);
-[maxmaxp, maxaxis] = max(max(p));
-radius = 0.0015;
-Length = (maxmaxp-minp(maxaxis));
+[maxmaxp, maxaxis] = max(maxp);
+radiusdet(maxaxis) = 0;
+radiusdet = logical(radiusdet);
+radius = sum(abs(maxp(radiusdet))+abs(minp(radiusdet)))/4;
+Length = maxmaxp+abs(minp(maxaxis));
 %% Parameters
 % Controls amount of antenna
 % p(:,1) = p(:,1)+0.03;
@@ -63,8 +68,8 @@ p1 = p;
 % t = [t; t+length(p1); t+length(p1)+length(p2); t+length(p1)+length(p2)+length(p3)];
 % % p(:,1) = p(:,1)+0.03;
 % Should source be dipole, if 0 a plane wave propagating in +x direction used
-UseDipole = 0;
-DipolePoint = [-0.1,0,0];
+UseDipole = 1;
+DipolePoint = [-lambda/15,0,0];
 % If set to one use 81 sub triangles pr element, if 0 use 9
 SubSubTri = 0;
 sub = 0;
@@ -83,14 +88,12 @@ n = 3.9;
 epsR = 11.68;
 Reflector = 0;
 FromAnt=0.003;
-xdist = radius/2+FromAnt;
+xdist = radius+FromAnt;
 %% Visual check
-if 0
 figure(1)
 plot3(p(:,1),p(:,2),p(:,3),'*')
 axis image
 toc;
-end
 %% constants
 eps0=8.854187817*10^-12; %F/m
 mu0=4*pi*10^-7; %N/A^2
@@ -127,13 +130,7 @@ toc;
 tic;
 fprintf('\n')
 disp('Lifting subtriangles and center points')
-[Center, SubTri] = ArbitraryAntenna.CenterLift(Center, SubTri);
-if 0
-figure(2)
-plot3(Center(:,1),Center(:,2),Center(:,3),'*')
-axis image
-toc;
-end
+[Center, SubTri] = ArbitraryAntenna.CenterLift(Center, SubTri, radius);
 %% Basis Function setup
 tic;
 fprintf('\n')
@@ -155,6 +152,7 @@ I2 = ArbitraryAntenna.SelfTerm(p, t);
 toc;
 %% Calculating Dipole strength on antenna points
 [Ei] = ArbitraryAntenna.PointSource(w, mu0, k, Center, SubTri, sub, DipolePoint, [0,1,0]);
+
 %% MoM
 tic;
 fprintf('\n')
