@@ -2,6 +2,8 @@
 
 % stl = stlread('antennas/Dipole10cmT264.stl');
 stl = stlread('antennas/Dipole10cmT580.stl'); %ok
+
+% stl = stlread('antennas/Dipole0.1mm/Dipole10cm2502T01mm.stl');
 % Smool
 % stl = stlread('antennas/DipoleTEST.stl'); %ok
 % stl = stlread('antennas/Dipole10CM1372T.stl'); %ok
@@ -66,8 +68,8 @@ p1 = p;
 % t = [t; t+length(p1); t+length(p1)+length(p2); t+length(p1)+length(p2)+length(p3)];
 % % p(:,1) = p(:,1)+0.03;
 % Should source be dipole, if 0 a plane wave propagating in +x direction used
-UseDipole = 0;
-DipolePoint = [-2*radius,0,0];
+UseDipole = 1;
+DipolePoint = [-lambda/15,0,0];
 % If set to one use 81 sub triangles pr element, if 0 use 9
 SubSubTri = 0;
 sub = 0;
@@ -150,6 +152,7 @@ I2 = ArbitraryAntenna.SelfTerm(p, t);
 toc;
 %% Calculating Dipole strength on antenna points
 [Ei] = ArbitraryAntenna.PointSource(w, mu0, k, Center, SubTri, sub, DipolePoint, [0,1,0]);
+
 %% MoM
 tic;
 fprintf('\n')
