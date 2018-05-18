@@ -19,9 +19,9 @@
 % stl = stlread('antennas/test1050.stl');
 % stl = stlread('antennas/AspecPrio/Dipole10cmT1152.stl');
 
-% stl = stlread('antennas/Dipole10cmT580.stl'); %ok
+stl = stlread('antennas/Dipole10cmT580.stl'); %ok
 % stl = stlread('antennas/Dipole10cmT722.stl'); %god
-stl = stlread('antennas/Dipole10cmT744.stl'); %
+% stl = stlread('antennas/Dipole10cmT744.stl'); %
 % stl = stlread('antennas/Dipole10cmT904.stl'); %
 % stl = stlread('antennas/Dipole10cmT924.stl'); %god
 % stl = stlread('antennas/Dipole10cmT1060.stl'); %god
@@ -42,6 +42,7 @@ tic;
 fprintf('\n')
 disp('Removing duplicate points')
 [p, t] = ArbitraryAntenna.RemoveDuplicatePoints(stl);
+% p(:,2) = p(:,2)*2; %Scaling works
 %% Calculating dimensions of dipole
 radiusdet = [1 1 1];
 minp = min(p);
@@ -68,13 +69,13 @@ p1 = p;
 % t = [t; t+length(p1); t+length(p1)+length(p2); t+length(p1)+length(p2)+length(p3)];
 % % p(:,1) = p(:,1)+0.03;
 % Should source be dipole, if 0 a plane wave propagating in +x direction used
-UseDipole = 1;
+UseDipole = 0;
 DipolePoint = [0,0,0];%[-lambda/15,0,0];
 % If set to one use 81 sub triangles pr element, if 0 use 9
 SubSubTri = 0;
 sub = 0;
-% if 1 use fast (but more inacurate) MoM
-vectorized = 0;
+% if 1 use fast MoM
+vectorized = 1;
 % Emmision parameters and size of plottet area
 normalize = 1;
 PlotComp = 0;
@@ -86,9 +87,12 @@ PointArea = xmax^2/steps;
 % Reflector surface params
 n = 3.9;
 epsR = 11.68;
-Reflector = 0;
+Reflector = 1;
 FromAnt=0.003;
 xdist = radius+FromAnt;
+% Determines if points should be lifted to surf of antenna, this is semi
+% hardcoded to a predetermined structure, if in doubt set to 0
+Lift = 0;
 %% Visual check
 figure(1)
 plot3(p(:,1),p(:,2),p(:,3),'*')
@@ -125,7 +129,8 @@ toc;
 tic;
 fprintf('\n')
 disp('Lifting subtriangles and center points')
-[Center, SubTri] = ArbitraryAntenna.CenterLift(Center, SubTri, radius);
+[Center, SubTri] = ArbitraryAntenna.CenterLift(Center, SubTri, radius, Lift);
+toc;
 %% Basis Function setup
 tic;
 fprintf('\n')
@@ -138,13 +143,7 @@ fprintf('\n')
 disp('Evaluating basis functions in center points')
 [RhoP, RhoM, RhoP_, RhoM_] = ArbitraryAntenna.BasisEvalCenter(t, EdgeList, Basis, Center, SubTri);
 toc;
-%% pre analytic calculations
-%Self Terms
-tic;
-fprintf('\n')
-disp('Pre-Calculating self-coupling terms')
-I2 = ArbitraryAntenna.SelfTerm(p, t);
-toc;
+
 %% Calculating Dipole strength on antenna points
 % [Ei] = ArbitraryAntenna.PointSource(w, mu0, k, Center, SubTri, sub, DipolePoint, [0,1,0]);
 [Ei] = ArbitraryAntenna.VoltageFeed(t, Center, DipolePoint, 1, EdgeList, BasisLA);
@@ -153,16 +152,13 @@ tic;
 fprintf('\n')
 disp('MoM')
 if vectorized
-    [Z, a, b ] = ArbitraryAntenna.MoMVectorized(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k, SubTri, 0, 1, 0, UseDipole, Ei);
+    [Z, a, b ] = ArbitraryAntenna.MoMVectorizedFuckAllowed(w, mu0, t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k, SubTri, 0, 1, 0, UseDipole, Ei,...
+        xdist, Reflector, epsR, Length, radius, 1, 2, lambda, n, eps0);
 else
-    
-%     [Z, b, a] = ArbitraryAntenna.MoMBackUp(w, mu0, t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k,  SubTri, 0, 1, 0, UseDipole, Ei);
-    
-    [Z, b, a] = ArbitraryAntenna.MoMSergey(w, mu0, t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k,  SubTri, 0, 1, 0, UseDipole, Ei, eps0);
-%     [Z, b, a] = ArbitraryAntenna.MoM(w, mu0, p, t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k,  SubTri, 0, 1, 0, UseDipole, Ei);
-    
-%     [Z, b, a] = ArbitraryAntenna.MoMIGTest(w, mu0, p, t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k,  SubTri, 0, 1, 0, UseDipole, Ei,...
+%     [Z, b, a] = ArbitraryAntenna.MoMSergey(w, mu0, t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k,  SubTri, 0, 1, 0, UseDipole, Ei,...
 %         xdist, Reflector, epsR, Length, radius, .5, 3, lambda, n, eps0);
+    [Z, b, a] = ArbitraryAntenna.MoM(w, mu0, t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k,  SubTri, 0, 1, 0, UseDipole, Ei,...
+        xdist, Reflector, epsR, Length, radius, .5, 3, lambda, n, eps0);
 end
 toc;
 %% Current calc in Triangle
@@ -201,7 +197,7 @@ disp('Calculating E-field')
 [Exy, Exz, Ezy, x, y, z, Exyx, Exzx, Eyzx, Exyy, Exzy, Eyzy, Exyz, Exzz, Eyzz] = ...
     ArbitraryAntenna.EField(Center, w, mu0, k, Jface, xmin, xmax, ymin, ymax, zmin, zmax, steps, Area, Reflector, xdist, n, lambda);
 toc;
-if 0%UseDipole
+if UseDipole
 fprintf('\n')
 disp('Setting up Dipole')
 [ExyD, ExzD, EzyD] = ...
