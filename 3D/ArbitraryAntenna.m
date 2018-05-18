@@ -1868,9 +1868,15 @@
             title('EscPhi^2+EscTheta^2')
         end
         
-        function [Esc, EscPhi, EscTheta] = AngularFarFieldSurf(w, mu, k, r, Center, J, steps)
+        function [Esc, EscPhi, EscTheta] = AngularFarFieldSurf(w, mu, k, r, Center, J, steps, xdist)
             phi = linspace(-pi, 2*pi, steps)';
             theta = linspace(-pi, 2*pi, steps)';
+            
+            SurfAngle = acos(xdist);
+            under = phi<=SurfAngle;
+            over = phi>=2*pi-SurfAngle;
+            UseTrans = logical(under+over);
+            
             xH = [1, 0, 0];
             yH = [0, 1, 0];
             zH = [0, 0, 1];
@@ -1880,12 +1886,20 @@
             EscTheta = zeros(steps);
             EscPhi = zeros(steps);
            for i=1:length(Center)
-                IntegralTerm = 1i*w*mu*(exp(1i*k*r)/(4*pi*r))...
+                NormalGreens = 1i*w*mu*(exp(1i*k*r)/(4*pi*r))...
                 *exp(-1i*k*sum(rHat.*Center(i,:),2)).*J(i,:); 
-                           
-                EscTheta = dot(thetaH,IntegralTerm,2) + EscTheta;
+                
+                IndirectGreens = exp(1i*k*r)/(4*pi*r)*exp(-1i*krho*rhohat*rmark)*exp(1i*kz1*zmark)*...
+                    (refS(krho)*phiH*phiH-refP(krho)*thetaH*(zH*krho/k1+rhoH*kz1/k1));
+                
+                TransmitGreens = 0;
+                
+                Greens = NormalGreens+IndirectGreens;
+                Greens(UseTrans,:) = TransmitGreens;
+                
+                EscTheta = dot(thetaH,Greens,2) + EscTheta;
             
-                EscPhi = dot(phiH,IntegralTerm,2) + EscPhi;
+                EscPhi = dot(phiH,Greens,2) + EscPhi;
             end
             
             Esc = EscPhi.^2+EscTheta.^2;
