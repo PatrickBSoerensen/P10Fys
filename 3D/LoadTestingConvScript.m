@@ -64,7 +64,7 @@ Amount = 7;
 % p(:,1) = p(:,1)+0.03;
 % Should source be dipole, if 0 a plane wave propagating in +x direction used
 diameter = 0.003;
-UseDipole = 1;
+UseDipole = 0;
 DipolePoint = [-diameter,0,0];
 % If set to one use 81 sub triangles pr element, if 0 use 9
 SubSubTri = 0;
@@ -83,7 +83,7 @@ epsR = 11.68;
 Reflector = 0;
 xdist = diameter/2+0;
 
-FileName= 'SergeyConvSlow552-2704FeedTest3mm';
+FileName= 'GibsonWave3mm';
 
 %% Loop
 for convloop=1:Amount

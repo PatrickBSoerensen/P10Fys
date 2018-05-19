@@ -435,7 +435,6 @@
             Ei(MinusTri(FeedEdges),2) = v/normfac; 
         end
    
-        
         function [Vertices, Edges] = Simplex(p,t)
             TotTri = length(t);
             Area = zeros(TotTri,3);
