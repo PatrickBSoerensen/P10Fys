@@ -1,10 +1,10 @@
 %% load STL file into matlab
 % stl = stlread('antennas/Dipole10cmT264.stl');
-stl = stlread('antennas/Dipole10cmT580.stl'); %ok
+% stl = stlread('antennas/Dipole10cmT580.stl'); %ok
 % stl = stlread('antennas/Dipole10cmT722.stl'); %god
 % stl = stlread('antennas/Dipole10cmT744.stl'); %
 % stl = stlread('antennas/Dipole10cmT904.stl'); %
-% stl = stlread('antennas/Dipole10cmT924.stl'); %god
+stl = stlread('antennas/Dipole10cmT924.stl'); %god
 % stl = stlread('antennas/Dipole10cmT1060.stl'); %god
 % stl = stlread('antennas/Dipole10cmT1104.stl'); %god
 % stl = stlread('antennas/Dipole10cmT1458.stl'); %god 
@@ -57,7 +57,7 @@ DipolePoint = [0,0,0];
 % If set to one use 81 sub triangles pr element, if 0 use 9
 SubSubTri = 0;
 % if 1 use fast (but more inacurate) MoM
-vectorized = 0;
+vectorized = 1;
 InTest = 0;
 % Emmision parameters and size of plottet area
 normalize = 0;
@@ -106,6 +106,13 @@ fprintf('\n')
 disp('Calculating areals for subtriangles')
 [SubTri] = ArbitraryAntenna.SubTriangles(p, t, Center, SubSubTri);
 toc;
+%% Lift
+Lift = 0;
+tic;
+fprintf('\n')
+disp('Lifting subtriangles and center points')
+[Center, SubTri] = ArbitraryAntenna.CenterLift(Center, SubTri, radius, Lift);
+toc;
 %% Basis Function setup
 tic;
 fprintf('\n')
@@ -118,13 +125,6 @@ fprintf('\n')
 disp('Evaluating basis functions in center points')
 [RhoP, RhoM, RhoP_, RhoM_] = ArbitraryAntenna.BasisEvalCenter(t, EdgeList, Basis, Center, SubTri);
 toc;
-%% pre analytic calculations
-%Self Terms
-tic;
-fprintf('\n')
-disp('Pre-Calculating self-coupling terms')
-I2 = ArbitraryAntenna.SelfTerm(p, t);
-toc;
 %% Calculating Dipole strength on antenna points
 [Ei] = ArbitraryAntenna.PointSource(w, mu0, k, Center, SubTri, 0, DipolePoint, [0,1,0]);
 %% MoM
@@ -135,7 +135,9 @@ if InTest
     [Z, b, a] = ArbitraryAntenna.MoMIG(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k,  SubTri, 0, 1, 0, UseDipole, Ei, InterfaceSurf, 3.4);
 end
 if vectorized
-    [Z, a, b ] = ArbitraryAntenna.MoMVectorized(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k, SubTri, 0, 1, 0, UseDipole, Ei);
+%     [Z, a, b ] = ArbitraryAntenna.MoMVectorized(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k, SubTri, 0, 1, 0, UseDipole, Ei);
+    [Z, a, b ] = ArbitraryAntenna.MoMVectorizedFuckAllowed(w, mu0, t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k, SubTri, 0, 1, 0, UseDipole, Ei,...
+        xdist, Reflector, epsR, Length, radius, 1, 2, lambda, n, eps0);
 else
     [Z, b, a] = ArbitraryAntenna.MoM(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k,  SubTri, 0, 1, 0, UseDipole, Ei);
 end
@@ -168,7 +170,7 @@ rotate3d
 tic;
 fprintf('\n')
 disp('Angular far field calc')
-ArbitraryAntenna.AngularFarField(w, mu0, k, 100, Center, Jface, 1000)
+ArbitraryAntenna.AngularFarField(w, mu0, k, 100, Center, Jface, 1000);
 toc
 %% Calculating E
 tic;

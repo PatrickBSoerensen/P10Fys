@@ -1,7 +1,7 @@
 %% load STL file into matlab
 
 % stl = stlread('antennas/Dipole10cmT264.stl');
-% stl = stlread('antennas/Dipole10cmT580.stl'); %ok
+stl = stlread('antennas/Dipole10cmT580.stl'); %ok
 
 % stl = stlread('antennas/Dipole0.1mm/Dipole10cm2502T01mm.stl');
 % Smool
@@ -19,7 +19,7 @@
 % stl = stlread('antennas/test1050.stl');
 % stl = stlread('antennas/AspecPrio/Dipole10cmT1152.stl');
 
-stl = stlread('antennas/Dipole10cmT580.stl'); %ok
+% stl = stlread('antennas/Dipole10cmT580.stl'); %ok
 % stl = stlread('antennas/Dipole10cmT722.stl'); %god
 % stl = stlread('antennas/Dipole10cmT744.stl'); %
 % stl = stlread('antennas/Dipole10cmT904.stl'); %
@@ -69,8 +69,8 @@ p1 = p;
 % t = [t; t+length(p1); t+length(p1)+length(p2); t+length(p1)+length(p2)+length(p3)];
 % % p(:,1) = p(:,1)+0.03;
 % Should source be dipole, if 0 a plane wave propagating in +x direction used
-UseDipole = 0;
-DipolePoint = [0,0,0];%[-lambda/15,0,0];
+UseDipole = 1;
+DipolePoint = [-lambda/15,0,0];%[0,0,0];%
 % If set to one use 81 sub triangles pr element, if 0 use 9
 SubSubTri = 0;
 sub = 0;
@@ -143,17 +143,17 @@ fprintf('\n')
 disp('Evaluating basis functions in center points')
 [RhoP, RhoM, RhoP_, RhoM_] = ArbitraryAntenna.BasisEvalCenter(t, EdgeList, Basis, Center, SubTri);
 toc;
-
 %% Calculating Dipole strength on antenna points
-% [Ei] = ArbitraryAntenna.PointSource(w, mu0, k, Center, SubTri, sub, DipolePoint, [0,1,0]);
-[Ei] = ArbitraryAntenna.VoltageFeed(t, Center, DipolePoint, 1, EdgeList, BasisLA);
+[Ei] = ArbitraryAntenna.PointSource(w, mu0, k, Center, SubTri, sub, DipolePoint, [0,1,0]);
+% [Ei, v] = ArbitraryAntenna.VoltageFeed(t,p, Center, DipolePoint, 1, EdgeList, BasisLA );
+% Ei(:,:)=0;
 %% MoM
 tic;
 fprintf('\n')
 disp('MoM')
 if vectorized
-    [Z, a, b ] = ArbitraryAntenna.MoMVectorizedFuckAllowed(w, mu0, t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k, SubTri, 0, 1, 0, UseDipole, Ei,...
-        xdist, Reflector, epsR, Length, radius, 1, 2, lambda, n, eps0);
+    [Z, a, b] = ArbitraryAntenna.MoMVectorized(w, mu0, t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k, SubTri, 0, 1, 0, UseDipole, Ei,...
+        xdist, Reflector, epsR, Length, radius, 0.009, 60, lambda, n, eps0);
 else
 %     [Z, b, a] = ArbitraryAntenna.MoMSergey(w, mu0, t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k,  SubTri, 0, 1, 0, UseDipole, Ei,...
 %         xdist, Reflector, epsR, Length, radius, .5, 3, lambda, n, eps0);
@@ -161,6 +161,13 @@ else
         xdist, Reflector, epsR, Length, radius, .5, 3, lambda, n, eps0);
 end
 toc;
+
+%             [PlusTri, MinusTri] = ArbitraryAntenna.PMTri(t, EdgeList);
+%  RefCoef = (1-n)/(1+n);
+%                 Ei(:,2) = 1.*exp(1i*k.*(Center(:,1))).*RefCoef;
+                
+%             b = BasisLA(:,2).*(dot(Ei(PlusTri,:),RhoP,2)/2+dot(Ei(MinusTri,:),RhoM,2)/2);
+% a=Z\(v+b)';
 %% Current calc in Triangle
 tic;
 fprintf('\n')

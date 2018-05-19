@@ -64,7 +64,7 @@ Amount = 10;
 % p(:,1) = p(:,1)+0.03;
 % Should source be dipole, if 0 a plane wave propagating in +x direction used
 diameter = 0.003;
-UseDipole = 0;
+UseDipole = 1;
 DipolePoint = [-diameter,0,0];
 % If set to one use 81 sub triangles pr element, if 0 use 9
 SubSubTri = 0;
@@ -84,7 +84,7 @@ Reflector = 0;
 xdist = diameter/2+0;
 Lift=0;
 
-FileName= 'VectorizedWavePoint1mm';
+FileName= 'VectorizedFeedPoint1mm';
 
 %% Loop
 for convloop=1:Amount
@@ -177,13 +177,15 @@ toc;
 %% Calculating Dipole strength on antenna points
 % [Ei] = ArbitraryAntenna.PointSource(w, mu0, k, Center, SubTri, sub, DipolePoint, [0,1,0]);
 
-[Ei] = ArbitraryAntenna.VoltageFeed(t, Center, DipolePoint, 1, EdgeList, BasisLA);
+[Ei, v] = ArbitraryAntenna.VoltageFeed(t,p, Center, DipolePoint, 1, EdgeList, BasisLA);
+
 %% MoM
 tic;
 fprintf('\n')
 disp('MoM')
 if vectorized
-    [Z, a, b ] = ArbitraryAntenna.MoMVectorized(w, mu0, t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k, SubTri, 0, 1, 0, UseDipole, Ei, eps0);
+    [Z, a, b] = ArbitraryAntenna.MoMVectorizedFuckAllowed(w, mu0, t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k, SubTri, 0, 1, 0, UseDipole, Ei,...
+        xdist, Reflector, epsR, Length, radius, .3, 3, lambda, n, eps0);
 else
     [Z, b, a] = ArbitraryAntenna.MoM(w, mu0, t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k,  SubTri, 0, 1, 0, UseDipole, Ei,...
         xdist, Reflector, epsR, Length, diameter, 2, 50, lambda, n, eps0);
@@ -194,6 +196,15 @@ else
 %         xdist, Reflector, epsR, Length, radius, 2, 50, lambda, n, eps0);
 end
 toc;
+% 
+%             [PlusTri, MinusTri] = ArbitraryAntenna.PMTri(t, EdgeList);
+%                 RefCoef = (1-n)/(1+n);
+%                 Ei(:,1)= 0;
+%                 Ei(:,2) = 1.*exp(1i*k.*(Center(:,1))).*RefCoef;
+%                 Ei(:,3)= 0;
+%                 
+%             b = BasisLA(:,2).*(dot(Ei(PlusTri,:),RhoP,2)/2+dot(Ei(MinusTri,:),RhoM,2)/2);+b
+a=Z\(v)';
 %% Current calc in Triangle
 tic;
 fprintf('\n')

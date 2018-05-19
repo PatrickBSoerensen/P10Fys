@@ -414,25 +414,40 @@
             end
         end
             
-        function [Ei] = VoltageFeed(t, Center, FeedPos, v, EdgeList, BasisLA) 
+        function [Ei, EdgeV] = VoltageFeed(t, p, Center, FeedPos, v, EdgeList, BasisLA) 
             
             [PlusTri, MinusTri] = ArbitraryAntenna.PMTri(t, EdgeList);
             Ei = zeros(size(Center));
+            EdgeV = 1:length(EdgeList);
+            EdgeV(:) = 0;
             
             %% Based on EdgeCenter
             PlusCoords = Center(PlusTri, :);
             MinusCoords = Center(MinusTri, :);
             
-            EdgeCenter = (PlusCoords+MinusCoords)/2;
-            FeedEdges = abs(EdgeCenter(:,2))<=1e-18+FeedPos(2);
-            if isempty(FeedEdges)
-                FeedEdges = min(abs(EdgeCenter(:,2)));
-            end
+%             EdgeCenter = (PlusCoords+MinusCoords)/2;
+%             FeedEdges = abs(EdgeCenter(:,2))<=1e-18+FeedPos(2);
             
-%             v=v*BasisLA(FeedEdges,2);
-            normfac= length(FeedEdges);
-            Ei(PlusTri(FeedEdges),2) = v/normfac;
-            Ei(MinusTri(FeedEdges),2) = v/normfac; 
+            %% straight edge selection mb?
+            FeedEdges = [];
+            counter=1;
+            PointsOnFeed = find(abs(p(:,2))<=1e-18+FeedPos(2));
+            for i = 1:length(PointsOnFeed)
+                    StartPoint = EdgeList(:,1)==PointsOnFeed(i);
+                for j=i+1:length(PointsOnFeed)
+                    EndPoint = EdgeList(:,2)==PointsOnFeed(j);
+                    if sum(StartPoint.*EndPoint)
+                        FeedEdges(counter) = find(StartPoint.*EndPoint);
+                        counter = counter+1;
+                    end
+                end
+            end
+%             v=v*Diam;
+            EdgeV(FeedEdges)=BasisLA(FeedEdges,2)*v;
+            if ~isempty(FeedEdges)
+                Ei(PlusTri(FeedEdges),2) = v/length(FeedEdges);
+                Ei(MinusTri(FeedEdges),2) = v/length(FeedEdges);
+            end
         end
         
         function [Z, b, a] = MoM(w, mu, t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k, SubTri, x, y, z, Point, Ei,...
@@ -688,54 +703,8 @@
             
             a = Z\b;
         end
-      
-        function [Z, a, b] = MoMVectorized(w,mu,t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k, SubTri, x, y, z, Point, Ei, eps0)
-            % alocating space
-            Z = zeros(length(EdgeList),length(EdgeList))+1i*zeros(length(EdgeList),length(EdgeList));
-            
-            SubAmount = size(SubTri);
-            Quad = SubAmount(1);
-            if ~Point
-            Ei = zeros(size(t));
-            Ei(:,1) = x.*exp(-1i*k.*(Center(:,1)));
-            Ei(:,2) = y.*exp(-1i*k.*(Center(:,1)));
-            Ei(:,3) = z.*exp(-1i*k.*(Center(:,1)));
-            end
-            
-            EdgesTotal = length(EdgeList);
-            
-            [PlusTri, MinusTri] = ArbitraryAntenna.PMTri(t, EdgeList);
-
-            for m=1:EdgesTotal
-                mPdist = sqrt(sum((Center(PlusTri(m),:)-SubTri(:,:,:)).^2,2));
-                mMdist = sqrt(sum((Center(MinusTri(m),:)-SubTri(:,:,:)).^2,2));
-                rhomP = repmat(RhoP(m,:),length(EdgeList),1);
-                rhomM = repmat(RhoM(m,:),length(EdgeList),1);
-                    
-                rhonP_ = RhoP_(:,:,:);
-                rhonM_ = RhoM_(:,:,:);
-                    
-                gmPnP = exp(-1i*k*mPdist(:,:,PlusTri))./mPdist(:,:,PlusTri);
-                gmMnP = exp(-1i*k*mMdist(:,:,PlusTri))./mMdist(:,:,PlusTri);
-                
-                gmPnM = exp(-1i*k*mPdist(:,:,MinusTri))./mPdist(:,:,MinusTri);
-                gmMnM = exp(-1i*k*mMdist(:,:,MinusTri))./mMdist(:,:,MinusTri);
-                
-                AmnP = mu/(4*pi)*(BasisLA(:,2).*permute(sum(rhonP_.*gmPnP/(2*Quad)),[3 2 1])+BasisLA(:,2).*permute(sum(rhonM_.*gmPnM/(2*Quad)),[3 2 1]));
-                AmnM = mu/(4*pi)*(BasisLA(:,2).*permute(sum(rhonP_.*gmMnP/(2*Quad)),[3 2 1])+BasisLA(:,2).*permute(sum(rhonM_.*gmMnM/(2*Quad)),[3 2 1]));
-            
-                PhiP = -1/(4*pi*1i*w*eps0)*(BasisLA(:,2).*permute(sum(gmPnP),[3 2 1])/Quad-BasisLA(:,2).*permute(sum(gmPnM),[3 2 1])/Quad);
-                PhiM = -1/(4*pi*1i*w*eps0)*(BasisLA(:,2).*permute(sum(gmMnP),[3 2 1])/Quad-BasisLA(:,2).*permute(sum(gmMnM),[3 2 1])/Quad);
-            
-                Z(m,:) = BasisLA(m,2).*(1i*w*(dot(AmnP,rhomP,2)/2+dot(AmnM,rhomM,2)/2)+PhiM-PhiP);  
-            end
-            b = BasisLA(:,2).*(dot(Ei(PlusTri,:),RhoP,2)/2+dot(Ei(MinusTri,:),RhoM,2)/2);
-            
-            %System solution
-            a=Z\b;
-        end
-       
-        function [Z, a, b] = MoMVectorizedFuckAllowed(w,mu,t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k, SubTri, x, y, z, Point, Ei,...
+        
+        function [Z, a, b] = MoMVectorized(w,mu,t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k, SubTri, x, y, z, Point, Ei,...
                 distx, Reflector, InEps, strip_length, strip_width, dx, Nz, lambda, n, eps0)
             % alocating space
             Z = zeros(length(EdgeList),length(EdgeList))+1i*zeros(length(EdgeList),length(EdgeList));
@@ -749,16 +718,20 @@
             end
             if Reflector
                 RefCoef = (1-n)/(1+n);
+                if ~Point
                 Ei(:,1) = Ei(:,1)+x.*exp(-1i*k.*(Center(:,2))).*RefCoef;
                 Ei(:,2) = Ei(:,2)+y.*exp(-1i*k.*(Center(:,1))).*RefCoef;
                 Ei(:,3) = Ei(:,3)+z.*exp(-1i*k.*(Center(:,1))).*RefCoef;
-             
-                [GIx, GIy, GIz] = ArbitraryAntenna.IDGreens(k, distx, strip_length, strip_width, dx, Nz, lambda, n, InEps, eps0, Center, SubTri);
+                else
+                    
+                Ei(:,1) = Ei(:,1)+Ei(:,1)*RefCoef;
+                Ei(:,2) = Ei(:,2)+Ei(:,2).*RefCoef;
+                Ei(:,3) = Ei(:,3)+Ei(:,3).*RefCoef;
+                end
+%                 [GIx, GIy, GIz] = ArbitraryAntenna.IDGreens(k, distx, strip_length, strip_width, dx, Nz, lambda, n, InEps, eps0, Center, SubTri);
   
-                GI = sum(GIx+GIy+GIz,2);
+%                 GI = sum(GIx+GIy+GIz,2);
 
-%                 GI = permute(GIx+GIy+GIz,[2,1,3]);
-%                 GI = repmat(GI,3,1);
             end
             
             EdgesTotal = length(EdgeList);
@@ -772,12 +745,18 @@
                     
                 rhonP_ = RhoP_(:,:,:);
                 rhonM_ = RhoM_(:,:,:);
-                if Reflector
-                    gmPnP = exp(-1i*k*mPdist(:,:,PlusTri))./mPdist(:,:,PlusTri)+GI(:,:,PlusTri);
-                    gmMnP = exp(-1i*k*mMdist(:,:,PlusTri))./mMdist(:,:,PlusTri)+GI(:,:,PlusTri);
+                if Reflector 
+                    gmPnPR = exp(-1i*k*(mPdist(:,:,PlusTri)+distx))./(mPdist(:,:,PlusTri)+distx);
+                    gmMnPR = exp(-1i*k*(mMdist(:,:,PlusTri)+distx))./(mMdist(:,:,PlusTri)+distx);
                 
-                    gmPnM = exp(-1i*k*mPdist(:,:,MinusTri))./mPdist(:,:,MinusTri)+GI(:,:,MinusTri);
-                    gmMnM = exp(-1i*k*mMdist(:,:,MinusTri))./mMdist(:,:,MinusTri)+GI(:,:,MinusTri);
+                    gmPnMR = exp(-1i*k*(mPdist(:,:,MinusTri)+distx))./(mPdist(:,:,MinusTri)+distx);
+                    gmMnMR = exp(-1i*k*(mMdist(:,:,MinusTri)+distx))./(mMdist(:,:,MinusTri)+distx);
+                    
+                    gmPnP = exp(-1i*k*mPdist(:,:,PlusTri))./mPdist(:,:,PlusTri)+gmPnPR;%+GI(:,:,PlusTri)%
+                    gmMnP = exp(-1i*k*mMdist(:,:,PlusTri))./mMdist(:,:,PlusTri)+gmMnPR;%+GI(:,:,PlusTri);%
+                
+                    gmPnM = exp(-1i*k*mPdist(:,:,MinusTri))./mPdist(:,:,MinusTri)+gmPnMR;%GI(:,:,MinusTri);
+                    gmMnM = exp(-1i*k*mMdist(:,:,MinusTri))./mMdist(:,:,MinusTri)+gmMnMR;%+GI(:,:,MinusTri)
                 else
                     gmPnP = exp(-1i*k*mPdist(:,:,PlusTri))./mPdist(:,:,PlusTri);
                     gmMnP = exp(-1i*k*mMdist(:,:,PlusTri))./mMdist(:,:,PlusTri);
@@ -1189,8 +1168,7 @@
         function [GIx, GIy, GIz] = IDGreens(k0, distx, ant_length, ant_width, dx, Nz, lambda, n, epsL2, eps1, Center, SubTri)
                 
             SubAmount = size(SubTri);
-            SubTri = reshape(SubTri, 3, [], SubAmount(3));
-            SubTri = permute(SubTri,[2 1 3]);
+%             SubTri = permute(SubTri,[2 1 3]);
             %% Soender
             k1i2=(2*pi/(lambda*n))^2;
             epsL2=epsL2*eps1;
@@ -1207,9 +1185,9 @@
             krhof=@(alpha) (1+cos(alpha))*ellipse_length/2+1i*ellipse_height*sin(alpha);
             dkrho_dalphaf=@(alpha) -sin(alpha)*ellipse_length/2+1i*ellipse_height*cos(alpha);
             
-            rhomin = distx;
+            rhomin = 0;
 %             rhomin = -ant_length/2-ant_width/2;
-            rhomax = sqrt((ant_length)^2+(distx-ant_width)^2);
+            rhomax = ant_length/2;%sqrt((ant_length)^2+(distx-ant_width)^2);
 %             rhomax = ant_length/2+ant_width/2;
 %             rhov1 = [rhomin rhomin+dx rhomin+dx*sqrt(2) rhomin+dx*2 rhomin+dx*sqrt(5) rhomin+dx*sqrt(8)];
             rhov1 = [0 dx dx*sqrt(2) dx*2 dx*sqrt(5) dx*sqrt(8)];
@@ -1265,7 +1243,7 @@
             %% Conversion to cartesian components
             TempCenters = permute(Center, [3 2 1]);
             TempCenters = repmat(TempCenters, [SubAmount(1) 1 1]);
-            AllSubDists = TempCenters+SubTri;
+            AllSubDists = TempCenters+SubTri+distx;
 
             x = AllSubDists(:,1,:);
             y = AllSubDists(:,2,:);
