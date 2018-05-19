@@ -5,14 +5,14 @@ ExyCrossX = [];
 ExzCrossZ =[];
 ESC = [];
 % %3mm
-stl1 = stlread('antennas/Dipole10cmT264.stl');
-stl2 = stlread('antennas/Dipole10cmT580.stl'); %ok
-stl3 = stlread('antennas/Dipole10cmT722.stl'); %god
-stl4 = stlread('antennas/Dipole10cmT924.stl'); %god
-stl5 = stlread('antennas/Dipole10cmT1060.stl'); %god
-stl6 = stlread('antennas/Dipole10cmT1104.stl');
-stl7 = stlread('antennas/Dipole10cmT1922.stl'); %god
-Amount = 7;
+% stl1 = stlread('antennas/Dipole10cmT264.stl');
+% stl2 = stlread('antennas/Dipole10cmT580.stl'); %ok
+% stl3 = stlread('antennas/Dipole10cmT722.stl'); %god
+% stl4 = stlread('antennas/Dipole10cmT924.stl'); %god
+% stl5 = stlread('antennas/Dipole10cmT1060.stl'); %god
+% stl6 = stlread('antennas/Dipole10cmT1104.stl');
+% stl7 = stlread('antennas/Dipole10cmT1922.stl'); %god
+% Amount = 7;
 %1mm
 % stl1 = stlread('antennas/Dipole1mm/Dipole10cm552T1mm.stl');
 % stl2 = stlread('antennas/Dipole1mm/Dipole10cm702T1mm.stl'); %ok
@@ -25,7 +25,7 @@ Amount = 7;
 % stl9 = stlread('antennas/Dipole1mm/Dipole10cm2070T1mm.stl');
 % stl10 = stlread('antennas/Dipole1mm/Dipole10cm2704T1mm.stl'); %god
 % Amount = 10;
-%0.5mm
+% 0.5mm
 % stl1 = stlread('antennas/DipoleHalfmm/Dipole10CM576T.stl');
 % stl2 = stlread('antennas/DipoleHalfmm/Dipole10CM700T.stl'); %ok
 % stl3 = stlread('antennas/DipoleHalfmm/Dipole10CM836T.stl'); %god
@@ -38,17 +38,17 @@ Amount = 7;
 % stl10 = stlread('antennas/DipoleHalfmm/Dipole10CM4416T.stl'); %god
 % Amount = 10;
 %0.1mm
-% stl1 = stlread('antennas/Dipole0.1mm/Dipole10cm2502T01mm.stl');
-% stl2 = stlread('antennas/Dipole0.1mm/Dipole10cm3060T01mm.stl'); %ok
-% stl3 = stlread('antennas/Dipole0.1mm/Dipole10cm3696T01mm.stl'); %god
-% stl4 = stlread('antennas/Dipole0.1mm/Dipole10cm4392T01mm.stl'); %god
-% stl5 = stlread('antennas/Dipole0.1mm/Dipole10cm5200T01mm.stl'); %god
-% stl6 = stlread('antennas/Dipole0.1mm/Dipole10cm6020T01mm.stl');
-% stl7 = stlread('antennas/Dipole0.1mm/Dipole10cm6870T01mm.stl'); %god
-% stl8 = stlread('antennas/Dipole0.1mm/Dipole10cm7808T01mm.stl'); %god
-% stl9 = stlread('antennas/Dipole0.1mm/Dipole10cm8874T01mm.stl');
-% stl10 = stlread('antennas/Dipole0.1mm/Dipole10cm9936T01mm.stl'); %god
-% Amount = 10;
+stl1 = stlread('antennas/Dipole0.1mm/Dipole10cm2502T01mm.stl');
+stl2 = stlread('antennas/Dipole0.1mm/Dipole10cm3060T01mm.stl'); %ok
+stl3 = stlread('antennas/Dipole0.1mm/Dipole10cm3696T01mm.stl'); %god
+stl4 = stlread('antennas/Dipole0.1mm/Dipole10cm4392T01mm.stl'); %god
+stl5 = stlread('antennas/Dipole0.1mm/Dipole10cm5200T01mm.stl'); %god
+stl6 = stlread('antennas/Dipole0.1mm/Dipole10cm6020T01mm.stl');
+stl7 = stlread('antennas/Dipole0.1mm/Dipole10cm6870T01mm.stl'); %god
+stl8 = stlread('antennas/Dipole0.1mm/Dipole10cm7808T01mm.stl'); %god
+stl9 = stlread('antennas/Dipole0.1mm/Dipole10cm8874T01mm.stl');
+stl10 = stlread('antennas/Dipole0.1mm/Dipole10cm9936T01mm.stl'); %god
+Amount = 10;
 %% Parameters
 % Controls amount of antenna
 % p1 = p;
@@ -70,7 +70,7 @@ DipolePoint = [-diameter,0,0];
 SubSubTri = 0;
 sub =0;
 % if 1 use fast (but more inacurate) MoM
-vectorized = 0;
+vectorized = 1;
 % Area of radiation
 xmin = -2; xmax = 2;
 ymin = -2; ymax = 2;
@@ -82,8 +82,9 @@ n = 3.9;
 epsR = 11.68;
 Reflector = 0;
 xdist = diameter/2+0;
+Lift=0;
 
-FileName= 'GibsonWave3mm';
+FileName= 'VectorizedWavePoint1mm';
 
 %% Loop
 for convloop=1:Amount
@@ -158,7 +159,7 @@ toc;
 tic;
 fprintf('\n')
 disp('Lifting subtriangles and center points')
-[Center, SubTri] = ArbitraryAntenna.CenterLift(Center, SubTri, diameter/2);
+[Center, SubTri] = ArbitraryAntenna.CenterLift(Center, SubTri, diameter/2, Lift);
 
 %% Basis Function setup
 tic;
@@ -172,13 +173,7 @@ fprintf('\n')
 disp('Evaluating basis functions in center points')
 [RhoP, RhoM, RhoP_, RhoM_] = ArbitraryAntenna.BasisEvalCenter(t, EdgeList, Basis, Center, SubTri);
 toc;
-%% pre analytic calculations
-%Self Terms
-tic;
-fprintf('\n')
-disp('Pre-Calculating self-coupling terms')
-I2 = ArbitraryAntenna.SelfTerm(p, t);
-toc;
+
 %% Calculating Dipole strength on antenna points
 % [Ei] = ArbitraryAntenna.PointSource(w, mu0, k, Center, SubTri, sub, DipolePoint, [0,1,0]);
 
@@ -188,10 +183,12 @@ tic;
 fprintf('\n')
 disp('MoM')
 if vectorized
-    [Z, a, b ] = ArbitraryAntenna.MoMVectorized(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k, SubTri, 0, 1, 0, UseDipole, Ei);
+    [Z, a, b ] = ArbitraryAntenna.MoMVectorized(w, mu0, t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k, SubTri, 0, 1, 0, UseDipole, Ei, eps0);
 else
-%     [Z, b, a] = ArbitraryAntenna.MoM(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k,  SubTri, 0, 1, 0, UseDipole, Ei);
-  [Z, b, a] = ArbitraryAntenna.MoMSergey(w, mu0, t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k, SubTri, 0, 1, 0, UseDipole, Ei, eps0);
+    [Z, b, a] = ArbitraryAntenna.MoM(w, mu0, t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k,  SubTri, 0, 1, 0, UseDipole, Ei,...
+        xdist, Reflector, epsR, Length, diameter, 2, 50, lambda, n, eps0);
+    
+%   [Z, b, a] = ArbitraryAntenna.MoMSergey(w, mu0, t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k, SubTri, 0, 1, 0, UseDipole, Ei, eps0);
            
 %     [Z, b, a] = ArbitraryAntenna.MoMIG(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k,  SubTri, 0, 1, 0, UseDipole, Ei,...
 %         xdist, Reflector, epsR, Length, radius, 2, 50, lambda, n, eps0);
