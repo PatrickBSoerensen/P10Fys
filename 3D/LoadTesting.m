@@ -1,9 +1,7 @@
 %% load STL file into matlab
-
-
-% stl1 = stlread('antennas/Dipole1mm/Dipole10cm552T1mm.stl');
-% stl2 = stlread('antennas/Dipole1mm/Dipole10cm702T1mm.stl'); %ok
-% stl3 = stlread('antennas/Dipole1mm/Dipole10cm900T1mm.stl'); %god
+stl = stlread('antennas/Dipole1mm/Dipole10cm552T1mm.stl');
+% stl = stlread('antennas/Dipole1mm/Dipole10cm702T1mm.stl'); %ok
+% stl = stlread('antennas/Dipole1mm/Dipole10cm900T1mm.stl'); %god
 
 % stl = stlread('antennas/Dipole10cmT180.stl');
 % stl = stlread('antennas/Dipole10cmT264.stl');
@@ -23,7 +21,6 @@
 % stl = stlread('antennas/Dipole10cmT2888.stl'); %god
 % stl = stlread('antennas/Dipole10cmT3528.stl');
 % stl = stlread('antennas/AntBinMesh2556.stl');
-% stl = stlread('antennas/HalfAntT212.stl');
 % stl =  stlread('antennas/AspecPrio/Dipole10cmT910.stl');
 %% faces and unique vertices
 tic;
@@ -43,7 +40,6 @@ Length = maxmaxp+abs(minp(maxaxis));
 %% Parameters
 % Controls amount of antenna
 % p(:,1) = p(:,1)+0.03;
-
 p1 = p;
 % p2 = p;
 % p3 = p;
@@ -61,6 +57,10 @@ UseDipole = 0;
 DipolePoint = [-Length,0,0];
 UseFeed = 0;
 FeedPos = [0,0,0];
+
+Yagi=0;
+OGSize = size(t);
+OGSize = OGSize(1)*1.5;
 % If set to one use 81 sub triangles pr element, if 0 use 9
 SubSubTri = 0;
 sub = 0;
@@ -77,8 +77,8 @@ PointArea = xmax^2/steps;
 % Reflector surface params
 n = 3.9;
 epsR = 11.68;
-Reflector = 1;
-FromAnt=0.001;
+Reflector = 0;
+FromAnt = 0.01;
 xdist = radius+FromAnt;
 % Determines if points should be lifted to surf of antenna, this is semi
 % hardcoded to a predetermined structure, if in doubt set to 0
@@ -134,40 +134,45 @@ disp('Evaluating basis functions in center points')
 [RhoP, RhoM, RhoP_, RhoM_] = ArbitraryAntenna.BasisEvalCenter(t, EdgeList, Basis, Center, SubTri);
 toc;
 %% Calculating Dipole strength on antenna points
+clear Ei
 if UseDipole
- [Ei] = ArbitraryAntenna.PointSource(w, mu0, k, Center, SubTri, sub, DipolePoint, [0,1,0]);
+    [Ei] = ArbitraryAntenna.PointSource(w, mu0, k, Center, SubTri, sub, DipolePoint, [0,1,0]);
 end
 if UseFeed
-[Ei, v] = ArbitraryAntenna.VoltageFeed(t,p, Center, DipolePoint, 1, EdgeList, BasisLA );
+    [Ei, v] = ArbitraryAntenna.VoltageFeed(t, p, Center, DipolePoint, 1, EdgeList, BasisLA, Yagi, OGSize);
 end
 if ~UseFeed && ~UseDipole
-    Ei=zeros(size(Center));
+    Ei(:,1) = 0.*exp(1i*k.*(Center(:,2)));
+    Ei(:,2) = 1.*exp(1i*k.*(Center(:,1)));
+    Ei(:,3) = 0.*exp(1i*k.*(Center(:,1)));
+end
+if Reflector   
+    [GIx, GIy, GIz] = ArbitraryAntenna.IDGreens(k, distx, Length, 2*radius, 0.005, 50, lambda, n, epsR, eps0, Center, SubTri);
+ 
+    GI = GIx+GIy+GIz;
+else
+    GI = [];
 end
 %% MoM
 tic;
 fprintf('\n')
 disp('MoM')
 if vectorized
-    [Z, a, b] = ArbitraryAntenna.MoMVectorized(w, mu0, t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k, SubTri, 0, 1, 0, UseDipole, Ei,...
-        xdist, Reflector, epsR, Length, 2*radius, 0.005, 50, lambda, n, eps0);
+    [Z, a, b] = ArbitraryAntenna.MoMVectorized(w, mu0, t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k, SubTri, Ei, Reflector, GI, n, eps0);
 else
-%     [Z, b, a] = ArbitraryAntenna.MoMSergey(w, mu0, t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k,  SubTri, 0, 1, 0, UseDipole, Ei,...
-%         xdist, Reflector, epsR, Length, radius, .5, 3, lambda, n, eps0);
-    [Z, b, a] = ArbitraryAntenna.MoM(w, mu0, t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k,  SubTri, 0, 1, 0, UseDipole, Ei,...
-        xdist, Reflector, epsR, Length, radius, .5, 3, lambda, n, eps0);
+    [Z, a, b] = ArbitraryAntenna.MoM(w, mu0, t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k,  SubTri, Ei, eps0);
 end
 toc;
 
-            [PlusTri, MinusTri] = ArbitraryAntenna.PMTri(t, EdgeList);
-            RefCoef = (1-n)/(1+n);
+if Reflector
+    [PlusTri, MinusTri] = ArbitraryAntenna.PMTri(t, EdgeList);
+    RefCoef = (1-n)/(1+n);
             
-                Ei(:,1) = 0.*exp(1i*k.*(Center(:,2)));
-                Ei(:,2) = 1.*exp(1i*k.*(Center(:,1)));
-                Ei(:,3) = 0.*exp(1i*k.*(Center(:,1)));
-                Ei(:,2) = Ei(:,2) + 1.*exp(-1i*k.*(Center(:,1)+2*(Center(:,1)-xdist))).*RefCoef;
+    Ei(:,2) = Ei(:,2) + 1.*exp(-1i*k.*(Center(:,1)+2*(Center(:,1)-xdist))).*RefCoef;
                 
     b = BasisLA(:,2).*(dot(Ei(PlusTri,:),RhoP,2)/2+dot(Ei(MinusTri,:),RhoM,2)/2);
-    a=Z\(v+b)';
+end
+
 if UseFeed 
     a=Z\(v+b)';
 end
@@ -198,10 +203,11 @@ axis('equal');
 rotate3d
 
 %%
-% [Esc, EscPhi, EscTheta] = ArbitraryAntenna.AngularFarField(w, mu0, k, 30, Center, Jface, steps);
-%%
+if Reflector
 [Esc, EscPhi, EscTheta] = ArbitraryAntenna.AngularFarFieldSurf(w, mu0, k, 30, Center, Jface, steps, xdist, epsR, eps0, lambda, n);
-
+else
+[Esc, EscPhi, EscTheta] = ArbitraryAntenna.AngularFarField(w, mu0, k, 30, Center, Jface, steps);
+end
 %% Calculating E   
 tic;
 fprintf('\n')

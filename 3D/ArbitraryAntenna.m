@@ -105,7 +105,7 @@
                     CenterToMove=Center(k,:);
                     SubTriToMove=reshape(SubTri(:,:,k), 3, [])';
                     SubTriRet(:,:,k) = reshape(SubTri(:,:,k), 3, [])';
-                    if Lift
+                if Lift
                 if Center(k,2) >=0.05 
                     % part of spherical surface
                     CenterOfSphere = [0, 0.05, 0];
@@ -147,7 +147,7 @@
                     Normal = Normal./n;
                     SubTriRet(:,:,k) = CenterOfCylinder+Normal*R;
                 end
-                    end
+                end
             end
         end
         
@@ -329,7 +329,6 @@
                     % Evaluating the basis function in centres of
                     % subtriangles
                     SubP = SubTri(:,:,m);
-%                     SubP = reshape(SubP, 3, []).';
                     RhoP_(:,:,TP) = BasisP(SubP);
                 end
                 for i=1:length(Minus)
@@ -341,7 +340,6 @@
                     % Evaluating the basis function in centres of
                     % subtriangles
                     SubM = SubTri(:,:,m);
-%                     SubM = reshape(SubM, 3, []).';
                     RhoM_(:,:,TM) = BasisM(SubM);
                 end        
             end
@@ -418,27 +416,23 @@
             end
         end
             
-        function [Ei, EdgeV] = VoltageFeed(t, p, Center, FeedPos, v, EdgeList, BasisLA) 
+        function [Ei, EdgeV] = VoltageFeed(t, p, Center, FeedPos, v, EdgeList, BasisLA, Yagi, OG)
             
             [PlusTri, MinusTri] = ArbitraryAntenna.PMTri(t, EdgeList);
             Ei = zeros(size(Center));
             EdgeV = 1:length(EdgeList);
             EdgeV(:) = 0;
             
-            %% Based on EdgeCenter
-            PlusCoords = Center(PlusTri, :);
-            MinusCoords = Center(MinusTri, :);
-            
-%             EdgeCenter = (PlusCoords+MinusCoords)/2;
-%             FeedEdges = abs(EdgeCenter(:,2))<=1e-18+FeedPos(2);
-            
-            %% straight edge selection mb?
             FeedEdges = [];
-            counter=1;
-            PointsOnFeed = find(abs(p(:,2))<=1e-18+FeedPos(2));
+            counter = 1;
+            if Yagi
+                PointsOnFeed(1:OG) = find(abs(p(:,2))<=1e-18+FeedPos(2));
+            else
+                PointsOnFeed = find(abs(p(:,2))<=1e-18+FeedPos(2));
+            end
             for i = 1:length(PointsOnFeed)
                     StartPoint = EdgeList(:,1)==PointsOnFeed(i);
-                for j=i+1:length(PointsOnFeed)
+                for j = i+1:length(PointsOnFeed)
                     EndPoint = EdgeList(:,2)==PointsOnFeed(j);
                     if sum(StartPoint.*EndPoint)
                         FeedEdges(counter) = find(StartPoint.*EndPoint);
@@ -446,230 +440,18 @@
                     end
                 end
             end
-%             v=v*Diam;
+            
             EdgeV(FeedEdges)=BasisLA(FeedEdges,2)*v;
             if ~isempty(FeedEdges)
                 Ei(PlusTri(FeedEdges),2) = v/length(FeedEdges);
                 Ei(MinusTri(FeedEdges),2) = v/length(FeedEdges);
             end
         end
-        
-        function [Z, b, a] = MoM(w, mu, t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k, SubTri, x, y, z, Point, Ei,...
-                distx, Reflector, InEps, strip_length, strip_width, dx, Nz, lambda, n, eps1)
-            % alocating space
-            Z = zeros(length(EdgeList),length(EdgeList))+1i*zeros(length(EdgeList),length(EdgeList));
-            if ~Point
-                Ei(:,1) = x.*exp(1i*k.*(Center(:,1)));
-                Ei(:,2) = y.*exp(1i*k.*(Center(:,1)));
-                Ei(:,3) = z.*exp(1i*k.*(Center(:,1)));
-            end
-            if Reflector
-                RefCoef = (1-n)/(1+n);
-                Ei(:,1) = Ei(:,1)+x.*exp(-1i*k.*(Center(:,1))).*RefCoef;
-                Ei(:,2) = Ei(:,2)+y.*exp(-1i*k.*(Center(:,1))).*RefCoef;
-                Ei(:,3) = Ei(:,3)+z.*exp(-1i*k.*(Center(:,1))).*RefCoef;
-            end
-            b = 1:length(EdgeList); b(:) =0; b=b';
-            [PlusTri, MinusTri] = ArbitraryAntenna.PMTri(t, EdgeList);
-            
-            if Reflector
-            [GIx, GIy, GIz] = ArbitraryAntenna.IDGreens(k, distx, strip_length, strip_width, dx, Nz, lambda, n, InEps, eps1, Center, SubTri);
-            end
-                        
-            SubAmount = size(SubTri);
-            Quad = SubAmount(1);
-            % Outer loop over triangles
-            for y=1:length(t)
-                PO = find(PlusTri - y ==0);
-                MO = find(MinusTri - y ==0);
-                % Inner triangle loop
-                SO = SubTri(:,:,y);
-                for h=1:length(t)
-                    PI = find(PlusTri - h ==0);
-                    MI = find(MinusTri - h ==0);
-                    SI = SubTri(:,:,h);
-                   
-                    IoO = sqrt(sum((Center(y,:)-SI).^2,2));
-                    OoI = sqrt(sum((Center(h,:)-SO).^2,2));
- 
-                     if Reflector
-                        GIppo = GIx(:,:,y)+GIy(:,:,y)+GIz(:,:,y);
-                        GImpo = GIx(:,:,y)+GIy(:,:,y)+GIz(:,:,y);
-                        GIpmo = GIx(:,:,y)+GIy(:,:,y)+GIz(:,:,y);
-                        GImmo = GIx(:,:,y)+GIy(:,:,y)+GIz(:,:,y);
-                    
-                        GIppi = GIx(:,:,h)+GIy(:,:,h)+GIz(:,:,h);
-                        GImpi = GIx(:,:,h)+GIy(:,:,h)+GIz(:,:,h);
-                        GIpmi = GIx(:,:,h)+GIy(:,:,h)+GIz(:,:,h);
-                        GImmi = GIx(:,:,h)+GIy(:,:,h)+GIz(:,:,h);
-                    end
-                    %Loop over outer triangles basis functions
-                    for i = 1:length(PO)
-                        % Intermediate loading of plus and minus functions
-                        % evaluated in center points, _ denotes sub
-                        % triangle
-                        zMP = (RhoP(PO(i),:));
-                        zMP_ = (RhoP_(:,:,PO(i)));
-                        zMPR = repmat(zMP ,Quad,1);
-                        
-                        % Subtriangles for the inner triangles basis
-                        % functions
-                        for j = 1:length(PI)
-                            % Intermediate loading of plus and minus functions
-                            % evaluated in center points, _ denotes sub
-                            % triangle
-                            zNP = (RhoP(PI(j),:));
-                            zNP_ = (RhoP_(:,:,PI(j)));           
-                            zNPR = repmat(zNP, Quad,1);
-                        
-                            gPPo = exp(1i.*k.*IoO)./IoO;
-                            gPPi = exp(1i.*k.*OoI)./OoI;
-                                                  
-                            Z(PO(i), PI(j)) = ...
-                                (BasisLA(PO(i),2)*BasisLA(PI(j),2))/(4*pi)...
-                                *(sum((dot(zMPR, zNP_,2)/4-1/k^2) .* gPPo) ...
-                                +sum((dot(zMP_, zNPR,2)/4-1/k^2) .* gPPi))/Quad...
-                                + Z(PO(i), PI(j));
-
-                            if Reflector
-                                Z(PO(i), PI(j)) = ...
-                                (BasisLA(PO(i),2)*BasisLA(PI(j),2))...
-                                *sum((dot(repmat(zMP,[Quad,1]).* GIppo, zNP_.* GIppo,2)) /Quad)...
-                                + Z(PO(i), PI(j));
-                            
-                                Z(PO(i), PI(j)) = ...
-                                (BasisLA(PO(i),2)*BasisLA(PI(j),2))...
-                                *sum((dot(zMP_.*GIppi, repmat(zNP,[Quad,1]).*GIppi,2)) /Quad)...
-                                + Z(PO(i), PI(j));
-                            end
-                        end
-                        for j=1:length(MI)
-                            zNM = (RhoM(MI(j),:));
-                            zNM_ = (RhoM_(:,:,MI(j)));        
-                            zNMR = repmat(zNM ,Quad,1);
-                        
-                            gPMo = exp(1i.*k.*IoO)./IoO;
-                            gMPi = exp(1i.*k.*OoI)./OoI;
-                          
-                            Z(PO(i), MI(j)) = ...
-                                (BasisLA(PO(i),2)*BasisLA(MI(j),2))/(4*pi)...
-                                *(sum((dot(zMPR, zNM_ ,2)/4+1/k^2) .* gPMo)...
-                                + sum((dot(zMP_, zNMR,2)/4+1/k^2) .* gMPi))/Quad...
-                                + Z(PO(i), MI(j));
-                        
-                          if Reflector
-                            Z(PO(i), MI(j)) = ...
-                            (BasisLA(PO(i),2)*BasisLA(MI(j),2))...
-                            *sum((dot(repmat(zMP,[Quad,1]).* GIpmo, zNM_.* GIpmo,2)) /Quad)...
-                            + Z(PO(i), MI(j));
-                            
-                            Z(PO(i), MI(j)) = ...
-                            (BasisLA(PO(i),2)*BasisLA(MI(j),2))...
-                            *sum((dot(zMP_.*GImpi, repmat(zNM,[Quad,1]).*GImpi,2)) /Quad)...
-                            + Z(PO(i), MI(j));
-                        
-                          end
-                        end
-                    end
-                    for i=1:length(MO)
-                        zMM = (RhoM(MO(i),:));
-                        zMM_ = (RhoM_(:,:,MO(i)));
-                        zMMR = repmat(zMM ,Quad,1);
-                          
-                        for j=1:length(PI)
-                            zNP = (RhoP(PI(j),:));
-                            zNP_ = (RhoP_(:,:,PI(j)));   
-                            zNPR = repmat(zNP ,Quad,1);
-                        
-                            gMPo = exp(1i.*k.*IoO)./IoO;
-                            gPMi = exp(1i.*k.*OoI)./OoI;
-                                
-                            Z(MO(i), PI(j)) = ...
-                                (BasisLA(MO(i),2)*BasisLA(PI(j),2))/(4*pi)...
-                                *(sum((dot(zMMR, zNP_,2)/4+1/k^2) .* gMPo) ...
-                                + sum((dot(zMM_, zNPR,2)/4+1/k^2) .* gPMi))/Quad...
-                                + Z(MO(i), PI(j));
-                            
-                        if Reflector
-                            Z(MO(i), PI(j)) = ...
-                            (BasisLA(MO(i),2)*BasisLA(PI(j),2))/(4*pi)...
-                            *sum((dot(repmat(zMM,[Quad,1]).*GImpo, zNP_.*GImpo,2))  /Quad)...
-                            + Z(MO(i), PI(j));
-                            
-                            Z(MO(i), PI(j)) = ...
-                            (BasisLA(MO(i),2)*BasisLA(PI(j),2))...
-                            *sum((dot(zMM_.*GIpmi, repmat(zNP,[Quad,1]).*GIpmi,2)) /Quad)...
-                            + Z(MO(i), PI(j));   
-                        end
-                        end
-                        for j=1:length(MI)
-                            zNM = (RhoM(MI(j),:));
-                            zNM_ = (RhoM_(:,:,MI(j)));   
-                            zNMR = repmat(zNM ,Quad,1);
-                            
-                            gMMo = exp(1i.*k.*IoO)./IoO;
-                            gMMi = exp(1i.*k.*OoI)./OoI;
-                                             
-                                Z(MO(i), MI(j)) = ...
-                                (BasisLA(MO(i),2)*BasisLA(MI(j),2))/(4*pi)...
-                                *(sum((dot(zMMR, zNM_,2)/4-1/k^2) .* gMMo)...
-                                +sum((dot(zMM_, zNMR,2)/4-1/k^2) .* gMMi))/Quad...
-                                + Z(MO(i), MI(j));
-                            
-                        if Reflector
-                            Z(MO(i), MI(j)) = ...
-                            (BasisLA(MO(i),2)*BasisLA(MI(j),2))...
-                            *sum((dot(repmat(zMM,[Quad,1]).* GImmo, zNM_.* GImmo,2)) /Quad)...
-                            + Z(MO(i), MI(j));
-                            
-                            Z(MO(i), MI(j)) = ...
-                            (BasisLA(MO(i),2)*BasisLA(MI(j),2))...
-                            *sum((dot(zMM_.* GImmi, repmat(zNM,[Quad,1]).* GImmi,2)) /Quad)...
-                            + Z(MO(i), MI(j));    
-                        end
-           
-                        end
-                     end      
-                end       
-            end
-            for y=1:length(t)
-                PO = find(PlusTri - y ==0);
-                MO = find(MinusTri - y ==0);
-                for i=1:length(PO)
-                    b(PO(i)) = -1i/(w*mu)*sum(dot(Ei(y,:),RhoP(PO(i),:),2)).*BasisLA(PO(i),2)/2 + b(PO(i));
-                end
-                for i=1:length(MO)
-                    b(MO(i)) = -1i/(w*mu)*sum(dot(Ei(y,:),RhoM(MO(i),:),2)).*BasisLA(MO(i),2)/2 + b(MO(i));
-                end
-            end
-            
-            b = -1i/(w*mu)*BasisLA(:,2).*(dot(Ei(PlusTri,:),RhoP,2)/2+dot(Ei(MinusTri,:),RhoM,2)/2);
-            
-            % Z\b is a newer faster version of inv(Z)*b
-            a = Z\b;
-        end
          
-        function [Z, b, a] = MoMSergey(w, mu, t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k, SubTri, x, y, z, Point, Ei,...
-                distx, Reflector, InEps, strip_length, strip_width, dx, Nz, lambda, n, eps0)
+        function [Z,  a, b] = MoM(w, mu, t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k, SubTri, Ei, eps0)
             
             Z = zeros(length(EdgeList),length(EdgeList))+1i*zeros(length(EdgeList),length(EdgeList));
-            if ~Point
-                Ei(:,1) = x.*exp(1i*k.*(Center(:,2)));
-                Ei(:,2) = y.*exp(1i*k.*(Center(:,1)));
-                Ei(:,3) = z.*exp(1i*k.*(Center(:,1)));
-            end
-            if Reflector
-                RefCoef = (1-n)/(1+n);
-                Ei(:,1) = Ei(:,1)+x.*exp(-1i*k.*(Center(:,2))).*RefCoef;
-                Ei(:,2) = Ei(:,2)+y.*exp(-1i*k.*(Center(:,1))).*RefCoef;
-                Ei(:,3) = Ei(:,3)+z.*exp(-1i*k.*(Center(:,1))).*RefCoef;
-             
-                [GIx, GIy, GIz] = ArbitraryAntenna.IDGreens(k, distx, strip_length, strip_width, dx, Nz, lambda, n, InEps, eps0, Center, SubTri);
-                
-                GI = permute(GIx+GIy+GIz,[2,1,3]);
-                GI = repmat(GI,3,1);
-            end
-            
+        
             [PlusTri, MinusTri] = ArbitraryAntenna.PMTri(t, EdgeList);
             
             SubAmount = size(SubTri);
@@ -683,26 +465,20 @@
                 for n=1:length(EdgeList)
                     rhonP_ = RhoP_(:,:,n);
                     rhonM_ = RhoM_(:,:,n);
-                    if Reflector
-                        gmPnP = exp(-1i*k*mPdist(:,:,PlusTri(n)))./mPdist(:,:,PlusTri(n))+GI(:,:,PlusTri(n));
-                        gmMnP = exp(-1i*k*mMdist(:,:,PlusTri(n)))./mMdist(:,:,PlusTri(n))+GI(:,:,PlusTri(n));
+                    
+                    gmPnP = exp(-1i*k*mPdist(:,:,PlusTri(n)))./mPdist(:,:,PlusTri(n));
+                    gmMnP = exp(-1i*k*mMdist(:,:,PlusTri(n)))./mMdist(:,:,PlusTri(n));
                 
-                        gmPnM = exp(-1i*k*mPdist(:,:,MinusTri(n)))./mPdist(:,:,MinusTri(n))+GI(:,:,MinusTri(n));
-                        gmMnM = exp(-1i*k*mMdist(:,:,MinusTri(n)))./mMdist(:,:,MinusTri(n))+GI(:,:,MinusTri(n));
-                    else
-                        gmPnP = exp(-1i*k*mPdist(:,:,PlusTri(n)))./mPdist(:,:,PlusTri(n));
-                        gmMnP = exp(-1i*k*mMdist(:,:,PlusTri(n)))./mMdist(:,:,PlusTri(n));
-                
-                        gmPnM = exp(-1i*k*mPdist(:,:,MinusTri(n)))./mPdist(:,:,MinusTri(n));
-                        gmMnM = exp(-1i*k*mMdist(:,:,MinusTri(n)))./mMdist(:,:,MinusTri(n));
-                    end
+                    gmPnM = exp(-1i*k*mPdist(:,:,MinusTri(n)))./mPdist(:,:,MinusTri(n));
+                    gmMnM = exp(-1i*k*mMdist(:,:,MinusTri(n)))./mMdist(:,:,MinusTri(n));
+                        
             AmnP = mu/(4*pi)*(BasisLA(n,2)*sum(rhonP_.*gmPnP/(2*Quad))+BasisLA(n,2)*sum(rhonM_.*gmPnM/(2*Quad)));
             AmnM = mu/(4*pi)*(BasisLA(n,2)*sum(rhonP_.*gmMnP/(2*Quad))+BasisLA(n,2)*sum(rhonM_.*gmMnM/(2*Quad)));
             
             PhiP = -1/(4*pi*1i*w*eps0)*(BasisLA(n,2)*sum(gmPnP)/Quad-BasisLA(n,2)*sum(gmPnM)/Quad);
             PhiM = -1/(4*pi*1i*w*eps0)*(BasisLA(n,2)*sum(gmMnP)/Quad-BasisLA(n,2)*sum(gmMnM)/Quad);
             
-            Z(m,n) = BasisLA(m,2)*(1i*w*(dot(AmnP,rhomP)/2+dot(AmnM,rhomM)/2)+PhiM-PhiP);  
+            Z(m,n) = BasisLA(m,2)*(1i*w*(dot(AmnP,rhomP)/2+dot(AmnM,rhomM)/2)+PhiM-PhiP);
                 end
             end
             
@@ -711,18 +487,14 @@
             a = Z\b;
         end
         
-        function [Z, a, b] = MoMVectorized(w,mu,t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k, SubTri, x, y, z, Point, Ei,...
-                distx, Reflector, InEps, strip_length, strip_width, dx, Nz, lambda, n, eps0)
+        function [Z, a, b] = MoMVectorized(w,mu,t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k, SubTri, Ei,...
+                Reflector, GI, n, eps0)
             % alocating space
             Z = zeros(length(EdgeList),length(EdgeList))+1i*zeros(length(EdgeList),length(EdgeList));
             
             SubAmount = size(SubTri);
             Quad = SubAmount(1);
-            if ~Point
-                Ei(:,1) = x.*exp(1i*k.*(Center(:,2)));
-                Ei(:,2) = y.*exp(1i*k.*(Center(:,1)));
-                Ei(:,3) = z.*exp(1i*k.*(Center(:,1)));
-            end
+         
             if Reflector
                 RefCoef = (1-n)/(1+n);
 %                 if ~Point
@@ -734,9 +506,6 @@
 %                     Ei(:,2) = Ei(:,2)+Ei(:,2).*RefCoef;
 %                     Ei(:,3) = Ei(:,3)+Ei(:,3).*RefCoef;
 %                 end
-                [GIx, GIy, GIz] = ArbitraryAntenna.IDGreens(k, distx, strip_length, strip_width, dx, Nz, lambda, n, InEps, eps0, Center, SubTri);
-  
-                GI = GIx+GIy+GIz;
             end
             
             EdgesTotal = length(EdgeList);
