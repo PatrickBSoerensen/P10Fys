@@ -1,5 +1,5 @@
 % close all
-normalize = 0;
+normalize = 1;
 
 figure(1)
 title('Convergence of J_y')

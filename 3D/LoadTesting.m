@@ -89,7 +89,7 @@ PointArea = xmax^2/steps;
 % Reflector surface params
 n = 3.9;
 epsR = 11.68;
-Reflector = 0;
+Reflector = 1;
 FromAnt=0.00;
 xdist = radius+FromAnt;
 % Determines if points should be lifted to surf of antenna, this is semi

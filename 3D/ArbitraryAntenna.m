@@ -729,7 +729,7 @@
                 end
                 [GIx, GIy, GIz] = ArbitraryAntenna.IDGreens(k, distx, strip_length, strip_width, dx, Nz, lambda, n, InEps, eps0, Center, SubTri);
   
-                GI = sum(GIx+GIy+GIz,2);
+                GI = GIx+GIy+GIz;
 
             end
             
@@ -751,11 +751,11 @@
                     gmPnMR = exp(-1i*k*(mPdist(:,:,MinusTri)+distx))./(mPdist(:,:,MinusTri)+distx);
                     gmMnMR = exp(-1i*k*(mMdist(:,:,MinusTri)+distx))./(mMdist(:,:,MinusTri)+distx);
                     
-                    gmPnP = exp(-1i*k*mPdist(:,:,PlusTri))./mPdist(:,:,PlusTri)+gmPnPR;%+GI(:,:,PlusTri)%
-                    gmMnP = exp(-1i*k*mMdist(:,:,PlusTri))./mMdist(:,:,PlusTri)+gmMnPR;%+GI(:,:,PlusTri);%
+                    gmPnP = exp(-1i*k*mPdist(:,:,PlusTri))./mPdist(:,:,PlusTri);%+gmPnPR;%+GI(:,:,PlusTri)%
+                    gmMnP = exp(-1i*k*mMdist(:,:,PlusTri))./mMdist(:,:,PlusTri);%+gmMnPR;%+GI(:,:,PlusTri);%
                 
-                    gmPnM = exp(-1i*k*mPdist(:,:,MinusTri))./mPdist(:,:,MinusTri)+gmPnMR;%GI(:,:,MinusTri);
-                    gmMnM = exp(-1i*k*mMdist(:,:,MinusTri))./mMdist(:,:,MinusTri)+gmMnMR;%+GI(:,:,MinusTri)
+                    gmPnM = exp(-1i*k*mPdist(:,:,MinusTri))./mPdist(:,:,MinusTri);%+gmPnMR;%GI(:,:,MinusTri);
+                    gmMnM = exp(-1i*k*mMdist(:,:,MinusTri))./mMdist(:,:,MinusTri);%+gmMnMR;%+GI(:,:,MinusTri)
                 else
                     gmPnP = exp(-1i*k*mPdist(:,:,PlusTri))./mPdist(:,:,PlusTri);
                     gmMnP = exp(-1i*k*mMdist(:,:,PlusTri))./mMdist(:,:,PlusTri);
@@ -763,11 +763,24 @@
                     gmPnM = exp(-1i*k*mPdist(:,:,MinusTri))./mPdist(:,:,MinusTri);
                     gmMnM = exp(-1i*k*mMdist(:,:,MinusTri))./mMdist(:,:,MinusTri);
                 end    
+                
                 AmnP = mu/(4*pi)*(BasisLA(:,2).*permute(sum(rhonP_.*gmPnP/(2*Quad)),[3 2 1])+BasisLA(:,2).*permute(sum(rhonM_.*gmPnM/(2*Quad)),[3 2 1]));
                 AmnM = mu/(4*pi)*(BasisLA(:,2).*permute(sum(rhonP_.*gmMnP/(2*Quad)),[3 2 1])+BasisLA(:,2).*permute(sum(rhonM_.*gmMnM/(2*Quad)),[3 2 1]));
             
                 PhiP = -1/(4*pi*1i*w*eps0)*(BasisLA(:,2).*permute(sum(gmPnP),[3 2 1])/Quad-BasisLA(:,2).*permute(sum(gmPnM),[3 2 1])/Quad);
                 PhiM = -1/(4*pi*1i*w*eps0)*(BasisLA(:,2).*permute(sum(gmMnP),[3 2 1])/Quad-BasisLA(:,2).*permute(sum(gmMnM),[3 2 1])/Quad);
+                
+                if Reflector
+                    AmnP = mu/(4*pi)*(BasisLA(:,2).*permute(sum(rhonP_.*GI(:,:,PlusTri)/(2*Quad)),[3 2 1])+BasisLA(:,2).*permute(sum(rhonM_.*GI(:,:,PlusTri)/(2*Quad)),[3 2 1]))...
+                        +AmnP;
+                    AmnM = mu/(4*pi)*(BasisLA(:,2).*permute(sum(rhonP_.*GI(:,:,MinusTri)/(2*Quad)),[3 2 1])+BasisLA(:,2).*permute(sum(rhonM_.*GI(:,:,MinusTri)/(2*Quad)),[3 2 1]))...
+                        +AmnM;
+            
+                    PhiP = -1/(8*pi*1i*w*eps0)*(BasisLA(:,2).*permute(sum(dot(rhonP_,GI(:,:,PlusTri),2)),[3 2 1])/Quad-BasisLA(:,2).*permute(sum(dot(rhonM_,GI(:,:,PlusTri),2)),[3 2 1])/Quad)...
+                        +PhiP;
+                    PhiM = -1/(8*pi*1i*w*eps0)*(BasisLA(:,2).*permute(sum(dot(rhonP_,GI(:,:,MinusTri),2)),[3 2 1])/Quad-BasisLA(:,2).*permute(sum(dot(rhonM_,GI(:,:,MinusTri),2)),[3 2 1])/Quad)...
+                        +PhiM;   
+                end
             
                 Z(m,:) = BasisLA(m,2).*(1i*w*(dot(AmnP,rhomP,2)/2+dot(AmnM,rhomM,2)/2)+PhiM-PhiP);  
             end
