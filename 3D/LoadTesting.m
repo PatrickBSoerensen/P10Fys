@@ -1,24 +1,12 @@
 %% load STL file into matlab
 
-% stl = stlread('antennas/Dipole10cmT264.stl');
-stl = stlread('antennas/Dipole10cmT580.stl'); %ok
 
-% stl = stlread('antennas/Dipole0.1mm/Dipole10cm2502T01mm.stl');
-% Smool
-% stl = stlread('antennas/DipoleTEST.stl'); %ok
-% stl = stlread('antennas/Dipole10CM1372T.stl'); %ok
-%Smooler
-% stl = stlread('antennas/Dipole10cm2502T01mm.stl'); %ok
+% stl1 = stlread('antennas/Dipole1mm/Dipole10cm552T1mm.stl');
+% stl2 = stlread('antennas/Dipole1mm/Dipole10cm702T1mm.stl'); %ok
+% stl3 = stlread('antennas/Dipole1mm/Dipole10cm900T1mm.stl'); %god
 
-% stl = stlread('antennas/Dipole10cm2502T.stl');
-% stl = stlread('antennas/Dipole100cm1560T.stl');
 % stl = stlread('antennas/Dipole10cmT180.stl');
-
 % stl = stlread('antennas/Dipole10cmT264.stl');
-% stl = stlread('antennas/Test4400.stl');
-% stl = stlread('antennas/test1050.stl');
-% stl = stlread('antennas/AspecPrio/Dipole10cmT1152.stl');
-
 % stl = stlread('antennas/Dipole10cmT580.stl'); %ok
 % stl = stlread('antennas/Dipole10cmT722.stl'); %god
 % stl = stlread('antennas/Dipole10cmT744.stl'); %
@@ -69,7 +57,7 @@ p1 = p;
 % t = [t; t+length(p1); t+length(p1)+length(p2); t+length(p1)+length(p2)+length(p3)];
 % % p(:,1) = p(:,1)+0.03;
 % Should source be dipole, if 0 a plane wave propagating in +x direction used
-UseDipole = 1;
+UseDipole = 0;
 DipolePoint = [-Length,0,0];
 UseFeed = 0;
 FeedPos = [0,0,0];
@@ -90,9 +78,7 @@ PointArea = xmax^2/steps;
 n = 3.9;
 epsR = 11.68;
 Reflector = 1;
-FromAnt=0.00;
-Reflector = 0;
-FromAnt=0.05;
+FromAnt=0.001;
 xdist = radius+FromAnt;
 % Determines if points should be lifted to surf of antenna, this is semi
 % hardcoded to a predetermined structure, if in doubt set to 0
@@ -149,11 +135,13 @@ disp('Evaluating basis functions in center points')
 toc;
 %% Calculating Dipole strength on antenna points
 if UseDipole
-[Ei] = ArbitraryAntenna.PointSource(w, mu0, k, Center, SubTri, sub, DipolePoint, [0,1,0]);
+ [Ei] = ArbitraryAntenna.PointSource(w, mu0, k, Center, SubTri, sub, DipolePoint, [0,1,0]);
 end
 if UseFeed
 [Ei, v] = ArbitraryAntenna.VoltageFeed(t,p, Center, DipolePoint, 1, EdgeList, BasisLA );
-Ei(:,:)=0;
+end
+if ~UseFeed && ~UseDipole
+    Ei=zeros(size(Center));
 end
 %% MoM
 tic;
@@ -161,7 +149,7 @@ fprintf('\n')
 disp('MoM')
 if vectorized
     [Z, a, b] = ArbitraryAntenna.MoMVectorized(w, mu0, t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k, SubTri, 0, 1, 0, UseDipole, Ei,...
-        xdist, Reflector, epsR, Length, radius, 0.009, 60, lambda, n, eps0);
+        xdist, Reflector, epsR, Length, 2*radius, 0.005, 50, lambda, n, eps0);
 else
 %     [Z, b, a] = ArbitraryAntenna.MoMSergey(w, mu0, t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k,  SubTri, 0, 1, 0, UseDipole, Ei,...
 %         xdist, Reflector, epsR, Length, radius, .5, 3, lambda, n, eps0);
@@ -170,12 +158,19 @@ else
 end
 toc;
 
-%             [PlusTri, MinusTri] = ArbitraryAntenna.PMTri(t, EdgeList);
-%  RefCoef = (1-n)/(1+n);
-%                 Ei(:,2) = 1.*exp(1i*k.*(Center(:,1))).*RefCoef;
+            [PlusTri, MinusTri] = ArbitraryAntenna.PMTri(t, EdgeList);
+            RefCoef = (1-n)/(1+n);
+            
+                Ei(:,1) = 0.*exp(1i*k.*(Center(:,2)));
+                Ei(:,2) = 1.*exp(1i*k.*(Center(:,1)));
+                Ei(:,3) = 0.*exp(1i*k.*(Center(:,1)));
+                Ei(:,2) = Ei(:,2) + 1.*exp(-1i*k.*(Center(:,1)+2*(Center(:,1)-xdist))).*RefCoef;
                 
-%             b = BasisLA(:,2).*(dot(Ei(PlusTri,:),RhoP,2)/2+dot(Ei(MinusTri,:),RhoM,2)/2);
-% a=Z\(v+b)';
+    b = BasisLA(:,2).*(dot(Ei(PlusTri,:),RhoP,2)/2+dot(Ei(MinusTri,:),RhoM,2)/2);
+    a=Z\(v+b)';
+if UseFeed 
+    a=Z\(v+b)';
+end
 %% Current calc in Triangle
 tic;
 fprintf('\n')
@@ -203,7 +198,7 @@ axis('equal');
 rotate3d
 
 %%
-[Esc, EscPhi, EscTheta] = ArbitraryAntenna.AngularFarField(w, mu0, k, 30, Center, Jface, steps);
+% [Esc, EscPhi, EscTheta] = ArbitraryAntenna.AngularFarField(w, mu0, k, 30, Center, Jface, steps);
 %%
 [Esc, EscPhi, EscTheta] = ArbitraryAntenna.AngularFarFieldSurf(w, mu0, k, 30, Center, Jface, steps, xdist, epsR, eps0, lambda, n);
 

@@ -411,6 +411,10 @@
                 Ei(:,1) = w^2*mu.*(Gxx .* p(1) + Gxy .* p(2) + Gxz .* p(3));
                 Ei(:,2) = w^2*mu.*(Gyx .* p(1) + Gyy .* p(2) + Gyz .* p(3));
                 Ei(:,3) = w^2*mu.*(Gzx .* p(1) + Gzy .* p(2) + Gzz .* p(3));
+                
+                Ei(:,1) = w^2*mu.*(Gxx .* p(1) + Gxy .* p(2) + Gxz .* p(3));
+                Ei(:,2) = w^2*mu.*(Gyx .* p(1) + Gyy .* p(2) + Gyz .* p(3));
+                Ei(:,3) = w^2*mu.*(Gzx .* p(1) + Gzy .* p(2) + Gzz .* p(3));
             end
         end
             
@@ -650,9 +654,9 @@
             
             Z = zeros(length(EdgeList),length(EdgeList))+1i*zeros(length(EdgeList),length(EdgeList));
             if ~Point
-                Ei(:,1) = x.*exp(-1i*k.*(Center(:,2)));
-                Ei(:,2) = y.*exp(-1i*k.*(Center(:,1)));
-                Ei(:,3) = z.*exp(-1i*k.*(Center(:,1)));
+                Ei(:,1) = x.*exp(1i*k.*(Center(:,2)));
+                Ei(:,2) = y.*exp(1i*k.*(Center(:,1)));
+                Ei(:,3) = z.*exp(1i*k.*(Center(:,1)));
             end
             if Reflector
                 RefCoef = (1-n)/(1+n);
@@ -721,19 +725,18 @@
             end
             if Reflector
                 RefCoef = (1-n)/(1+n);
-                if ~Point
-                    Ei(:,1) = Ei(:,1)+x.*exp(-1i*k.*(Center(:,2))).*RefCoef;
-                    Ei(:,2) = Ei(:,2)+y.*exp(-1i*k.*(Center(:,1)+distx)).*RefCoef;
-                    Ei(:,3) = Ei(:,3)+z.*exp(-1i*k.*(Center(:,1))).*RefCoef;
-                else
-                    Ei(:,1) = Ei(:,1)+Ei(:,1).*RefCoef;
-                    Ei(:,2) = Ei(:,2)+Ei(:,2).*RefCoef;
-                    Ei(:,3) = Ei(:,3)+Ei(:,3).*RefCoef;
-                end
+%                 if ~Point
+%                     Ei(:,1) = Ei(:,1)+x.*exp(-1i*k.*(Center(:,2))).*RefCoef;
+%                     Ei(:,2) = Ei(:,2)+y.*exp(-1i*k.*(Center(:,1))).*RefCoef;
+%                     Ei(:,3) = Ei(:,3)+z.*exp(-1i*k.*(Center(:,1))).*RefCoef;
+%                 else
+%                     Ei(:,1) = Ei(:,1)+Ei(:,1).*RefCoef;
+%                     Ei(:,2) = Ei(:,2)+Ei(:,2).*RefCoef;
+%                     Ei(:,3) = Ei(:,3)+Ei(:,3).*RefCoef;
+%                 end
                 [GIx, GIy, GIz] = ArbitraryAntenna.IDGreens(k, distx, strip_length, strip_width, dx, Nz, lambda, n, InEps, eps0, Center, SubTri);
   
                 GI = GIx+GIy+GIz;
-
             end
             
             EdgesTotal = length(EdgeList);
@@ -745,43 +748,27 @@
                 rhomP = repmat(RhoP(m,:),length(EdgeList),1);
                 rhomM = repmat(RhoM(m,:),length(EdgeList),1);
                     
-                rhonP_ = RhoP_;
-                rhonM_ = RhoM_;
-                if Reflector 
-                    gmPnPR = exp(-1i*k*(mPdist(:,:,PlusTri)+distx))./(mPdist(:,:,PlusTri)+distx);
-                    gmMnPR = exp(-1i*k*(mMdist(:,:,PlusTri)+distx))./(mMdist(:,:,PlusTri)+distx);
+                gmPnP = exp(1i*k*mPdist(:,:,PlusTri))./mPdist(:,:,PlusTri);
+                gmMnP = exp(1i*k*mMdist(:,:,PlusTri))./mMdist(:,:,PlusTri);
                 
-                    gmPnMR = exp(-1i*k*(mPdist(:,:,MinusTri)+distx))./(mPdist(:,:,MinusTri)+distx);
-                    gmMnMR = exp(-1i*k*(mMdist(:,:,MinusTri)+distx))./(mMdist(:,:,MinusTri)+distx);
-                    
-                    gmPnP = exp(-1i*k*mPdist(:,:,PlusTri))./mPdist(:,:,PlusTri);%+gmPnPR;%+GI(:,:,PlusTri)%
-                    gmMnP = exp(-1i*k*mMdist(:,:,PlusTri))./mMdist(:,:,PlusTri);%+gmMnPR;%+GI(:,:,PlusTri);%
+                gmPnM = exp(1i*k*mPdist(:,:,MinusTri))./mPdist(:,:,MinusTri);
+                gmMnM = exp(1i*k*mMdist(:,:,MinusTri))./mMdist(:,:,MinusTri);
                 
-                    gmPnM = exp(-1i*k*mPdist(:,:,MinusTri))./mPdist(:,:,MinusTri);%+gmPnMR;%GI(:,:,MinusTri);
-                    gmMnM = exp(-1i*k*mMdist(:,:,MinusTri))./mMdist(:,:,MinusTri);%+gmMnMR;%+GI(:,:,MinusTri)
-                else
-                    gmPnP = exp(1i*k*mPdist(:,:,PlusTri))./mPdist(:,:,PlusTri);
-                    gmMnP = exp(1i*k*mMdist(:,:,PlusTri))./mMdist(:,:,PlusTri);
-                
-                    gmPnM = exp(-1i*k*mPdist(:,:,MinusTri))./mPdist(:,:,MinusTri);
-                    gmMnM = exp(-1i*k*mMdist(:,:,MinusTri))./mMdist(:,:,MinusTri);
-                end    
-                
-                AmnP = mu/(4*pi)*(BasisLA(:,2).*permute(sum(rhonP_.*gmPnP/(2*Quad)),[3 2 1])+BasisLA(:,2).*permute(sum(rhonM_.*gmPnM/(2*Quad)),[3 2 1]));
-                AmnM = mu/(4*pi)*(BasisLA(:,2).*permute(sum(rhonP_.*gmMnP/(2*Quad)),[3 2 1])+BasisLA(:,2).*permute(sum(rhonM_.*gmMnM/(2*Quad)),[3 2 1]));
+                AmnP = mu/(4*pi)*(BasisLA(:,2).*permute(sum(RhoP_.*gmPnP/(2*Quad)),[3 2 1])+BasisLA(:,2).*permute(sum(RhoM_.*gmPnM/(2*Quad)),[3 2 1]));
+                AmnM = mu/(4*pi)*(BasisLA(:,2).*permute(sum(RhoP_.*gmMnP/(2*Quad)),[3 2 1])+BasisLA(:,2).*permute(sum(RhoM_.*gmMnM/(2*Quad)),[3 2 1]));
             
                 PhiP = -1/(4*pi*1i*w*eps0)*(BasisLA(:,2).*permute(sum(gmPnP),[3 2 1])/Quad-BasisLA(:,2).*permute(sum(gmPnM),[3 2 1])/Quad);
                 PhiM = -1/(4*pi*1i*w*eps0)*(BasisLA(:,2).*permute(sum(gmMnP),[3 2 1])/Quad-BasisLA(:,2).*permute(sum(gmMnM),[3 2 1])/Quad);
                 
                 if Reflector
-                    AmnP = mu/(4*pi)*(BasisLA(:,2).*permute(sum(rhonP_.*GI(:,:,PlusTri)/(2*Quad)),[3 2 1])+BasisLA(:,2).*permute(sum(rhonM_.*GI(:,:,PlusTri)/(2*Quad)),[3 2 1]))...
+                    AmnP = mu/(4*pi)*(BasisLA(:,2).*permute(sum(RhoP_.*GI(:,:,PlusTri)/(2*Quad)),[3 2 1])+BasisLA(:,2).*permute(sum(RhoM_.*GI(:,:,PlusTri)/(2*Quad)),[3 2 1]))...
                         +AmnP;
-                    AmnM = mu/(4*pi)*(BasisLA(:,2).*permute(sum(rhonP_.*GI(:,:,MinusTri)/(2*Quad)),[3 2 1])+BasisLA(:,2).*permute(sum(rhonM_.*GI(:,:,MinusTri)/(2*Quad)),[3 2 1]))...
+                    AmnM = mu/(4*pi)*(BasisLA(:,2).*permute(sum(RhoP_.*GI(:,:,MinusTri)/(2*Quad)),[3 2 1])+BasisLA(:,2).*permute(sum(RhoM_.*GI(:,:,MinusTri)/(2*Quad)),[3 2 1]))...
                         +AmnM;
             
-                    PhiP = -1/(8*pi*1i*w*eps0)*(BasisLA(:,2).*permute(sum(dot(rhonP_,GI(:,:,PlusTri),2)),[3 2 1])/Quad-BasisLA(:,2).*permute(sum(dot(rhonM_,GI(:,:,PlusTri),2)),[3 2 1])/Quad)...
+                    PhiP = -1/(2*pi*1i*w*eps0)*(BasisLA(:,2).*permute(sum(dot(RhoP_,GI(:,:,PlusTri),2)),[3 2 1])/Quad-BasisLA(:,2).*permute(sum(dot(RhoM_,GI(:,:,PlusTri),2)),[3 2 1])/Quad)...
                         +PhiP;
-                    PhiM = -1/(8*pi*1i*w*eps0)*(BasisLA(:,2).*permute(sum(dot(rhonP_,GI(:,:,MinusTri),2)),[3 2 1])/Quad-BasisLA(:,2).*permute(sum(dot(rhonM_,GI(:,:,MinusTri),2)),[3 2 1])/Quad)...
+                    PhiM = -1/(2*pi*1i*w*eps0)*(BasisLA(:,2).*permute(sum(dot(RhoP_,GI(:,:,MinusTri),2)),[3 2 1])/Quad-BasisLA(:,2).*permute(sum(dot(RhoM_,GI(:,:,MinusTri),2)),[3 2 1])/Quad)...
                         +PhiM;   
                 end
             
@@ -1208,7 +1195,7 @@
             
             rhomin = 0;
 %             rhomin = -ant_length/2-ant_width/2;
-            rhomax = ant_length/2;%sqrt((ant_length)^2+(distx-ant_width)^2);
+            rhomax = ant_length;%sqrt((ant_length)^2+(distx-ant_width)^2);
 %             rhomax = ant_length/2+ant_width/2;
 %             rhov1 = [rhomin rhomin+dx rhomin+dx*sqrt(2) rhomin+dx*2 rhomin+dx*sqrt(5) rhomin+dx*sqrt(8)];
             rhov1 = [0 dx dx*sqrt(2) dx*2 dx*sqrt(5) dx*sqrt(8)];
@@ -1268,7 +1255,7 @@
 
             x = AllSubDists(:,1,:);
             y = AllSubDists(:,2,:);
-            z = sum(AllSubDists(:,3,:).^2,2);
+            z = AllSubDists(:,3,:);
                  
             for i=1:SubAmount(1)
                 rho = sqrt(x.*x+y.*y);
