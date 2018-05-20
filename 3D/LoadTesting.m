@@ -71,6 +71,8 @@ p1 = p;
 % Should source be dipole, if 0 a plane wave propagating in +x direction used
 UseDipole = 0;
 DipolePoint = [0,0,0];%[-lambda/15,0,0];%[0,0,0];%
+UseFeed = 0;
+FeedPos = [0,0,0];
 % If set to one use 81 sub triangles pr element, if 0 use 9
 SubSubTri = 0;
 sub = 0;
@@ -144,9 +146,13 @@ disp('Evaluating basis functions in center points')
 [RhoP, RhoM, RhoP_, RhoM_] = ArbitraryAntenna.BasisEvalCenter(t, EdgeList, Basis, Center, SubTri);
 toc;
 %% Calculating Dipole strength on antenna points
+if UseDipole
 [Ei] = ArbitraryAntenna.PointSource(w, mu0, k, Center, SubTri, sub, DipolePoint, [0,1,0]);
-% [Ei, v] = ArbitraryAntenna.VoltageFeed(t,p, Center, DipolePoint, 1, EdgeList, BasisLA );
-% Ei(:,:)=0;
+end
+if UseFeed
+[Ei, v] = ArbitraryAntenna.VoltageFeed(t,p, Center, DipolePoint, 1, EdgeList, BasisLA );
+Ei(:,:)=0;
+end
 %% MoM
 tic;
 fprintf('\n')

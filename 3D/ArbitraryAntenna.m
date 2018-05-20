@@ -722,16 +722,15 @@
             if Reflector
                 RefCoef = (1-n)/(1+n);
                 if ~Point
-                Ei(:,1) = Ei(:,1)+x.*exp(-1i*k.*(Center(:,2))).*RefCoef;
-                Ei(:,2) = Ei(:,2)+y.*exp(-1i*k.*(Center(:,1))).*RefCoef;
-                Ei(:,3) = Ei(:,3)+z.*exp(-1i*k.*(Center(:,1))).*RefCoef;
+                    Ei(:,1) = Ei(:,1)+x.*exp(-1i*k.*(Center(:,2))).*RefCoef;
+                    Ei(:,2) = Ei(:,2)+y.*exp(-1i*k.*(Center(:,1)+distx)).*RefCoef;
+                    Ei(:,3) = Ei(:,3)+z.*exp(-1i*k.*(Center(:,1))).*RefCoef;
                 else
-                    
-                Ei(:,1) = Ei(:,1)+Ei(:,1)*RefCoef;
-                Ei(:,2) = Ei(:,2)+Ei(:,2).*RefCoef;
-                Ei(:,3) = Ei(:,3)+Ei(:,3).*RefCoef;
+                    Ei(:,1) = Ei(:,1)+Ei(:,1).*RefCoef;
+                    Ei(:,2) = Ei(:,2)+Ei(:,2).*RefCoef;
+                    Ei(:,3) = Ei(:,3)+Ei(:,3).*RefCoef;
                 end
-%                 [GIx, GIy, GIz] = ArbitraryAntenna.IDGreens(k, distx, strip_length, strip_width, dx, Nz, lambda, n, InEps, eps0, Center, SubTri);
+                [GIx, GIy, GIz] = ArbitraryAntenna.IDGreens(k, distx, strip_length, strip_width, dx, Nz, lambda, n, InEps, eps0, Center, SubTri);
   
 %                 GI = sum(GIx+GIy+GIz,2);
             end
