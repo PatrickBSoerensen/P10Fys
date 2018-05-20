@@ -774,14 +774,11 @@
             
                 Z(m,:) = BasisLA(m,2).*(1i*w*(dot(AmnP,rhomP,2)/2+dot(AmnM,rhomM,2)/2)+PhiM-PhiP);  
             end
-            
             b = BasisLA(:,2).*(dot(Ei(PlusTri,:),RhoP,2)/2+dot(Ei(MinusTri,:),RhoM,2)/2);
-            
             %System solution
             a=Z\b;
         end
-          
-          
+           
         function [Jface] = CurrentCalc(t, EdgeList, a, BasisLA, RhoP, RhoM)
             Jface = zeros(size(t));
             
@@ -1125,7 +1122,7 @@
             title('EscPhi^2+EscTheta^2')
         end
         
-        function [Esc, EscPhi, EscTheta] = AngularFarFieldSurf(w, mu, k, r, Center, J, steps, xdist)
+        function [Esc, EscPhi, EscTheta] = AngularFarFieldSurf(w, mu, k, r, Center, J, steps, xdist, eps2, eps1, lambda, n)
             phi = linspace(-pi, 2*pi, steps)';
             theta = linspace(-pi, 2*pi, steps)';
             
@@ -1142,12 +1139,20 @@
             rHat = (xH.*cos(phi)+yH.*sin(phi)).*sin(theta)+zH.*cos(theta);
             EscTheta = zeros(steps);
             EscPhi = zeros(steps);
+            rhoH = xH.*cos(phi)+yH.*sin(phi);
+            krho = 4;
+            
+            kL2 = 2*pi/(lambda*n);
+          kz1=k;
+          k1=k;
+            refS = (k-kL2)/(k+kL2);
+            refP = (eps2.*k-eps1.*kL2)/(eps2.*k+eps1.*kL2);
            for i=1:length(Center)
                 NormalGreens = 1i*w*mu*(exp(1i*k*r)/(4*pi*r))...
                 *exp(-1i*k*sum(rHat.*Center(i,:),2)).*J(i,:); 
                 
-                IndirectGreens = exp(1i*k*r)/(4*pi*r)*exp(-1i*krho*rhohat*rmark)*exp(1i*kz1*zmark)*...
-                    (refS(krho)*phiH*phiH-refP(krho)*thetaH*(zH*krho/k1+rhoH*kz1/k1));
+                IndirectGreens = exp(1i*k*r)/(4*pi*r)*exp(-1i*krho*rhoH.*Center(i,:)).*exp(1i*kz1*xdist).*...
+                    (refS*phiH.*phiH-refP*thetaH.*(zH*krho/k1+rhoH*kz1/k1));
                 
                 TransmitGreens = 0;
                 
