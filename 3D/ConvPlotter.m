@@ -1,4 +1,4 @@
-% close all
+close all
 normalize = 0;
 
 figure(1)

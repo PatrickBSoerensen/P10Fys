@@ -69,8 +69,8 @@ p1 = p;
 % t = [t; t+length(p1); t+length(p1)+length(p2); t+length(p1)+length(p2)+length(p3)];
 % % p(:,1) = p(:,1)+0.03;
 % Should source be dipole, if 0 a plane wave propagating in +x direction used
-UseDipole = 1;
-DipolePoint = [-lambda/15,0,0];%[0,0,0];%
+UseDipole = 0;
+DipolePoint = [0,0,0];%[-lambda/15,0,0];%[0,0,0];%
 % If set to one use 81 sub triangles pr element, if 0 use 9
 SubSubTri = 0;
 sub = 0;
@@ -87,12 +87,12 @@ PointArea = xmax^2/steps;
 % Reflector surface params
 n = 3.9;
 epsR = 11.68;
-Reflector = 1;
+Reflector = 0;
 FromAnt=0.003;
 xdist = radius+FromAnt;
 % Determines if points should be lifted to surf of antenna, this is semi
 % hardcoded to a predetermined structure, if in doubt set to 0
-Lift = 0;
+Lift = 1;
 %% Visual check
 figure(1)
 plot3(p(:,1),p(:,2),p(:,3),'*')

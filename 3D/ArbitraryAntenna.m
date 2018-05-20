@@ -455,15 +455,15 @@
             % alocating space
             Z = zeros(length(EdgeList),length(EdgeList))+1i*zeros(length(EdgeList),length(EdgeList));
             if ~Point
-                Ei(:,1) = x.*exp(-1i*k.*(Center(:,1)));
-                Ei(:,2) = y.*exp(-1i*k.*(Center(:,1)));
-                Ei(:,3) = z.*exp(-1i*k.*(Center(:,1)));
+                Ei(:,1) = x.*exp(1i*k.*(Center(:,1)));
+                Ei(:,2) = y.*exp(1i*k.*(Center(:,1)));
+                Ei(:,3) = z.*exp(1i*k.*(Center(:,1)));
             end
             if Reflector
                 RefCoef = (1-n)/(1+n);
-                Ei(:,1) = Ei(:,1)+x.*exp(1i*k.*(Center(:,1))).*RefCoef;
-                Ei(:,2) = Ei(:,2)+y.*exp(1i*k.*(Center(:,1))).*RefCoef;
-                Ei(:,3) = Ei(:,3)+z.*exp(1i*k.*(Center(:,1))).*RefCoef;
+                Ei(:,1) = Ei(:,1)+x.*exp(-1i*k.*(Center(:,1))).*RefCoef;
+                Ei(:,2) = Ei(:,2)+y.*exp(-1i*k.*(Center(:,1))).*RefCoef;
+                Ei(:,3) = Ei(:,3)+z.*exp(-1i*k.*(Center(:,1))).*RefCoef;
             end
             b = 1:length(EdgeList); b(:) =0; b=b';
             [PlusTri, MinusTri] = ArbitraryAntenna.PMTri(t, EdgeList);
@@ -523,8 +523,8 @@
                                                   
                             Z(PO(i), PI(j)) = ...
                                 (BasisLA(PO(i),2)*BasisLA(PI(j),2))/(4*pi)...
-                                *sum((dot(zMPR, zNP_,2)/4-1/k^2) .* gPPo ...
-                                +(dot(zMP_, zNPR,2)/4-1/k^2) .* gPPi)/Quad...
+                                *(sum((dot(zMPR, zNP_,2)/4-1/k^2) .* gPPo) ...
+                                +sum((dot(zMP_, zNPR,2)/4-1/k^2) .* gPPi))/Quad...
                                 + Z(PO(i), PI(j));
 
                             if Reflector
@@ -549,8 +549,8 @@
                           
                             Z(PO(i), MI(j)) = ...
                                 (BasisLA(PO(i),2)*BasisLA(MI(j),2))/(4*pi)...
-                                *sum((dot(zMPR, zNM_ ,2)/4+1/k^2) .* gPMo...
-                                + (dot(zMP_, zNMR,2)/4+1/k^2) .* gMPi)/Quad...
+                                *(sum((dot(zMPR, zNM_ ,2)/4+1/k^2) .* gPMo)...
+                                + sum((dot(zMP_, zNMR,2)/4+1/k^2) .* gMPi))/Quad...
                                 + Z(PO(i), MI(j));
                         
                           if Reflector
@@ -582,8 +582,8 @@
                                 
                             Z(MO(i), PI(j)) = ...
                                 (BasisLA(MO(i),2)*BasisLA(PI(j),2))/(4*pi)...
-                                *sum((dot(zMMR, zNP_,2)/4+1/k^2) .* gMPo ...
-                                + (dot(zMM_, zNPR,2)/4+1/k^2) .* gPMi)/Quad...
+                                *(sum((dot(zMMR, zNP_,2)/4+1/k^2) .* gMPo) ...
+                                + sum((dot(zMM_, zNPR,2)/4+1/k^2) .* gPMi))/Quad...
                                 + Z(MO(i), PI(j));
                             
                         if Reflector
@@ -608,8 +608,8 @@
                                              
                                 Z(MO(i), MI(j)) = ...
                                 (BasisLA(MO(i),2)*BasisLA(MI(j),2))/(4*pi)...
-                                *sum((dot(zMMR, zNM_,2)/4-1/k^2) .* gMMo...
-                                +(dot(zMM_, zNMR,2)/4-1/k^2) .* gMMi)/Quad...
+                                *(sum((dot(zMMR, zNM_,2)/4-1/k^2) .* gMMo)...
+                                +sum((dot(zMM_, zNMR,2)/4-1/k^2) .* gMMi))/Quad...
                                 + Z(MO(i), MI(j));
                             
                         if Reflector
@@ -632,12 +632,15 @@
                 PO = find(PlusTri - y ==0);
                 MO = find(MinusTri - y ==0);
                 for i=1:length(PO)
-                    b(PO(i)) = -1i/(w*mu)*sum(dot(repmat(Ei(y,:),Quad,1),RhoP_(:,:,PO(i)),2).*BasisLA(PO(i),2)/Quad)/2 + b(PO(i));
+                    b(PO(i)) = -1i/(w*mu)*sum(dot(Ei(y,:),RhoP(PO(i),:),2)).*BasisLA(PO(i),2)/2 + b(PO(i));
                 end
                 for i=1:length(MO)
-                    b(MO(i)) = -1i/(w*mu)*sum(dot(repmat(Ei(y,:),Quad,1),RhoM_(:,:,MO(i)),2).*BasisLA(MO(i),2)/Quad)/2 + b(MO(i));
+                    b(MO(i)) = -1i/(w*mu)*sum(dot(Ei(y,:),RhoM(MO(i),:),2)).*BasisLA(MO(i),2)/2 + b(MO(i));
                 end
             end
+            
+            b = -1i/(w*mu)*BasisLA(:,2).*(dot(Ei(PlusTri,:),RhoP,2)/2+dot(Ei(MinusTri,:),RhoM,2)/2);
+            
             % Z\b is a newer faster version of inv(Z)*b
             a = Z\b;
         end
@@ -731,7 +734,6 @@
 %                 [GIx, GIy, GIz] = ArbitraryAntenna.IDGreens(k, distx, strip_length, strip_width, dx, Nz, lambda, n, InEps, eps0, Center, SubTri);
   
 %                 GI = sum(GIx+GIy+GIz,2);
-
             end
             
             EdgesTotal = length(EdgeList);
@@ -743,8 +745,8 @@
                 rhomP = repmat(RhoP(m,:),length(EdgeList),1);
                 rhomM = repmat(RhoM(m,:),length(EdgeList),1);
                     
-                rhonP_ = RhoP_(:,:,:);
-                rhonM_ = RhoM_(:,:,:);
+                rhonP_ = RhoP_;
+                rhonM_ = RhoM_;
                 if Reflector 
                     gmPnPR = exp(-1i*k*(mPdist(:,:,PlusTri)+distx))./(mPdist(:,:,PlusTri)+distx);
                     gmMnPR = exp(-1i*k*(mMdist(:,:,PlusTri)+distx))./(mMdist(:,:,PlusTri)+distx);
@@ -758,12 +760,13 @@
                     gmPnM = exp(-1i*k*mPdist(:,:,MinusTri))./mPdist(:,:,MinusTri)+gmPnMR;%GI(:,:,MinusTri);
                     gmMnM = exp(-1i*k*mMdist(:,:,MinusTri))./mMdist(:,:,MinusTri)+gmMnMR;%+GI(:,:,MinusTri)
                 else
-                    gmPnP = exp(-1i*k*mPdist(:,:,PlusTri))./mPdist(:,:,PlusTri);
-                    gmMnP = exp(-1i*k*mMdist(:,:,PlusTri))./mMdist(:,:,PlusTri);
+                    gmPnP = exp(1i*k*mPdist(:,:,PlusTri))./mPdist(:,:,PlusTri);
+                    gmMnP = exp(1i*k*mMdist(:,:,PlusTri))./mMdist(:,:,PlusTri);
                 
-                    gmPnM = exp(-1i*k*mPdist(:,:,MinusTri))./mPdist(:,:,MinusTri);
-                    gmMnM = exp(-1i*k*mMdist(:,:,MinusTri))./mMdist(:,:,MinusTri);
-                end    
+                    gmPnM = exp(1i*k*mPdist(:,:,MinusTri))./mPdist(:,:,MinusTri);
+                    gmMnM = exp(1i*k*mMdist(:,:,MinusTri))./mMdist(:,:,MinusTri);
+                end
+                    
                 AmnP = mu/(4*pi)*(BasisLA(:,2).*permute(sum(rhonP_.*gmPnP/(2*Quad)),[3 2 1])+BasisLA(:,2).*permute(sum(rhonM_.*gmPnM/(2*Quad)),[3 2 1]));
                 AmnM = mu/(4*pi)*(BasisLA(:,2).*permute(sum(rhonP_.*gmMnP/(2*Quad)),[3 2 1])+BasisLA(:,2).*permute(sum(rhonM_.*gmMnM/(2*Quad)),[3 2 1]));
             
@@ -777,8 +780,9 @@
             
             %System solution
             a=Z\b;
-          end
-       
+        end
+          
+          
         function [Jface] = CurrentCalc(t, EdgeList, a, BasisLA, RhoP, RhoM)
             Jface = zeros(size(t));
             
