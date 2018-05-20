@@ -26,15 +26,17 @@
 clear all
 tic;
 
-load('mesh/platefine');
+load('mesh/our');
+p=p.';
+t=t.';
 [s1 s2]=size(p);
 if(s1==2)
     p(3,:)=0;   %to convert 2D to 3D
 end
 
 %Eliminate unnecessary triangles
-Remove=find(t(4,:)>1);   
-t(:,Remove)=[];           
+% Remove=find(t(4,:)>1);   
+% t(:,Remove)=[];           
 TrianglesTotal=length(t);
 
 %Find areas of separate triangles
@@ -86,7 +88,7 @@ EdgesTotal=length(Edge_)
 
 
 %All structures of this chapter have EdgeIndicator=2
-EdgeIndicator=t(4,TrianglePlus)+t(4,TriangleMinus);
+EdgeIndicator=2;%t(4,TrianglePlus)+t(4,TriangleMinus);
 
 %Find edge length
 for m=1:EdgesTotal

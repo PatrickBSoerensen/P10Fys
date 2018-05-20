@@ -91,10 +91,12 @@ n = 3.9;
 epsR = 11.68;
 Reflector = 1;
 FromAnt=0.00;
+Reflector = 0;
+FromAnt=0.05;
 xdist = radius+FromAnt;
 % Determines if points should be lifted to surf of antenna, this is semi
 % hardcoded to a predetermined structure, if in doubt set to 0
-Lift = 0;
+Lift = 1;
 %% Visual check
 figure(1)
 plot3(p(:,1),p(:,2),p(:,3),'*')
@@ -202,6 +204,8 @@ rotate3d
 
 %%
 [Esc, EscPhi, EscTheta] = ArbitraryAntenna.AngularFarField(w, mu0, k, 30, Center, Jface, steps);
+%%
+[Esc, EscPhi, EscTheta] = ArbitraryAntenna.AngularFarFieldSurf(w, mu0, k, 30, Center, Jface, steps, xdist, epsR, eps0, lambda, n);
 
 %% Calculating E   
 tic;
