@@ -4,7 +4,7 @@ center = [];
 ExyCrossX = [];
 ExzCrossZ =[];
 ESC = [];
-% %3mm
+%3mm
 stl1 = stlread('antennas/Dipole10cmT264.stl');
 stl2 = stlread('antennas/Dipole10cmT580.stl'); %ok
 stl3 = stlread('antennas/Dipole10cmT722.stl'); %god
@@ -63,14 +63,15 @@ Amount = 7;
 % t = [t; t+length(p1)];% t+length(p1)+length(p2); t+length(p1)+length(p2)+length(p3)];
 % p(:,1) = p(:,1)+0.03;
 % Should source be dipole, if 0 a plane wave propagating in +x direction used
-diameter = 0.003;
 UseDipole = 0;
-DipolePoint = [-diameter,0,0];
-% If set to one use 81 sub triangles pr element, if 0 use 9
+
+UseFeed = 0;
+FeedPos = [0,0,0];
+%If set to one use 81 sub triangles pr element, if 0 use 9
 SubSubTri = 0;
 sub =0;
 % if 1 use fast (but more inacurate) MoM
-vectorized = 0;
+vectorized = 1;
 % Area of radiation
 xmin = -2; xmax = 2;
 ymin = -2; ymax = 2;
@@ -81,10 +82,9 @@ PointArea = xmax^2/steps;
 n = 3.9;
 epsR = 11.68;
 Reflector = 0;
-xdist = diameter/2+0;
-Lift=1;
+Lift=0;
 
-FileName= 'GibsonFeedPoint3mm';
+FileName= 'SergeyConstant3mm';
 
 %% Loop
 for convloop=1:Amount
@@ -123,11 +123,19 @@ tic;
 fprintf('\n')
 disp('Removing duplicate points')
 [p, t] = ArbitraryAntenna.RemoveDuplicatePoints(stl);
-%% Calculating dimensions of dipole
+%%
+radiusdet = [1 1 1];
 minp = min(p);
 maxp = max(p);
-[maxmaxp, maxaxis] = max(max(p));
-Length = (maxmaxp-minp(maxaxis));
+[maxmaxp, maxaxis] = max(maxp);
+radiusdet(maxaxis) = 0;
+radiusdet = logical(radiusdet);
+radius = sum(abs(maxp(radiusdet))+abs(minp(radiusdet)))/4;
+Length = maxmaxp+abs(minp(maxaxis));
+
+DipolePoint = [-Length,0,0];
+
+xdist = radius+0;
 %% constants
 eps0=8.854187817*10^-12; %F/m
 mu0=4*pi*10^-7; %N/A^2
@@ -159,7 +167,7 @@ toc;
 tic;
 fprintf('\n')
 disp('Lifting subtriangles and center points')
-[Center, SubTri] = ArbitraryAntenna.CenterLift(Center, SubTri, diameter/2, Lift);
+[Center, SubTri] = ArbitraryAntenna.CenterLift(Center, SubTri, radius, Lift);
 
 %% Basis Function setup
 tic;
@@ -175,36 +183,54 @@ disp('Evaluating basis functions in center points')
 toc;
 
 %% Calculating Dipole strength on antenna points
-% [Ei] = ArbitraryAntenna.PointSource(w, mu0, k, Center, SubTri, sub, DipolePoint, [0,1,0]);
+clear Ei
+if UseDipole
+    [Ei] = ArbitraryAntenna.PointSource(w, mu0, k, Center, SubTri, sub, DipolePoint, [0,1,0]);
+end
+if UseFeed
+    [Ei, v] = ArbitraryAntenna.VoltageFeed(t, p, Center, DipolePoint, 1, EdgeList, BasisLA, Yagi, OGSize);
+end
+if ~UseFeed && ~UseDipole
+    Ei(:,1) = 0.*exp(1i*k.*(Center(:,2)));
+    Ei(:,2) = 1.*exp(1i*k.*(Center(:,1)));
+    Ei(:,3) = 0.*exp(1i*k.*(Center(:,1)));
 
-[Ei, v] = ArbitraryAntenna.VoltageFeed(t,p, Center, DipolePoint, 1, EdgeList, BasisLA);
+    Ei(:,1) = 0;
+    Ei(:,2) = 1;
+    Ei(:,3) = 0;
 
+end
+if Reflector   
+    [GIx, GIy, GIz] = ArbitraryAntenna.IDGreens(k, distx, Length, 2*radius, 0.005, 50, lambda, n, epsR, eps0, Center, SubTri);
+ 
+    GI = GIx+GIy+GIz;
+else
+    GI = [];
+end
 %% MoM
 tic;
 fprintf('\n')
 disp('MoM')
+
 if vectorized
-    [Z, a, b] = ArbitraryAntenna.MoMVectorizedFuckAllowed(w, mu0, t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k, SubTri, 0, 1, 0, UseDipole, Ei,...
-        xdist, Reflector, epsR, Length, radius, .3, 3, lambda, n, eps0);
+    [Z, a, b] = ArbitraryAntenna.MoMVectorized(w, mu0, t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k, SubTri, Ei, Reflector, GI, n, eps0);
 else
-    [Z, b, a] = ArbitraryAntenna.MoM(w, mu0, t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k,  SubTri, 0, 1, 0, UseDipole, Ei,...
-        xdist, Reflector, epsR, Length, diameter, 2, 50, lambda, n, eps0);
-    
-%   [Z, b, a] = ArbitraryAntenna.MoMSergey(w, mu0, t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, I2, Center, k, SubTri, 0, 1, 0, UseDipole, Ei, eps0);
-           
-%     [Z, b, a] = ArbitraryAntenna.MoMIG(t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k,  SubTri, 0, 1, 0, UseDipole, Ei,...
-%         xdist, Reflector, epsR, Length, radius, 2, 50, lambda, n, eps0);
+    [Z, a, b] = ArbitraryAntenna.MoM(w, mu0, t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k,  SubTri, Ei, eps0);
 end
 toc;
-% 
-%             [PlusTri, MinusTri] = ArbitraryAntenna.PMTri(t, EdgeList);
-%                 RefCoef = (1-n)/(1+n);
-%                 Ei(:,1)= 0;
-%                 Ei(:,2) = 1.*exp(1i*k.*(Center(:,1))).*RefCoef;
-%                 Ei(:,3)= 0;
-%                 
-%             b = BasisLA(:,2).*(dot(Ei(PlusTri,:),RhoP,2)/2+dot(Ei(MinusTri,:),RhoM,2)/2);+b
-a=Z\(v)';
+
+if Reflector
+    [PlusTri, MinusTri] = ArbitraryAntenna.PMTri(t, EdgeList);
+    RefCoef = (1-n)/(1+n);
+            
+    Ei(:,2) = Ei(:,2) + 1.*exp(-1i*k.*(Center(:,1)+2*(Center(:,1)-xdist))).*RefCoef;
+                
+    b = BasisLA(:,2).*(dot(Ei(PlusTri,:),RhoP,2)/2+dot(Ei(MinusTri,:),RhoM,2)/2);
+end
+
+if UseFeed 
+    a=Z\(v+b)';
+end
 %% Current calc in Triangle
 tic;
 fprintf('\n')
