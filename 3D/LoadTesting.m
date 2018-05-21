@@ -27,7 +27,7 @@ tic;
 fprintf('\n')
 disp('Removing duplicate points')
 [p, t] = ArbitraryAntenna.RemoveDuplicatePoints(stl);
-% p(:,2) = p(:,2)*2; %Scaling works
+
 %% Calculating dimensions of dipole
 radiusdet = [1 1 1];
 minp = min(p);
@@ -176,7 +176,7 @@ end
 toc;
 
 if UseFeed 
-    a=Z\(v+b)';
+    a=Z\(v)';
 end
 %% Current calc in Triangle
 tic;
