@@ -65,7 +65,7 @@ Amount = 7;
 % Should source be dipole, if 0 a plane wave propagating in +x direction used
 UseDipole = 0;
 
-UseFeed = 0;
+UseFeed = 1;
 FeedPos = [0,0,0];
 %If set to one use 81 sub triangles pr element, if 0 use 9
 SubSubTri = 0;
@@ -84,7 +84,7 @@ epsR = 11.68;
 Reflector = 0;
 Lift=0;
 
-FileName= 'SergeyConstant3mm';
+FileName= 'SergeyFeed3mm';
 
 %% Loop
 for convloop=1:Amount
@@ -219,17 +219,8 @@ else
 end
 toc;
 
-if Reflector
-    [PlusTri, MinusTri] = ArbitraryAntenna.PMTri(t, EdgeList);
-    RefCoef = (1-n)/(1+n);
-            
-    Ei(:,2) = Ei(:,2) + 1.*exp(-1i*k.*(Center(:,1)+2*(Center(:,1)-xdist))).*RefCoef;
-                
-    b = BasisLA(:,2).*(dot(Ei(PlusTri,:),RhoP,2)/2+dot(Ei(MinusTri,:),RhoM,2)/2);
-end
-
 if UseFeed 
-    a=Z\(v+b)';
+    a=Z\(v)';
 end
 %% Current calc in Triangle
 tic;
