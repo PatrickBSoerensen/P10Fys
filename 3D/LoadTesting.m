@@ -78,7 +78,7 @@ PointArea = xmax^2/steps;
 n = 3.9;
 epsR = 11.68;
 Reflector = 1;
-FromAnt = 0.01;
+FromAnt = 0.00;
 xdist = radius+FromAnt;
 % Determines if points should be lifted to surf of antenna, this is semi
 % hardcoded to a predetermined structure, if in doubt set to 0
@@ -169,11 +169,11 @@ else
 end
 toc;
 
-% if Reflector
-%     Ei(:,1) = Ei(:,1) + Exy(:,101).*RefCoef;        
-%     Ei(:,2) = Ei(:,2) + Exy(:,101).*RefCoef;
-%     Ei(:,3) = Ei(:,3) + Exy(:,101).*RefCoef;
-% end
+if Reflector
+    Ei(:,1) = Ei(:,1) + Ei(:,1).*RefCoef;        
+    Ei(:,2) = Ei(:,2) + Ei(:,2).*RefCoef;
+    Ei(:,3) = Ei(:,3) + Ei(:,3).*RefCoef;
+end
 
 if UseFeed 
     a=Z\(v+b)';
