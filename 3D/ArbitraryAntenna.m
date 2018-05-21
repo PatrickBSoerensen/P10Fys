@@ -1061,20 +1061,6 @@
             GIz = [GIzx GIzy GIzz];
         end
     
-        function [] = DistJPlot(Center, J)
-%             unq = unique(sqrt(Center(:,1).^2+Center(:,3).^2));
-unq = unique(Center(:,1));
-unq(1) = [];
-            figure(96)
-            hold on
-            for i=1:length(unqi)
-%                 index = find(sqrt(Center(:,1).^2+Center(:,3).^2)-unq(i) == 0);
-index = find(Center(:,1)-unq(i)==0);     
-if length(index)>10
-plot(Center(index,2),abs(J(index,2)),'*')
-end
-            end
-        end
         end
 end
 

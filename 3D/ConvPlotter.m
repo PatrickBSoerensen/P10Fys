@@ -1,65 +1,96 @@
-% close all
+close all
+PlottetLabels = {};
 normalize = 1;
 
+% fonts properties
+    iFontSize       = 17;
+    strFontName     = 'Helvetica';      % [Times | Courier | ] TODO complete the list
+    strInterpreter  = 'latex';          % [{tex} | latex]
+    fXLabelRotation = 0.0;
+    fYLabelRotation = 90;
+
 figure(1)
-title('Convergence of J_y')
-xlabel('y')
-ylabel('abs(J_y)')
-PlottetLabels = {};
 hold on
-
+    xlabel( '\bf{y [cm]}', 'FontName', strFontName, 'FontSize', iFontSize, 'Interpreter', strInterpreter);
+    ylabel( '$\bf{|J_y|}$ (arb. units)', 'FontName', strFontName, 'FontSize', iFontSize, 'Interpreter', strInterpreter);
+    set(get(gca, 'XLabel'), 'Rotation', fXLabelRotation);
+    set(get(gca, 'YLabel'), 'Rotation', fYLabelRotation);
+    % in order to make matlab to do not "cut" latex-interpreted axes labels
+    set(gca, 'Position', [0.15 0.15 0.75 0.75]);
+    % general properties
+    set(gca, 'FontName', strFontName, 'FontSize', 12);
+%%
 figure(2)
-title('Convergence of E_{xy}')
-xlabel('x')
-ylabel('Size of E_{xy}')
 hold on
+    xlabel( '\bf{x [m]}', 'FontName', strFontName, 'FontSize', iFontSize, 'Interpreter', strInterpreter);
+    ylabel( '$\bf{|E_{xy}|}$ (arb. units)',  'FontName', strFontName, 'FontSize', iFontSize, 'Interpreter', strInterpreter);
+    set(get(gca, 'XLabel'), 'Rotation', fXLabelRotation);
+    set(get(gca, 'YLabel'), 'Rotation', fYLabelRotation);
+    % in order to make matlab to do not "cut" latex-interpreted axes labels
+    set(gca, 'Units', 'normalized', 'Position', [0.15 0.15 0.75 0.75]);
+    set(gca, 'FontName', strFontName, 'FontSize', 12);
 
-figure(3)
-title('Convergence of E_{xz}')
-xlabel('z')
-ylabel('Size of E_{xz}')
-hold on
-
+%%
 Amount = size(ExyCrossX);
-Jcount = 2;
+start=1;
+Minus=1;
+Jcount = 2*start;
 if normalize
-for i=1:Amount(2)
-    figure(1)
-    plot(center(:,Jcount),abs(J(:,Jcount))/max(abs(J(:,Jcount))),'*')
-    figure(2)
-    plot(abs(ExyCrossX(:,i))/max(abs(ExyCrossX(:,i))))
-    figure(3)
-    plot(abs(ExzCrossZ(:,i))/max(abs(ExzCrossZ(:,i))))
+for i=start:Amount(2)-Minus
     TriAmount = J(:,Jcount);
-    TriAmount(TriAmount==0) = [];
+    TriAmount(TriAmount==0)= [];
+    TriCent = center(:,Jcount);
+    TriCent(TriCent==0)= [];
+    
+    if isempty(TriAmount)
+        Minus=Minus+1;
+    else
+    figure(1)
+    plot(TriCent*100,abs(TriAmount)/max(abs(TriAmount)),'.', 'markersize', 11)
+    figure(2)
+    plot(linspace(-2,2,200),abs(ExyCrossX(:,i))/max(abs(ExyCrossX(:,i))), 'linewidth', 1.5)
+   
     TriAmount = int2str(length(TriAmount));
     PlottetLabels = [PlottetLabels, strcat(TriAmount, 'T')];
+    end
+    
     Jcount = Jcount+3;
 end
 else
-for i=1:Amount(2)
-    figure(1)
-    plot(center(:,Jcount),abs(J(:,Jcount)),'*')
-    figure(2)
-    plot(abs(ExyCrossX(:,i)))
-    figure(3)
-    plot(abs(ExzCrossZ(:,i)))
-    TriAmount = J(:,Jcount);
-    TriAmount(TriAmount==0) = [];
-    TriAmount = int2str(length(TriAmount));
-    PlottetLabels = [PlottetLabels, strcat(TriAmount, 'T')];
+for i=start:Amount(2)-Minus
+        TriAmount = J(:,Jcount);
+        TriAmount(TriAmount==0) = [];
+        TriCent = center(:,Jcount);
+        TriCent(TriCent==0)= [];
+    
+    if isempty(TriAmount)
+        Minus=Minus+1;
+    else
+        figure(1)
+        plot(TriCent,abs(TriAmount),'.', 'markersize', 15)
+        figure(2)
+        plot(linspace(-2,2,200),abs(ExyCrossX(:,i)), 'linewidth', 1.5)
+    
+        TriAmount = int2str(length(TriAmount));
+        PlottetLabels = [PlottetLabels, strcat(TriAmount, 'T')];
+    end
     Jcount = Jcount+3;
 end
 end
 %%
-figure(1)
-legend(PlottetLabels)
-figure(2)
-legend(PlottetLabels)
-figure(3)
-legend(PlottetLabels)
+h=figure(1);
+legend(PlottetLabels, 'FontSize', 11, 'box', 'off')
+set(h,'Units','Inches');
+pos = get(h,'Position');
+set(h,'PaperPositionMode','Auto','PaperUnits','Inches','PaperSize',[pos(3), pos(4)])
+print(h,'Jy3mmFeed','-dpdf','-r0')
+h=figure(2);
+legend(PlottetLabels, 'FontSize', 11, 'box', 'off')
+set(h,'Units','Inches');
+pos = get(h,'Position');
+set(h,'PaperPositionMode','Auto','PaperUnits','Inches','PaperSize',[pos(3), pos(4)])
+print(h,'Eyx3mmFeed','-dpdf','-r0')
 
-% saveas(figure(1), 'JyWave.jpg')
-% saveas(figure(2), 'EyxWave.jpg')
+
 
 
