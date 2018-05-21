@@ -158,6 +158,12 @@ if ~UseFeed && ~UseDipole
     Ei(:,3) = 0.*exp(1i*k.*(Center(:,1)));
 end
 toc;
+
+if Reflector
+    Ei(:,1) = Ei(:,1) + Ei(:,1).*RefCoef;        
+    Ei(:,2) = Ei(:,2) + Ei(:,2).*RefCoef;
+    Ei(:,3) = Ei(:,3) + Ei(:,3).*RefCoef;
+end
 %% MoM
 tic;
 fprintf('\n')
@@ -169,11 +175,6 @@ else
 end
 toc;
 
-if Reflector
-    Ei(:,1) = Ei(:,1) + Ei(:,1).*RefCoef;        
-    Ei(:,2) = Ei(:,2) + Ei(:,2).*RefCoef;
-    Ei(:,3) = Ei(:,3) + Ei(:,3).*RefCoef;
-end
 
 if UseFeed 
     a=Z\(v+b)';
