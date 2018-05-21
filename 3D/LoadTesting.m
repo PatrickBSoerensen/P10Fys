@@ -77,7 +77,7 @@ PointArea = xmax^2/steps;
 % Reflector surface params
 n = 3.9;
 epsR = 11.68;
-Reflector = 0;
+Reflector = 1;
 FromAnt = 0.01;
 xdist = radius+FromAnt;
 % Determines if points should be lifted to surf of antenna, this is semi
@@ -134,7 +134,18 @@ disp('Evaluating basis functions in center points')
 [RhoP, RhoM, RhoP_, RhoM_] = ArbitraryAntenna.BasisEvalCenter(t, EdgeList, Basis, Center, SubTri);
 toc;
 %% Calculating Dipole strength on antenna points
+tic;
+fprintf('\n')
+disp('Calculating IncidentField and ID Greens if Reflector')
 clear Ei
+RefCoef = (1-n)/(1+n);
+if Reflector
+    [GIx, GIy, GIz] = ArbitraryAntenna.IDGreens(k, xdist, Length, 2*radius, 0.05, 10, lambda, n, epsR, eps0, Center, SubTri);
+ 
+    GI = GIx+GIy+GIz;
+else
+    GI = [];
+end
 if UseDipole
     [Ei] = ArbitraryAntenna.PointSource(w, mu0, k, Center, SubTri, sub, DipolePoint, [0,1,0]);
 end
@@ -146,13 +157,7 @@ if ~UseFeed && ~UseDipole
     Ei(:,2) = 1.*exp(1i*k.*(Center(:,1)));
     Ei(:,3) = 0.*exp(1i*k.*(Center(:,1)));
 end
-if Reflector   
-    [GIx, GIy, GIz] = ArbitraryAntenna.IDGreens(k, distx, Length, 2*radius, 0.005, 50, lambda, n, epsR, eps0, Center, SubTri);
- 
-    GI = GIx+GIy+GIz;
-else
-    GI = [];
-end
+toc;
 %% MoM
 tic;
 fprintf('\n')
@@ -164,14 +169,11 @@ else
 end
 toc;
 
-if Reflector
-    [PlusTri, MinusTri] = ArbitraryAntenna.PMTri(t, EdgeList);
-    RefCoef = (1-n)/(1+n);
-            
-    Ei(:,2) = Ei(:,2) + 1.*exp(-1i*k.*(Center(:,1)+2*(Center(:,1)-xdist))).*RefCoef;
-                
-    b = BasisLA(:,2).*(dot(Ei(PlusTri,:),RhoP,2)/2+dot(Ei(MinusTri,:),RhoM,2)/2);
-end
+% if Reflector
+%     Ei(:,1) = Ei(:,1) + Exy(:,101).*RefCoef;        
+%     Ei(:,2) = Ei(:,2) + Exy(:,101).*RefCoef;
+%     Ei(:,3) = Ei(:,3) + Exy(:,101).*RefCoef;
+% end
 
 if UseFeed 
     a=Z\(v+b)';
