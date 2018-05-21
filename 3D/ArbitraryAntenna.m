@@ -415,7 +415,7 @@
                 Ei(:,3) = w^2*mu.*(Gzx .* p(1) + Gzy .* p(2) + Gzz .* p(3));
             end
         end
-            
+        
         function [Ei, EdgeV] = VoltageFeed(t, p, Center, FeedPos, v, EdgeList, BasisLA, Yagi, OG)
             
             [PlusTri, MinusTri] = ArbitraryAntenna.PMTri(t, EdgeList);
@@ -945,7 +945,6 @@
         function [GIx, GIy, GIz] = IDGreens(k0, distx, ant_length, ant_width, dx, Nz, lambda, n, epsL2, eps1, Center, SubTri)
                 
             SubAmount = size(SubTri);
-%             SubTri = permute(SubTri,[2 1 3]);
             %% Soender
             k1i2=(2*pi/(lambda*n))^2;
             epsL2=epsL2*eps1;
@@ -964,7 +963,7 @@
             
             rhomin = 0;
 %             rhomin = -ant_length/2-ant_width/2;
-            rhomax = ant_length;%sqrt((ant_length)^2+(distx-ant_width)^2);
+            rhomax = ant_length;
 %             rhomax = ant_length/2+ant_width/2;
 %             rhov1 = [rhomin rhomin+dx rhomin+dx*sqrt(2) rhomin+dx*2 rhomin+dx*sqrt(5) rhomin+dx*sqrt(8)];
             rhov1 = [0 dx dx*sqrt(2) dx*2 dx*sqrt(5) dx*sqrt(8)];
@@ -1020,7 +1019,7 @@
             %% Conversion to cartesian components
             TempCenters = permute(Center, [3 2 1]);
             TempCenters = repmat(TempCenters, [SubAmount(1) 1 1]);
-            AllSubDists = TempCenters+SubTri+distx;
+            AllSubDists = TempCenters-SubTri+TempCenters(:,2,:)-distx+SubTri(:,2,:)-distx;
 
             x = AllSubDists(:,1,:);
             y = AllSubDists(:,2,:);
