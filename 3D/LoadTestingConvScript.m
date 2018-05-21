@@ -5,14 +5,14 @@ ExyCrossX = [];
 ExzCrossZ =[];
 ESC = [];
 %3mm
-stl1 = stlread('antennas/Dipole10cmT264.stl');
-stl2 = stlread('antennas/Dipole10cmT580.stl'); %ok
-stl3 = stlread('antennas/Dipole10cmT722.stl'); %god
-stl4 = stlread('antennas/Dipole10cmT924.stl'); %god
-stl5 = stlread('antennas/Dipole10cmT1060.stl'); %god
-stl6 = stlread('antennas/Dipole10cmT1104.stl');
-stl7 = stlread('antennas/Dipole10cmT1922.stl'); %god
-Amount = 7;
+% stl1 = stlread('antennas/Dipole10cmT264.stl');
+% stl2 = stlread('antennas/Dipole10cmT580.stl'); %ok
+% stl3 = stlread('antennas/Dipole10cmT722.stl'); %god
+% stl4 = stlread('antennas/Dipole10cmT924.stl'); %god
+% stl5 = stlread('antennas/Dipole10cmT1060.stl'); %god
+% stl6 = stlread('antennas/Dipole10cmT1104.stl');
+% stl7 = stlread('antennas/Dipole10cmT1922.stl'); %god
+% Amount = 7;
 %1mm
 % stl1 = stlread('antennas/Dipole1mm/Dipole10cm552T1mm.stl');
 % stl2 = stlread('antennas/Dipole1mm/Dipole10cm702T1mm.stl'); %ok
@@ -38,17 +38,17 @@ Amount = 7;
 % stl10 = stlread('antennas/DipoleHalfmm/Dipole10CM4416T.stl'); %god
 % Amount = 10;
 %0.1mm
-% stl1 = stlread('antennas/Dipole0.1mm/Dipole10cm2502T01mm.stl');
-% stl2 = stlread('antennas/Dipole0.1mm/Dipole10cm3060T01mm.stl'); %ok
-% stl3 = stlread('antennas/Dipole0.1mm/Dipole10cm3696T01mm.stl'); %god
-% stl4 = stlread('antennas/Dipole0.1mm/Dipole10cm4392T01mm.stl'); %god
-% stl5 = stlread('antennas/Dipole0.1mm/Dipole10cm5200T01mm.stl'); %god
-% stl6 = stlread('antennas/Dipole0.1mm/Dipole10cm6020T01mm.stl');
-% stl7 = stlread('antennas/Dipole0.1mm/Dipole10cm6870T01mm.stl'); %god
-% stl8 = stlread('antennas/Dipole0.1mm/Dipole10cm7808T01mm.stl'); %god
-% stl9 = stlread('antennas/Dipole0.1mm/Dipole10cm8874T01mm.stl');
-% stl10 = stlread('antennas/Dipole0.1mm/Dipole10cm9936T01mm.stl'); %god
-% Amount = 10;
+stl1 = stlread('antennas/Dipole0.1mm/Dipole10cm2502T01mm.stl');
+stl2 = stlread('antennas/Dipole0.1mm/Dipole10cm3060T01mm.stl'); %ok
+stl3 = stlread('antennas/Dipole0.1mm/Dipole10cm3696T01mm.stl'); %god
+stl4 = stlread('antennas/Dipole0.1mm/Dipole10cm4392T01mm.stl'); %god
+stl5 = stlread('antennas/Dipole0.1mm/Dipole10cm5200T01mm.stl'); %god
+stl6 = stlread('antennas/Dipole0.1mm/Dipole10cm6020T01mm.stl');
+stl7 = stlread('antennas/Dipole0.1mm/Dipole10cm6870T01mm.stl'); %god
+stl8 = stlread('antennas/Dipole0.1mm/Dipole10cm7808T01mm.stl'); %god
+stl9 = stlread('antennas/Dipole0.1mm/Dipole10cm8874T01mm.stl');
+stl10 = stlread('antennas/Dipole0.1mm/Dipole10cm9936T01mm.stl'); %god
+Amount = 10;
 %% Parameters
 % Controls amount of antenna
 % p1 = p;
@@ -67,6 +67,8 @@ UseDipole = 0;
 
 UseFeed = 1;
 FeedPos = [0,0,0];
+
+Yagi=0;
 %If set to one use 81 sub triangles pr element, if 0 use 9
 SubSubTri = 0;
 sub =0;
@@ -84,7 +86,7 @@ epsR = 11.68;
 Reflector = 0;
 Lift=0;
 
-FileName= 'SergeyFeed3mm';
+FileName= 'SergeyFeedPoint1mm';
 
 %% Loop
 for convloop=1:Amount
@@ -134,6 +136,10 @@ radius = sum(abs(maxp(radiusdet))+abs(minp(radiusdet)))/4;
 Length = maxmaxp+abs(minp(maxaxis));
 
 DipolePoint = [-Length,0,0];
+
+
+OGSize = size(t);
+OGSize = OGSize(1)*1.5;
 
 xdist = radius+0;
 %% constants
