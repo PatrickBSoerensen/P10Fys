@@ -89,6 +89,11 @@ epsR = 11.68;
 Reflector = 0;
 FromAnt =0% 0.001;
 RefDist =0% radius+FromAnt;
+FromAnt = 0.00;
+xdist = radius+FromAnt;
+Reflector = 1;
+FromAnt = 0.02;
+RefDist = radius+FromAnt;
 % Determines if points should be lifted to surf of antenna, this is semi
 % hardcoded to a predetermined structure, if in doubt set to 0
 Lift = 0;
@@ -164,6 +169,7 @@ end
 if ~UseFeed && ~UseDipole
     Ei(:,1) = 0.*exp(1i*k.*(Center(:,2)));
     Ei(:,2) = 1.*exp(1i*k.*(Center(:,3)))
+    Ei(:,2) = 1.*exp(1i*k.*(Center(:,1)))
     Ei(:,3) = 0.*exp(1i*k.*(Center(:,1)));
 end
 toc;
