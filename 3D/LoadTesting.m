@@ -3,12 +3,12 @@
 % stl = stlread('antennas/Dipole1mm/Dipole10cm702T1mm.stl'); %ok
 % stl = stlread('antennas/Dipole1mm/Dipole10cm900T1mm.stl'); %god
 
-stl = stlread('antennas/AspecPrio/Dipole10cmT648.stl'); 
+% stl = stlread('antennas/AspecPrio/Dipole10cmT648.stl'); 
 
 % stl = stlread('antennas/AspecPrio/Dipole10cmT910.stl'); 
 
 % stl = stlread('antennas/test/720.stl');
-% stl = stlread('antennas/Dipole10cmT180.stl');
+stl = stlread('antennas/Dipole10cmT180.stl');
 % stl1 = stlread('antennas/Dipole10cmT264.stl');
 % stl = stlread('antennas/Dipole10cmT580.stl'); %ok
 % stl = stlread('antennas/Dipole10cmT722.stl'); %god
@@ -87,13 +87,8 @@ PointArea = xmax^2/steps;
 n = 3.9;
 epsR = 11.68;
 Reflector = 0;
-FromAnt =0% 0.001;
-RefDist =0% radius+FromAnt;
 FromAnt = 0.00;
-xdist = radius+FromAnt;
-Reflector = 1;
-FromAnt = 0.02;
-RefDist = radius+FromAnt;
+RefDist =0% radius+FromAnt;
 % Determines if points should be lifted to surf of antenna, this is semi
 % hardcoded to a predetermined structure, if in doubt set to 0
 Lift = 0;
@@ -158,6 +153,7 @@ if Reflector
 %  0.003, 15 OR 0.002, 20
     GI = GIx+GIy+GIz;
 else
+    GIxx=0; GIxy=0; GIxz=0; GIyx=0; GIyy=0; GIyz=0; GIzx=0; GIzy=0; GIzz=0;
     GI = [];
 end
 if UseDipole

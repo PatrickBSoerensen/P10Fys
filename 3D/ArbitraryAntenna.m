@@ -486,9 +486,8 @@
             
             a = Z\b;
         end
-        
-        function [Z, a, b] = MoMVectorized(w,mu,t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k, SubTri, Ei,...
-                Reflector, GI, n, eps0)
+            function [Z, a, b] = MoMVectorized(w,mu,t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k, SubTri, Ei,...
+                Reflector, GIxx, GIxy, GIxz, GIyx, GIyy, GIyz, GIzx, GIzy, GIzz, n, eps0)
             % alocating space
             Z = zeros(length(EdgeList),length(EdgeList))+1i*zeros(length(EdgeList),length(EdgeList));
             
@@ -512,8 +511,8 @@
             [PlusTri, MinusTri] = ArbitraryAntenna.PMTri(t, EdgeList);
 
             for m=1:EdgesTotal
-                mPdist = sqrt(sum((Center(PlusTri(m),:)-SubTri).^2,2));
-                mMdist = sqrt(sum((Center(MinusTri(m),:)-SubTri).^2,2));
+                mPdist = sqrt(sum((Center(PlusTri(m),:)-SubTri(:,:,:)).^2,2));
+                mMdist = sqrt(sum((Center(MinusTri(m),:)-SubTri(:,:,:)).^2,2));
                 rhomP = repmat(RhoP(m,:),length(EdgeList),1);
                 rhomM = repmat(RhoM(m,:),length(EdgeList),1);
                     
@@ -526,27 +525,56 @@
                 AmnP = mu/(4*pi)*(BasisLA(:,2).*permute(sum(RhoP_.*gmPnP/(2*Quad)),[3 2 1])+BasisLA(:,2).*permute(sum(RhoM_.*gmPnM/(2*Quad)),[3 2 1]));
                 AmnM = mu/(4*pi)*(BasisLA(:,2).*permute(sum(RhoP_.*gmMnP/(2*Quad)),[3 2 1])+BasisLA(:,2).*permute(sum(RhoM_.*gmMnM/(2*Quad)),[3 2 1]));
             
-                PhiP = -1/(8*pi*1i*w*eps0)*(BasisLA(:,2).*permute(sum(gmPnP),[3 2 1])/Quad-BasisLA(:,2).*permute(sum(gmPnM),[3 2 1])/Quad);
-                PhiM = -1/(8*pi*1i*w*eps0)*(BasisLA(:,2).*permute(sum(gmMnP),[3 2 1])/Quad-BasisLA(:,2).*permute(sum(gmMnM),[3 2 1])/Quad);
+                PhiP = -1/(4*pi*1i*w*eps0)*(BasisLA(:,2).*permute(sum(gmPnP),[3 2 1])/Quad-BasisLA(:,2).*permute(sum(gmPnM),[3 2 1])/Quad);
+                PhiM = -1/(4*pi*1i*w*eps0)*(BasisLA(:,2).*permute(sum(gmMnP),[3 2 1])/Quad-BasisLA(:,2).*permute(sum(gmMnM),[3 2 1])/Quad);
                 
                 if Reflector
-                    AmnP = mu/(4*pi)*(BasisLA(:,2).*permute(sum(RhoP_.*GI(:,:,PlusTri)/(2*Quad)),[3 2 1])+BasisLA(:,2).*permute(sum(RhoM_.*GI(:,:,PlusTri)/(2*Quad)),[3 2 1]))...
+                    GIx = [GIxx(:,PlusTri(m),:) GIxy(:,PlusTri(m),:) GIxz(:,PlusTri(m),:)];
+                    GIy = [GIyx(:,PlusTri(m),:) GIyy(:,PlusTri(m),:) GIyz(:,PlusTri(m),:)];
+                    GIz = [GIzx(:,PlusTri(m),:) GIzy(:,PlusTri(m),:) GIzz(:,PlusTri(m),:)];
+                    GImP = GIx+ GIy + GIz;
+                    
+                    GIx = [GIxx(:,MinusTri(m),:) GIxy(:,MinusTri(m),:) GIxz(:,MinusTri(m),:)];
+                    GIy = [GIyx(:,MinusTri(m),:) GIyy(:,MinusTri(m),:) GIyz(:,MinusTri(m),:)];
+                    GIz = [GIzx(:,MinusTri(m),:) GIzy(:,MinusTri(m),:) GIzz(:,MinusTri(m),:)];
+                    GImM = GIx+GIy+GIz;
+
+                    GImPnP = GImP(:,:,PlusTri);
+                    GImMnP = GImM(:,:,MinusTri);
+                    
+                    GImPnM = GImP(:,:,PlusTri);
+                    GImMnM = GImM(:,:,MinusTri);
+ 
+                    AmnP = mu/(4*pi)*(BasisLA(:,2).*permute(sum(RhoP_.*GImPnP/(2*Quad)),[3 2 1])...
+                        +BasisLA(:,2).*permute(sum(RhoM_.*GImPnM/(2*Quad)),[3 2 1]))...
                         +AmnP;
-                    AmnM = mu/(4*pi)*(BasisLA(:,2).*permute(sum(RhoP_.*GI(:,:,MinusTri)/(2*Quad)),[3 2 1])+BasisLA(:,2).*permute(sum(RhoM_.*GI(:,:,MinusTri)/(2*Quad)),[3 2 1]))...
+                    AmnM = mu/(4*pi)*(BasisLA(:,2).*permute(sum(RhoP_.*GImMnP/(2*Quad)),[3 2 1])...
+                        +BasisLA(:,2).*permute(sum(RhoM_.*GImMnM/(2*Quad)),[3 2 1]))...
                         +AmnM;
             
-                    PhiP = -1/(8*pi*1i*w*eps0)*(BasisLA(:,2).*permute(sum(dot(RhoP_,GI(:,:,PlusTri),2)),[3 2 1])/Quad-BasisLA(:,2).*permute(sum(dot(RhoM_,GI(:,:,PlusTri),2)),[3 2 1])/Quad)...
+                    PhiP = -1/(2*pi*1i*w*eps0)*(BasisLA(:,2).*permute(sum(dot(RhoP_,GImPnP,2)),[3 2 1])/Quad...
+                        -BasisLA(:,2).*permute(sum(dot(RhoM_,GImPnM,2)),[3 2 1])/Quad)...
                         +PhiP;
-                    PhiM = -1/(8*pi*1i*w*eps0)*(BasisLA(:,2).*permute(sum(dot(RhoP_,GI(:,:,MinusTri),2)),[3 2 1])/Quad-BasisLA(:,2).*permute(sum(dot(RhoM_,GI(:,:,MinusTri),2)),[3 2 1])/Quad)...
+                    PhiM = -1/(2*pi*1i*w*eps0)*(BasisLA(:,2).*permute(sum(dot(RhoP_,GImMnP,2)),[3 2 1])/Quad...
+                        -BasisLA(:,2).*permute(sum(dot(RhoM_,GImMnM,2)),[3 2 1])/Quad)...
                         +PhiM;   
                 end
             
-                Z(m,:) = BasisLA(m,2).*(1i*w*(dot(AmnP,rhomP,2)/2+dot(AmnM,rhomM,2)/2)+PhiM-PhiP);  
+                Z(m,:) = BasisLA(m,2).*(1i*w*(dot(AmnP,rhomP,2)/2+dot(AmnM,rhomM,2)/2)+PhiM-PhiP);
             end
             b = BasisLA(:,2).*(dot(Ei(PlusTri,:),RhoP,2)/2+dot(Ei(MinusTri,:),RhoM,2)/2);
+            
+%             for selfO=1:length(EdgeList)
+%                 for selfI=1:length(EdgeList)
+%                     if PlusTri(selfO) == MinusTri(selfI)
+%                         Z(selfO, selfI) = 2*Z(selfO, selfI);
+%                    end
+%                 end
+%             end
             %System solution
             a=Z\b;
         end
+    
            
         function [Jface] = CurrentCalc(t, EdgeList, a, BasisLA, RhoP, RhoM)
             Jface = zeros(size(t));
