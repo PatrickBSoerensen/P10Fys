@@ -1,9 +1,9 @@
 %% load STL file into matlab
-stl = stlread('antennas/Dipole1mm/Dipole10cm552T1mm.stl');
+% stl = stlread('antennas/Dipole1mm/Dipole10cm552T1mm.stl');
 % stl = stlread('antennas/Dipole1mm/Dipole10cm702T1mm.stl'); %ok
 % stl = stlread('antennas/Dipole1mm/Dipole10cm900T1mm.stl'); %god
 
-% stl = stlread('antennas/Dipole10cmT180.stl');
+stl = stlread('antennas/Dipole10cmT180.stl');
 % stl = stlread('antennas/Dipole10cmT264.stl');
 % stl = stlread('antennas/Dipole10cmT580.stl'); %ok
 % stl = stlread('antennas/Dipole10cmT722.stl'); %god
@@ -80,6 +80,9 @@ epsR = 11.68;
 Reflector = 0;
 FromAnt = 0.00;
 xdist = radius+FromAnt;
+Reflector = 1;
+FromAnt = 0.02;
+RefDist = radius+FromAnt;
 % Determines if points should be lifted to surf of antenna, this is semi
 % hardcoded to a predetermined structure, if in doubt set to 0
 Lift = 1;
@@ -140,14 +143,14 @@ disp('Calculating IncidentField and ID Greens if Reflector')
 clear Ei
 RefCoef = (1-n)/(1+n);
 if Reflector
-    [GIx, GIy, GIz] = ArbitraryAntenna.IDGreens(k, xdist, Length, 2*radius, 0.05, 10, lambda, n, epsR, eps0, Center, SubTri);
+    [GIx, GIy, GIz] = ArbitraryAntenna.IDGreens(k, RefDist, Length, 2*radius, 0.005, 50, lambda, n, epsR, eps0, Center, SubTri);
  
     GI = GIx+GIy+GIz;
 else
     GI = [];
 end
 if UseDipole
-    [Ei] = ArbitraryAntenna.PointSource(w, mu0, k, Center, SubTri, sub, DipolePoint, [0,1,0]);
+    [Ei] = ArbitraryAntenna.PointSource(w, mu0, k, Center, SubTri, sub, DipolePoint, [0,1,0], Reflector, GIx, GIy, GIz);
 end
 if UseFeed
     [Ei, v] = ArbitraryAntenna.VoltageFeed(t, p, Center, DipolePoint, 1, EdgeList, BasisLA, Yagi, OGSize);
@@ -158,7 +161,6 @@ if ~UseFeed && ~UseDipole
     Ei(:,3) = 0.*exp(1i*k.*(Center(:,1)));
 end
 toc;
-
 if Reflector
     Ei(:,1) = Ei(:,1) + Ei(:,1).*RefCoef;        
     Ei(:,2) = Ei(:,2) + Ei(:,2).*RefCoef;
@@ -206,7 +208,7 @@ rotate3d
 
 %%
 if Reflector
-[Esc, EscPhi, EscTheta] = ArbitraryAntenna.AngularFarFieldSurf(w, mu0, k, 30, Center, Jface, steps, xdist, epsR, eps0, lambda, n);
+[Esc, EscPhi, EscTheta] = ArbitraryAntenna.AngularFarFieldSurf(w, mu0, k, 30, Center, Jface, steps, RefDist, epsR, eps0, lambda, n);
 else
 [Esc, EscPhi, EscTheta] = ArbitraryAntenna.AngularFarField(w, mu0, k, 30, Center, Jface, steps);
 end
@@ -215,7 +217,7 @@ tic;
 fprintf('\n')
 disp('Calculating E-field')
 [Exy, Exz, Ezy, x, y, z, Exyx, Exzx, Eyzx, Exyy, Exzy, Eyzy, Exyz, Exzz, Eyzz] = ...
-    ArbitraryAntenna.EField(Center, w, mu0, k, Jface, xmin, xmax, ymin, ymax, zmin, zmax, steps, Area, Reflector, xdist, n, lambda);
+    ArbitraryAntenna.EField(Center, w, mu0, k, Jface, xmin, xmax, ymin, ymax, zmin, zmax, steps, Area, Reflector, RefDist, n, lambda);
 toc;
 if UseDipole
 fprintf('\n')

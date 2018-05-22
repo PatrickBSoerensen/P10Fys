@@ -26,7 +26,7 @@ disp('Removing duplicate points')
 minp = min(p);
 maxp = max(p);
 [maxmaxp, maxaxis] = max(max(p));
-radius = 0.003;
+radius = sum(abs(maxp(radiusdet))+abs(minp(radiusdet)))/4;
 Length = (maxmaxp-minp(maxaxis));
 %% Parameters
 % Controls amount of antenna
@@ -67,11 +67,11 @@ t = [t; t+length(p1); t+length(p1)+length(p2);...
     t+length(p1)+length(p2)+length(p3)+length(p4)+length(p5)+length(p6)+length(p7);...
     t+length(p1)+length(p2)+length(p3)+length(p4)+length(p5)+length(p6)+length(p7)+length(p8)];
 % Should source be dipole, if 0 a plane wave propagating in +x direction used
-UseDipole = 0;
-DipolePoint = [0,0,0];
-UseFeed = 1;
+UseDipole = 1;
+DipolePoint = [radius,0,0];
+UseFeed = 0;
 FeedPos = [0,0,0];
-Yagi=0;
+Yagi=1;
 OGSize = size(t);
 OGSize = OGSize(1)*1.5;
 % If set to one use 81 sub triangles pr element, if 0 use 9
