@@ -3,8 +3,13 @@
 % stl = stlread('antennas/Dipole1mm/Dipole10cm702T1mm.stl'); %ok
 % stl = stlread('antennas/Dipole1mm/Dipole10cm900T1mm.stl'); %god
 
-stl = stlread('antennas/Dipole10cmT180.stl');
-% stl = stlread('antennas/Dipole10cmT264.stl');
+stl = stlread('antennas/AspecPrio/Dipole10cmT648.stl'); 
+
+% stl = stlread('antennas/AspecPrio/Dipole10cmT910.stl'); 
+
+% stl = stlread('antennas/test/720.stl');
+% stl = stlread('antennas/Dipole10cmT180.stl');
+% stl1 = stlread('antennas/Dipole10cmT264.stl');
 % stl = stlread('antennas/Dipole10cmT580.stl'); %ok
 % stl = stlread('antennas/Dipole10cmT722.stl'); %god
 % stl = stlread('antennas/Dipole10cmT744.stl'); %
@@ -27,7 +32,18 @@ tic;
 fprintf('\n')
 disp('Removing duplicate points')
 [p, t] = ArbitraryAntenna.RemoveDuplicatePoints(stl);
-% p(:,2) = p(:,2)*2; %Scaling works
+% [p1, t1] = ArbitraryAntenna.RemoveDuplicatePoints(stl1);
+% prem = p(:,2) <= 0;
+% p1rem = p1(:,2) >= 0;
+% p(prem,:) = [];
+% p1(p1rem,:) = [];
+% trem = t>= length(p);
+% t1rem = t1 >= length(p1);
+% t(trem) = [];
+% t1(t1rem) = [];
+% t1 = t1+length(t);
+% p = [p; p1];
+% t = [t; t1];
 %% Calculating dimensions of dipole
 radiusdet = [1 1 1];
 minp = min(p);
@@ -41,17 +57,10 @@ Length = maxmaxp+abs(minp(maxaxis));
 % Controls amount of antenna
 % p(:,1) = p(:,1)+0.03;
 p1 = p;
+% p(:,3)=p(:,3)-radius-0.1;
 % p2 = p;
-% p3 = p;
-% p4 = p;
-% p1(:,1) = p(:,1)+0.003;
-% p2(:,1) = p(:,1)+0.01;
-% p2(:,2) = p(:,2)+0.05;
-% p3(:,1) = p(:,1)+0.02;
-% p3(:,2) = p(:,2)-0.05;
 % p = [p1; p2; p3; p4];
 % t = [t; t+length(p1); t+length(p1)+length(p2); t+length(p1)+length(p2)+length(p3)];
-% % p(:,1) = p(:,1)+0.03;
 % Should source be dipole, if 0 a plane wave propagating in +x direction used
 UseDipole = 0;
 DipolePoint = [-Length,0,0];
@@ -62,7 +71,7 @@ Yagi=0;
 OGSize = size(t);
 OGSize = OGSize(1)*1.5;
 % If set to one use 81 sub triangles pr element, if 0 use 9
-SubSubTri = 0;
+SubSubTri = 1;
 sub = 0;
 % if 1 use fast MoM
 vectorized = 1;
@@ -77,12 +86,12 @@ PointArea = xmax^2/steps;
 % Reflector surface params
 n = 3.9;
 epsR = 11.68;
-Reflector = 1;
-FromAnt = 0.02;
-RefDist = radius+FromAnt;
+Reflector = 0;
+FromAnt =0% 0.001;
+RefDist =0% radius+FromAnt;
 % Determines if points should be lifted to surf of antenna, this is semi
 % hardcoded to a predetermined structure, if in doubt set to 0
-Lift = 1;
+Lift = 0;
 %% Visual check
 figure(1)
 plot3(p(:,1),p(:,2),p(:,3),'*')
@@ -140,8 +149,8 @@ disp('Calculating IncidentField and ID Greens if Reflector')
 clear Ei
 RefCoef = (1-n)/(1+n);
 if Reflector
-    [GIx, GIy, GIz] = ArbitraryAntenna.IDGreens(k, RefDist, Length, 2*radius, 0.005, 50, lambda, n, epsR, eps0, Center, SubTri);
- 
+    [GIxx, GIxy, GIxz, GIyx, GIyy, GIyz, GIzx, GIzy, GIzz] = ArbitraryAntenna.IDGreens(k, RefDist, Length, 2*radius, 0.003, 15, lambda, n, epsR, eps0, Center, SubTri);
+%  0.003, 15 OR 0.002, 20
     GI = GIx+GIy+GIz;
 else
     GI = [];
@@ -154,7 +163,7 @@ if UseFeed
 end
 if ~UseFeed && ~UseDipole
     Ei(:,1) = 0.*exp(1i*k.*(Center(:,2)));
-    Ei(:,2) = 1.*exp(1i*k.*(Center(:,1)));
+    Ei(:,2) = 1.*exp(1i*k.*(Center(:,3)))
     Ei(:,3) = 0.*exp(1i*k.*(Center(:,1)));
 end
 toc;
@@ -168,7 +177,7 @@ tic;
 fprintf('\n')
 disp('MoM')
 if vectorized
-    [Z, a, b] = ArbitraryAntenna.MoMVectorized(w, mu0, t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k, SubTri, Ei, Reflector, GI, n, eps0);
+    [Z, a, b] = ArbitraryAntenna.MoMVectorized(w, mu0, t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k, SubTri, Ei, Reflector, GIxx, GIxy, GIxz, GIyx, GIyy, GIyz, GIzx, GIzy, GIzz, n, eps0);
 else
     [Z, a, b] = ArbitraryAntenna.MoM(w, mu0, t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k,  SubTri, Ei, eps0);
 end

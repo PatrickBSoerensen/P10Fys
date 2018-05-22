@@ -360,7 +360,7 @@
             end
         end
         
-        function [Ei] = PointSource(w, mu, k, Center, SubTri, sub, PointPos, p) 
+        function [Ei] = PointSource(w, mu, k, Center, SubTri, sub, PointPos, p, Reflector, GIx, GIy, GIz) 
             if sub
                 dims = size(SubTri);
                 SubTri = reshape(SubTri, 3, [], dims(3));
@@ -406,13 +406,15 @@
                 Ei(:,2) = sum(w^2*mu.*(Gyx .* p(1) + Gyy .* p(2) + Gyz .* p(3)))/dims(1);
                 Ei(:,3) = sum(w^2*mu.*(Gzx .* p(1) + Gzy .* p(2) + Gzz .* p(3)))/dims(1);
             else
-                Ei(:,1) = w^2*mu.*(Gxx .* p(1) + Gxy .* p(2) + Gxz .* p(3));
-                Ei(:,2) = w^2*mu.*(Gyx .* p(1) + Gyy .* p(2) + Gyz .* p(3));
-                Ei(:,3) = w^2*mu.*(Gzx .* p(1) + Gzy .* p(2) + Gzz .* p(3));
-                
-                Ei(:,1) = w^2*mu.*(Gxx .* p(1) + Gxy .* p(2) + Gxz .* p(3));
-                Ei(:,2) = w^2*mu.*(Gyx .* p(1) + Gyy .* p(2) + Gyz .* p(3));
-                Ei(:,3) = w^2*mu.*(Gzx .* p(1) + Gzy .* p(2) + Gzz .* p(3));
+                if Reflector
+                    Ei(:,1) = w^2*mu.*(Gxx .* p(1) + Gxy .* p(2) + Gxz .* p(3))+sum(reshape(sum(GIx),3,[]).'.*p/9,2);
+                    Ei(:,2) = w^2*mu.*(Gyx .* p(1) + Gyy .* p(2) + Gyz .* p(3))+sum(reshape(sum(GIy),3,[]).'.*p/9,2);
+                    Ei(:,3) = w^2*mu.*(Gzx .* p(1) + Gzy .* p(2) + Gzz .* p(3))+sum(reshape(sum(GIz),3,[]).'.*p/9,2);
+                else
+                    Ei(:,1) = w^2*mu.*(Gxx .* p(1) + Gxy .* p(2) + Gxz .* p(3));
+                    Ei(:,2) = w^2*mu.*(Gyx .* p(1) + Gyy .* p(2) + Gyz .* p(3));
+                    Ei(:,3) = w^2*mu.*(Gzx .* p(1) + Gzy .* p(2) + Gzz .* p(3));
+                end
             end
         end
         
@@ -426,7 +428,7 @@
             FeedEdges = [];
             counter = 1;
             if Yagi
-                PointsOnFeed(1:OG) = find(abs(p(:,2))<=1e-18+FeedPos(2));
+                PointsOnFeed = find(abs(p(:,2))<=1e-18+FeedPos(2));
             else
                 PointsOnFeed = find(abs(p(:,2))<=1e-18+FeedPos(2));
             end
@@ -440,7 +442,9 @@
                     end
                 end
             end
-            
+            if Yagi
+                FeedEdges(FeedEdges>OG) = [];
+            end
             EdgeV(FeedEdges)=BasisLA(FeedEdges,2)*v;
             if ~isempty(FeedEdges)
                 Ei(PlusTri(FeedEdges),2) = v/length(FeedEdges);
@@ -488,7 +492,7 @@
         end
         
         function [Z, a, b] = MoMVectorized(w,mu,t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k, SubTri, Ei,...
-                Reflector, GI, n, eps0)
+                Reflector, GIxx, GIxy, GIxz, GIyx, GIyy, GIyz, GIzx, GIzy, GIzz, n, eps0)
             % alocating space
             Z = zeros(length(EdgeList),length(EdgeList))+1i*zeros(length(EdgeList),length(EdgeList));
             
@@ -530,20 +534,48 @@
                 PhiM = -1/(4*pi*1i*w*eps0)*(BasisLA(:,2).*permute(sum(gmMnP),[3 2 1])/Quad-BasisLA(:,2).*permute(sum(gmMnM),[3 2 1])/Quad);
                 
                 if Reflector
-                    AmnP = mu/(4*pi)*(BasisLA(:,2).*permute(sum(RhoP_.*GI(:,:,PlusTri)/(2*Quad)),[3 2 1])+BasisLA(:,2).*permute(sum(RhoM_.*GI(:,:,PlusTri)/(2*Quad)),[3 2 1]))...
+                    GIx = [GIxx(:,PlusTri(m),:) GIxy(:,PlusTri(m),:) GIxz(:,PlusTri(m),:)];
+                    GIy = [GIyx(:,PlusTri(m),:) GIyy(:,PlusTri(m),:) GIyz(:,PlusTri(m),:)];
+                    GIz = [GIzx(:,PlusTri(m),:) GIzy(:,PlusTri(m),:) GIzz(:,PlusTri(m),:)];
+                    GImP = GIx+ GIy + GIz;
+                    
+                    GIx = [GIxx(:,MinusTri(m),:) GIxy(:,MinusTri(m),:) GIxz(:,MinusTri(m),:)];
+                    GIy = [GIyx(:,MinusTri(m),:) GIyy(:,MinusTri(m),:) GIyz(:,MinusTri(m),:)];
+                    GIz = [GIzx(:,MinusTri(m),:) GIzy(:,MinusTri(m),:) GIzz(:,MinusTri(m),:)];
+                    GImM = GIx+GIy+GIz;
+
+                    GImPnP = GImP(:,:,PlusTri);
+                    GImMnP = GImM(:,:,MinusTri);
+                    
+                    GImPnM = GImP(:,:,PlusTri);
+                    GImMnM = GImM(:,:,MinusTri);
+ 
+                    AmnP = mu/(4*pi)*(BasisLA(:,2).*permute(sum(RhoP_.*GImPnP/(2*Quad)),[3 2 1])...
+                        +BasisLA(:,2).*permute(sum(RhoM_.*GImPnM/(2*Quad)),[3 2 1]))...
                         +AmnP;
-                    AmnM = mu/(4*pi)*(BasisLA(:,2).*permute(sum(RhoP_.*GI(:,:,MinusTri)/(2*Quad)),[3 2 1])+BasisLA(:,2).*permute(sum(RhoM_.*GI(:,:,MinusTri)/(2*Quad)),[3 2 1]))...
+                    AmnM = mu/(4*pi)*(BasisLA(:,2).*permute(sum(RhoP_.*GImMnP/(2*Quad)),[3 2 1])...
+                        +BasisLA(:,2).*permute(sum(RhoM_.*GImMnM/(2*Quad)),[3 2 1]))...
                         +AmnM;
             
-                    PhiP = -1/(2*pi*1i*w*eps0)*(BasisLA(:,2).*permute(sum(dot(RhoP_,GI(:,:,PlusTri),2)),[3 2 1])/Quad-BasisLA(:,2).*permute(sum(dot(RhoM_,GI(:,:,PlusTri),2)),[3 2 1])/Quad)...
+                    PhiP = -1/(2*pi*1i*w*eps0)*(BasisLA(:,2).*permute(sum(dot(RhoP_,GImPnP,2)),[3 2 1])/Quad...
+                        -BasisLA(:,2).*permute(sum(dot(RhoM_,GImPnM,2)),[3 2 1])/Quad)...
                         +PhiP;
-                    PhiM = -1/(2*pi*1i*w*eps0)*(BasisLA(:,2).*permute(sum(dot(RhoP_,GI(:,:,MinusTri),2)),[3 2 1])/Quad-BasisLA(:,2).*permute(sum(dot(RhoM_,GI(:,:,MinusTri),2)),[3 2 1])/Quad)...
+                    PhiM = -1/(2*pi*1i*w*eps0)*(BasisLA(:,2).*permute(sum(dot(RhoP_,GImMnP,2)),[3 2 1])/Quad...
+                        -BasisLA(:,2).*permute(sum(dot(RhoM_,GImMnM,2)),[3 2 1])/Quad)...
                         +PhiM;   
                 end
             
-                Z(m,:) = BasisLA(m,2).*(1i*w*(dot(AmnP,rhomP,2)/2+dot(AmnM,rhomM,2)/2)+PhiM-PhiP);  
+                Z(m,:) = BasisLA(m,2).*(1i*w*(dot(AmnP,rhomP,2)/2+dot(AmnM,rhomM,2)/2)+PhiM-PhiP);
             end
             b = BasisLA(:,2).*(dot(Ei(PlusTri,:),RhoP,2)/2+dot(Ei(MinusTri,:),RhoM,2)/2);
+            
+%             for selfO=1:length(EdgeList)
+%                 for selfI=1:length(EdgeList)
+%                     if PlusTri(selfO) == MinusTri(selfI)
+%                         Z(selfO, selfI) = 2*Z(selfO, selfI);
+%                    end
+%                 end
+%             end
             %System solution
             a=Z\b;
         end
@@ -566,7 +598,7 @@
         end
         
         function [Exy, Exz, Ezy, xrange, yrange, zrange, Exyx, Exzx, Eyzx, Exyy, Exzy, Eyzy, Exyz, Exzz, Eyzz] = EField(Center, w, mu, k0, J,...
-                xmin, xmax,  ymin, ymax,zmin, zmax, steps, Area, Reflect, xsurf, n, lambda)
+                xmin, xmax,  ymin, ymax,zmin, zmax, steps, Area, Reflect, surf, n, lambda)
        
             kR = 2*pi/(lambda*n);
             xrange = linspace(xmin, xmax, steps);
@@ -602,7 +634,7 @@
                             Ry = repmat(ry(i,:),steps,1);
                             Rz = repmat(rz(i),steps,steps);
                             r = sqrt(Rx.^2+Ry.^2+Rz.^2);
-                            surfside = find(rx(i,:)>=xsurf);
+                            surfside = find(rz(i,:)>=surf);
                             k = zeros(steps,steps);
                             k(:,:) = k0; 
                             if Reflect
@@ -642,11 +674,11 @@
                             Ry = repmat(ry(i,:),steps,steps);
                             Rz = repmat(rz(i,:),steps,1);
                             r = sqrt(Rx.^2+Ry.^2+Rz.^2);
-                            surfside = find(rx(i,:)>=xsurf);
+                            surfside = find(rz(i,:)>=surf);
                             k = zeros(steps,steps);
                             k(:,:) = k0; 
                             if Reflect
-                                k(surfside,:) = kR;
+                                k(:,surfside) = kR;
                             end
                             
                             g = exp(1i.*k.*r)./(4*pi*r);
@@ -682,7 +714,7 @@
                             Ry = repmat(ry(i,:),steps,1);
                             Rz = repmat(rz(i,:)',1,steps);
                             r = sqrt(Rx.^2+Ry.^2+Rz.^2);
-                            surfside = find(rx(i,:)>=xsurf);
+                            surfside = find(rz(i,:)>=surf);
                             k = zeros(steps,steps);
                             k(:,:) = k0; 
                             if Reflect
@@ -942,7 +974,7 @@
             title('EscPhi^2+EscTheta^2')
         end
         
-        function [GIx, GIy, GIz] = IDGreens(k0, distx, ant_length, ant_width, dx, Nz, lambda, n, epsL2, eps1, Center, SubTri)
+        function [GIxx, GIxy, GIxz, GIyx, GIyy, GIyz, GIzx, GIzy, GIzz] = IDGreens(k0, dist, ant_length, ant_width, dx, Nz, lambda, n, epsL2, eps1, Center, SubTri)
                 
             SubAmount = size(SubTri);
             %% Soender
@@ -962,27 +994,18 @@
             dkrho_dalphaf=@(alpha) -sin(alpha)*ellipse_length/2+1i*ellipse_height*cos(alpha);
             
             rhomin = 0;
-%             rhomin = -ant_length/2-ant_width/2;
-            rhomax = ant_length;
-%             rhomax = ant_length/2+ant_width/2;
-%             rhov1 = [rhomin rhomin+dx rhomin+dx*sqrt(2) rhomin+dx*2 rhomin+dx*sqrt(5) rhomin+dx*sqrt(8)];
-            rhov1 = [0 dx dx*sqrt(2) dx*2 dx*sqrt(5) dx*sqrt(8)];
+            rhomax = ant_length; % maybe half is enough due to symetri?
             
-            if rhomax>dx*3
-                rhov2=linspace(dx*3,rhomax,ceil((rhomax-dx*3)/dx)+1);
-            else
-                rhov2=[];
-            end
-            rhotabv=[rhov1 rhov2];
+            rhotabv = linspace(rhomin,rhomax,Nz*3);
             Nrho=length(rhotabv);
-    
-            GItabzz=zeros(Nrho,2*Nz-1); GItabzr=GItabzz;
+
+            GItabzz=zeros(Nrho,Nz); GItabzr=GItabzz;
             GItabrr=GItabzz; GItabpp=GItabzz;
             tab_z=GItabzz; tab_r=GItabzz;
             
             for jrho=1:Nrho
                 rho=rhotabv(jrho);
-                for jz=1:Nz*2-1
+                for jz=1:Nz
                     z=jz*dx;
                     dJmf = @(krho) -besselj(1,krho*rho)./(krho*rho);
                     if jrho==1
@@ -1019,46 +1042,35 @@
             %% Conversion to cartesian components
             TempCenters = permute(Center, [3 2 1]);
             TempCenters = repmat(TempCenters, [SubAmount(1) 1 1]);
-            AllSubDists = TempCenters-SubTri+TempCenters(:,2,:)-distx+SubTri(:,2,:)-distx;
 
-            x = AllSubDists(:,1,:);
-            y = AllSubDists(:,2,:);
-            z = AllSubDists(:,3,:);
+            for j=1:length(Center)
+                TriDist = TempCenters(:,:,j)-SubTri;
+                x = TriDist(:,1,:);
+                y = TriDist(:,2,:);
+                z = 2*dist+TempCenters(:,3,j)+SubTri(:,3,:);
                  
-            for i=1:SubAmount(1)
-                rho = sqrt(x.*x+y.*y);
+                rho = sqrt(x.^2+y.^2);
                 phi = atan2(y,x);
-
-                Gzz = permute(interp2(tab_z, tab_r, GItabzz, permute(z(i,:,:), [3 2 1]), permute(rho(i,:,:), [3 2 1]), 'spline'), [3 2 1]); 
-                Gzr = permute(interp2(tab_z, tab_r, GItabzr, permute(z(i,:,:), [3 2 1]), permute(rho(i,:,:), [3 2 1]), 'spline'), [3 2 1]); 
-                Grr = permute(interp2(tab_z, tab_r, GItabrr, permute(z(i,:,:), [3 2 1]), permute(rho(i,:,:), [3 2 1]), 'spline'), [3 2 1]); 
-                Gpp = permute(interp2(tab_z, tab_r, GItabpp, permute(z(i,:,:), [3 2 1]), permute(rho(i,:,:), [3 2 1]), 'spline'), [3 2 1]);                
-                Grz = -Gzr;
-                
-                GIxx(i,:,:) = ((sin(phi(i,:,:))).^2).*Gpp+((cos(phi(i,:,:))).^2).*Grr;
-                GIxy(i,:,:) = sin(phi(i,:,:)).*cos(phi(i,:,:)).*(Grr-Gpp);
-                GIxz(i,:,:) = cos(phi(i,:,:)).*Grz;
-                GIyx(i,:,:) = sin(phi(i,:,:)).*cos(phi(i,:,:)).*(Grr-Gpp);
-                GIyy(i,:,:) = ((cos(phi(i,:,:))).^2).*Gpp+((sin(phi(i,:,:))).^2).*Grr;
-                GIyz(i,:,:) = sin(phi(i,:,:)).*Grz;
-                GIzx(i,:,:) = cos(phi(i,:,:)).*Gzr;
-                GIzy(i,:,:) = sin(phi(i,:,:)).*Gzr;
-                GIzz(i,:,:) = Gzz;
-            end
-            GIxx = reshape(GIxx, SubAmount(1), [],SubAmount(3));
-            GIxy = reshape(GIxy, SubAmount(1), [],SubAmount(3));
-            GIxz = reshape(GIxz, SubAmount(1), [],SubAmount(3));
-            GIx = [GIxx GIxy GIxz];
                     
-            GIyx = reshape(GIyx, SubAmount(1),[],SubAmount(3));
-            GIyy = reshape(GIyy, SubAmount(1),[],SubAmount(3));
-            GIyz = reshape(GIyz, SubAmount(1),[],SubAmount(3));
-            GIy = [GIyx GIyy GIyz];
-            
-            GIzx = reshape(GIzx, SubAmount(1),[],SubAmount(3));
-            GIzy = reshape(GIzy, SubAmount(1),[],SubAmount(3));
-            GIzz = reshape(GIzz, SubAmount(1),[],SubAmount(3));
-            GIz = [GIzx GIzy GIzz];
+                if max(max(tab_z)) < max(max(max(z)))
+                   hej=4;
+                end
+                Gzz = interp2(tab_z, tab_r, GItabzz, z, rho, 'spline'); 
+                Gzr = interp2(tab_z, tab_r, GItabzr, z, rho, 'spline'); 
+                Grr = interp2(tab_z, tab_r, GItabrr, z, rho, 'spline'); 
+                Gpp = interp2(tab_z, tab_r, GItabpp, z, rho, 'spline');                
+                Grz = -Gzr;
+
+                GIxx(:,j,:) = ((sin(phi)).^2).*Gpp+((cos(phi)).^2).*Grr;
+                GIxy(:,j,:) = sin(phi).*cos(phi).*(Grr-Gpp);
+                GIxz(:,j,:) = cos(phi).*Grz;
+                GIyx(:,j,:) = sin(phi).*cos(phi).*(Grr-Gpp);
+                GIyy(:,j,:) = ((cos(phi)).^2).*Gpp+((sin(phi)).^2).*Grr;
+                GIyz(:,j,:) = sin(phi).*Grz;
+                GIzx(:,j,:) = cos(phi).*Gzr;
+                GIzy(:,j,:) = sin(phi).*Gzr;
+                GIzz(:,j,:) = Gzz;
+            end
         end
     
         end
