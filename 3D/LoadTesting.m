@@ -8,8 +8,8 @@
 % stl = stlread('antennas/AspecPrio/Dipole10cmT910.stl'); 
 
 % stl = stlread('antennas/test/720.stl');
-stl = stlread('antennas/Dipole10cmT180.stl');
-% stl1 = stlread('antennas/Dipole10cmT264.stl');
+% stl = stlread('antennas/Dipole10cmT180.stl');
+stl = stlread('antennas/Dipole10cmT264.stl');
 % stl = stlread('antennas/Dipole10cmT580.stl'); %ok
 % stl = stlread('antennas/Dipole10cmT722.stl'); %god
 % stl = stlread('antennas/Dipole10cmT744.stl'); %
@@ -44,6 +44,10 @@ disp('Removing duplicate points')
 % t1 = t1+length(t);
 % p = [p; p1];
 % t = [t; t1];
+
+p(:,1) = p(:,1);
+p(:,2) = p(:,2);
+p(:,3) = p(:,3);
 %% Calculating dimensions of dipole
 radiusdet = [1 1 1];
 minp = min(p);
@@ -57,7 +61,6 @@ Length = maxmaxp+abs(minp(maxaxis));
 % Controls amount of antenna
 % p(:,1) = p(:,1)+0.03;
 p1 = p;
-% p(:,3)=p(:,3)-radius-0.1;
 % p2 = p;
 % p = [p1; p2; p3; p4];
 % t = [t; t+length(p1); t+length(p1)+length(p2); t+length(p1)+length(p2)+length(p3)];
@@ -134,7 +137,7 @@ toc;
 tic;
 fprintf('\n')
 disp('Defining basis functions')
-[EdgeList, Basis, BasisLA] = ArbitraryAntenna.BasisFunc(p, t, ConnectCell);
+[EdgeList, Basis, BasisLA, BasisCoord] = ArbitraryAntenna.BasisFunc(p, t, ConnectCell);
 toc;
 %% Evaluating Basis Functions
 tic;
@@ -164,7 +167,6 @@ if UseFeed
 end
 if ~UseFeed && ~UseDipole
     Ei(:,1) = 0.*exp(1i*k.*(Center(:,2)));
-    Ei(:,2) = 1.*exp(1i*k.*(Center(:,3)))
     Ei(:,2) = 1.*exp(1i*k.*(Center(:,1)))
     Ei(:,3) = 0.*exp(1i*k.*(Center(:,1)));
 end
@@ -175,11 +177,11 @@ if Reflector
     Ei(:,3) = Ei(:,3) + Ei(:,3).*RefCoef;
 end
 %% MoM
-tic;
+% tic;
 fprintf('\n')
 disp('MoM')
 if vectorized
-    [Z, a, b] = ArbitraryAntenna.MoMVectorized(w, mu0, t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k, SubTri, Ei, Reflector, GIxx, GIxy, GIxz, GIyx, GIyy, GIyz, GIzx, GIzy, GIzz, n, eps0);
+    [Z, a, b] = ArbitraryAntenna.MoMVectorized(w, mu0, t, p, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, BasisCoord, Center, k, SubTri, Ei, Reflector, GIxx, GIxy, GIxz, GIyx, GIyy, GIyz, GIzx, GIzy, GIzz, eps0);
 else
     [Z, a, b] = ArbitraryAntenna.MoM(w, mu0, t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k,  SubTri, Ei, eps0);
 end

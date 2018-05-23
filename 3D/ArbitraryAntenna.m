@@ -49,6 +49,48 @@
             t = sort(t,2);
         end
         
+        function [p, t] = RemoveDuplicatePointsPT(vertices, faces)
+            %Loading p/t matrixes from STL object
+            p = zeros(size(vertices));
+            t = faces;
+            
+            %Looping through vertices
+            for i=1:length(vertices)
+                % Comparing current vertices to all others
+                a = vertices==vertices(i,:);
+                % Summing over rows
+                a = sum(a,2);
+                % Finding rows where all points where the same
+                b = a==3;
+                % Finding index of points that are the same
+                d=find(b);
+                % Writing the first point into p matrix as a unqiue point
+                p(d(1),:) = vertices(d(1),:);
+                % Loops through the points ekvivalent to the first unique
+                % one and replaces it in the t matrix
+                for n=2:length(d)
+                    c = stl.faces == d(n);
+                    t(c) = d(1);
+                end
+            end
+            % Moving the row index into a temporary index in column four
+            for i=1:length(p)
+                p(i,4) = i;
+            end
+            % Removes any empty points i.e. duplicates
+            p( ~any(p(:,1:3),2), : ) = [];
+            
+            % Updates vertices in t matrix with new index after removing
+            % duplicate points from p
+            for i=1:length(p)
+                t(t==p(i,4)) = i;
+            end
+            % Removing the temporary index from p
+            p(:,4) = [];
+            
+            t = sort(t,2);
+        end
+       
         function [ConnectCell] = Connectivity(p, t)
             %Setting up cell size
             ConnectCell = cell(length(p),2);
@@ -234,7 +276,7 @@
                     [a1 a2 a3 a4 a5 a6 a7 a8 a9];
         end
          
-        function [EdgeList, Basis, BasisLA] = BasisFunc(p, t, ConnectCell)
+        function [EdgeList, Basis, BasisLA, BasisCoord] = BasisFunc(p, t, ConnectCell)
             % Method for creating basis functions and saving other
             % information relevant to these
             BasisNumber = 1;
@@ -302,6 +344,16 @@
                     Basis{BasisNumber,1} = @(r) (p(NotEdgePoints(1),:) - r);
                     % Minus basis function
                     Basis{BasisNumber,2} = @(r) (r - p(NotEdgePoints(2),:));
+                  
+                    % Plus basis function
+                    BasisCoord{BasisNumber,1} = @(r) (p(NotEdgePoints(1),1) - r);
+                    BasisCoord{BasisNumber,2} = @(r) (p(NotEdgePoints(1),2) - r);
+                    BasisCoord{BasisNumber,3} = @(r) (p(NotEdgePoints(1),3) - r);
+                    % Minus basis function
+                    BasisCoord{BasisNumber,4} = @(r) (r - p(NotEdgePoints(2),1));
+                    BasisCoord{BasisNumber,5} = @(r) (r - p(NotEdgePoints(2),2));
+                    BasisCoord{BasisNumber,6} = @(r) (r - p(NotEdgePoints(2),3));
+                  
                     
                     % Fronterm for basis function
                     BasisLA(BasisNumber,1) =  L./(2*AP);
@@ -486,47 +538,60 @@
             
             a = Z\b;
         end
-            function [Z, a, b] = MoMVectorized(w,mu,t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k, SubTri, Ei,...
-                Reflector, GIxx, GIxy, GIxz, GIyx, GIyy, GIyz, GIzx, GIzy, GIzz, n, eps0)
+        
+        function [Z, a, b] = MoMVectorized(w, mu, t, p, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Basis, Center, k, SubTri, Ei,...
+                Reflector, GIxx, GIxy, GIxz, GIyx, GIyy, GIyz, GIzx, GIzy, GIzz, eps0)
             % alocating space
             Z = zeros(length(EdgeList),length(EdgeList))+1i*zeros(length(EdgeList),length(EdgeList));
             
             SubAmount = size(SubTri);
             Quad = SubAmount(1);
          
-            if Reflector
-                RefCoef = (1-n)/(1+n);
-%                 if ~Point
-%                     Ei(:,1) = Ei(:,1)+x.*exp(-1i*k.*(Center(:,2))).*RefCoef;
-%                     Ei(:,2) = Ei(:,2)+y.*exp(-1i*k.*(Center(:,1))).*RefCoef;
-%                     Ei(:,3) = Ei(:,3)+z.*exp(-1i*k.*(Center(:,1))).*RefCoef;
-%                 else
-%                     Ei(:,1) = Ei(:,1)+Ei(:,1).*RefCoef;
-%                     Ei(:,2) = Ei(:,2)+Ei(:,2).*RefCoef;
-%                     Ei(:,3) = Ei(:,3)+Ei(:,3).*RefCoef;
-%                 end
-            end
-            
             EdgesTotal = length(EdgeList);
             [PlusTri, MinusTri] = ArbitraryAntenna.PMTri(t, EdgeList);
 
             for m=1:EdgesTotal
-                mPdist = sqrt(sum((Center(PlusTri(m),:)-SubTri(:,:,:)).^2,2));
-                mMdist = sqrt(sum((Center(MinusTri(m),:)-SubTri(:,:,:)).^2,2));
+                mPdist = sqrt(sum((Center(PlusTri(m),:)-SubTri).^2,2));
+                mMdist = sqrt(sum((Center(MinusTri(m),:)-SubTri).^2,2));
                 rhomP = repmat(RhoP(m,:),length(EdgeList),1);
                 rhomM = repmat(RhoM(m,:),length(EdgeList),1);
-                    
+                
+                SameEdgePP = find(PlusTri - PlusTri(m) == 0);
+                SameEdgeMP = find(MinusTri - PlusTri(m) == 0);
+                SameEdgeMM = find(MinusTri - MinusTri(m) == 0);
+                SameEdgePM = find(PlusTri - MinusTri(m) == 0);
+                
+                [a] = ArbitraryAntenna.SelfTermInt(t, p, Basis, PlusTri, MinusTri);
+                
                 gmPnP = exp(1i*k*mPdist(:,:,PlusTri))./mPdist(:,:,PlusTri);
                 gmMnP = exp(1i*k*mMdist(:,:,PlusTri))./mMdist(:,:,PlusTri);
                 
                 gmPnM = exp(1i*k*mPdist(:,:,MinusTri))./mPdist(:,:,MinusTri);
                 gmMnM = exp(1i*k*mMdist(:,:,MinusTri))./mMdist(:,:,MinusTri);
                 
-                AmnP = mu/(4*pi)*(BasisLA(:,2).*permute(sum(RhoP_.*gmPnP/(2*Quad)),[3 2 1])+BasisLA(:,2).*permute(sum(RhoM_.*gmPnM/(2*Quad)),[3 2 1]));
-                AmnM = mu/(4*pi)*(BasisLA(:,2).*permute(sum(RhoP_.*gmMnP/(2*Quad)),[3 2 1])+BasisLA(:,2).*permute(sum(RhoM_.*gmMnM/(2*Quad)),[3 2 1]));
-            
-                PhiP = -1/(4*pi*1i*w*eps0)*(BasisLA(:,2).*permute(sum(gmPnP),[3 2 1])/Quad-BasisLA(:,2).*permute(sum(gmPnM),[3 2 1])/Quad);
-                PhiM = -1/(4*pi*1i*w*eps0)*(BasisLA(:,2).*permute(sum(gmMnP),[3 2 1])/Quad-BasisLA(:,2).*permute(sum(gmMnM),[3 2 1])/Quad);
+                Acnst = mu/(4*pi);
+                PPA = permute(sum(RhoP_.*gmPnP/(2*Quad)),[3 2 1]);
+                PPA(SameEdgePP) = 0;
+                MPA = permute(sum(RhoM_.*gmPnM/(2*Quad)),[3 2 1]);
+                MPA(SameEdgeMP) = 0;
+                PMA = permute(sum(RhoP_.*gmMnP/(2*Quad)),[3 2 1]);
+                PMA(SameEdgePM) = 0; 
+                MMA = permute(sum(RhoM_.*gmMnM/(2*Quad)),[3 2 1]);
+                MMA(SameEdgeMM) = 0;
+                AmnP = Acnst*(BasisLA(:,2).*PPA+BasisLA(:,2).*MPA);
+                AmnM = Acnst*(BasisLA(:,2).*PMA+BasisLA(:,2).*MMA);
+                
+                Pcnst = -1/(4*pi*1i*w*eps0); 
+                PPPhi = permute(sum(gmPnP),[3 2 1])/Quad;
+                PPPhi(SameEdgePP) = 0;
+                PMPhi = permute(sum(gmPnM),[3 2 1])/Quad;
+                PMPhi(SameEdgePM) = 0;
+                MPPhi = permute(sum(gmMnP),[3 2 1])/Quad;
+                MPPhi(SameEdgeMP) = 0;
+                MMPhi = permute(sum(gmMnM),[3 2 1])/Quad;
+                MMPhi(SameEdgeMM) = 0;
+                PhiP = Pcnst*(BasisLA(:,2).*PPPhi-BasisLA(:,2).*PMPhi);
+                PhiM = Pcnst*(BasisLA(:,2).*MPPhi-BasisLA(:,2).*MMPhi);
                 
                 if Reflector
                     GIx = [GIxx(:,PlusTri(m),:) GIxy(:,PlusTri(m),:) GIxz(:,PlusTri(m),:)];
@@ -564,17 +629,87 @@
             end
             b = BasisLA(:,2).*(dot(Ei(PlusTri,:),RhoP,2)/2+dot(Ei(MinusTri,:),RhoM,2)/2);
             
-%             for selfO=1:length(EdgeList)
-%                 for selfI=1:length(EdgeList)
-%                     if PlusTri(selfO) == MinusTri(selfI)
-%                         Z(selfO, selfI) = 2*Z(selfO, selfI);
-%                    end
-%                 end
-%             end
             %System solution
             a=Z\b;
         end
-    
+        
+        function [RhoGP, RhoGM, gintP, gintM] = SelfTermInt(t, p, Basis, PlusTri, MinusTri)
+            SelfBasis = [];
+            SelfG = [];
+            for i=1:length(t)
+                Plus = find( PlusTri - i == 0);
+                Minus = find( MinusTri - i == 0);
+                for j=1:length(Plus)
+                    for self=1:3
+                    %Integration for selfterms
+                    v1 = p(t(i,1),self); v2 = p(t(i,2),self); v3 = p(t(i,3),self);
+                    rp = @(al, be) (1-al-be).*v1+al.*v2+be.*v3;
+                    v1 = p(t(i,1),self); v2 = p(t(i,2),self); v3 = p(t(i,3),self);
+                    rm = @(al, be) (1-al-be).*v1+al.*v2+be.*v3;
+                    
+                    RhoPlus = Basis{PlusTri(i), self};
+                    RhoPlus = @(be,al) RhoPlus(rp(al, be));
+                    RhoMinus = Basis{MinusTri, self+3};
+                    RhoMinus = @(be,al) RhoMinus(rm(al, be));
+                                    
+                    gp = @(be,al) exp(1i*k*rp(al, be))./(rp(al, be));
+                    gm = @(be,al) exp(1i*k*rm(al, be))./(rm(al, be));
+                    bem = @(al) 1-al;
+                    
+                    funcPP = @(be,al) RhoPlus(be,al).*gp(be,al);
+                    funcMP = @(be,al) RhoMinus(be,al).*gp(be,al);
+                    funcPM = @(be,al) RhoPlus(be,al).*gm(be,al);
+                    funcMM = @(be,al) RhoMinus(be,al).*gm(be,al);
+                    
+                    RhoGP(m,self) =(integral2( funcPP , 0, 1, 0, bem)...
+                        +integral2( funcMP , 0, 1, 0, bem));
+                    RhoGM(m,self) = (integral2( funcPM , 0, 1, 0, bem)...
+                        +integral2( funcMM , 0, 1, 0, bem));
+                
+                    %Integration for selfterms
+                    gintP(m) = (integral2( gp, 0, 1, 0, bem)...
+                        +integral2( gp, 0, 1, 0, bem));
+                    gintM(m) = (integral2( gm , 0, 1, 0, bem)...
+                        +integral2( gm , 0, 1, 0, bem));   
+                end
+                end
+                for j=1:length(Minus) 
+                    for self=1:3
+                    %Integration for selfterms
+                    v1 = p(t(i,1),self); v2 = p(t(i,2),self); v3 = p(t(i,3),self);
+                    rp = @(al, be) (1-al-be).*v1+al.*v2+be.*v3;
+                    v1 = p(t(i,1),self); v2 = p(t(i,2),self); v3 = p(t(i,3),self);
+                    rm = @(al, be) (1-al-be).*v1+al.*v2+be.*v3;
+                    
+                    RhoPlus = Basis{PlusTri, self};
+                    RhoPlus = @(be,al) RhoPlus(rp(al, be));
+                    RhoMinus = Basis{MinusTri, self+3};
+                    RhoMinus = @(be,al) RhoMinus(rm(al, be));
+                                    
+                    gp = @(be,al) exp(1i*k*rp(al, be))./(rp(al, be));
+                    gm = @(be,al) exp(1i*k*rm(al, be))./(rm(al, be));
+                    bem = @(al) 1-al;
+                    
+                    funcPP = @(be,al) RhoPlus(be,al).*gp(be,al);
+                    funcMP = @(be,al) RhoMinus(be,al).*gp(be,al);
+                    funcPM = @(be,al) RhoPlus(be,al).*gm(be,al);
+                    funcMM = @(be,al) RhoMinus(be,al).*gm(be,al);
+                    
+                    RhoGP(m,self) =(integral2( funcPP , 0, 1, 0, bem)...
+                        +integral2( funcMP , 0, 1, 0, bem));
+                    RhoGM(m,self) = (integral2( funcPM , 0, 1, 0, bem)...
+                        +integral2( funcMM , 0, 1, 0, bem));
+                
+                    %Integration for selfterms
+                    gintP(m) = (integral2( gp, 0, 1, 0, bem)...
+                        +integral2( gp, 0, 1, 0, bem));
+                    gintM(m) = (integral2( gm , 0, 1, 0, bem)...
+                        +integral2( gm , 0, 1, 0, bem));   
+                end
+                end
+            end
+            
+        end
            
         function [Jface] = CurrentCalc(t, EdgeList, a, BasisLA, RhoP, RhoM)
             Jface = zeros(size(t));
