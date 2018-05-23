@@ -561,7 +561,8 @@
                 SameEdgeMM = find(MinusTri - MinusTri(m) == 0);
                 SameEdgePM = find(PlusTri - MinusTri(m) == 0);
                 
-                [a] = ArbitraryAntenna.SelfTermInt(t, p, Basis, PlusTri, MinusTri);
+%                 [a] = ArbitraryAntenna.SelfTermInt(t, p, Basis, PlusTri, MinusTri);
+                [BasisAnalytic, DistAnalytic] = ArbitraryAntenna.SelfTermInt(t, p, Basis, PlusTri, MinusTri, EdgeList);
                 
                 gmPnP = exp(1i*k*mPdist(:,:,PlusTri))./mPdist(:,:,PlusTri);
                 gmMnP = exp(1i*k*mMdist(:,:,PlusTri))./mMdist(:,:,PlusTri);
@@ -571,25 +572,25 @@
                 
                 Acnst = mu/(4*pi);
                 PPA = permute(sum(RhoP_.*gmPnP/(2*Quad)),[3 2 1]);
-                PPA(SameEdgePP) = 0;
+                PPA(SameEdgePP,:) = 2*BasisAnalytic(PlusTri(m));
                 MPA = permute(sum(RhoM_.*gmPnM/(2*Quad)),[3 2 1]);
-                MPA(SameEdgeMP) = 0;
+                MPA(SameEdgeMP,:) = BasisAnalytic(PlusTri(m))+BasisAnalytic(MinusTri(m));
                 PMA = permute(sum(RhoP_.*gmMnP/(2*Quad)),[3 2 1]);
-                PMA(SameEdgePM) = 0; 
+                PMA(SameEdgePM,:) = BasisAnalytic(PlusTri(m))+BasisAnalytic(MinusTri(m)); 
                 MMA = permute(sum(RhoM_.*gmMnM/(2*Quad)),[3 2 1]);
-                MMA(SameEdgeMM) = 0;
+                MMA(SameEdgeMM,:) = 2*BasisAnalytic(MinusTri(m));
                 AmnP = Acnst*(BasisLA(:,2).*PPA+BasisLA(:,2).*MPA);
                 AmnM = Acnst*(BasisLA(:,2).*PMA+BasisLA(:,2).*MMA);
                 
                 Pcnst = -1/(4*pi*1i*w*eps0); 
                 PPPhi = permute(sum(gmPnP),[3 2 1])/Quad;
-                PPPhi(SameEdgePP) = 0;
+                PPPhi(SameEdgePP,:) = 2*DistAnalytic(PlusTri(m));
                 PMPhi = permute(sum(gmPnM),[3 2 1])/Quad;
-                PMPhi(SameEdgePM) = 0;
+                PMPhi(SameEdgePM,:) = DistAnalytic(PlusTri(m))+DistAnalytic(MinusTri(m));
                 MPPhi = permute(sum(gmMnP),[3 2 1])/Quad;
-                MPPhi(SameEdgeMP) = 0;
+                MPPhi(SameEdgeMP,:) = DistAnalytic(PlusTri(m))+DistAnalytic(MinusTri(m));
                 MMPhi = permute(sum(gmMnM),[3 2 1])/Quad;
-                MMPhi(SameEdgeMM) = 0;
+                MMPhi(SameEdgeMM,:) = 2*DistAnalytic(MinusTri(m));
                 PhiP = Pcnst*(BasisLA(:,2).*PPPhi-BasisLA(:,2).*PMPhi);
                 PhiM = Pcnst*(BasisLA(:,2).*MPPhi-BasisLA(:,2).*MMPhi);
                 
@@ -633,82 +634,152 @@
             a=Z\b;
         end
         
-        function [RhoGP, RhoGM, gintP, gintM] = SelfTermInt(t, p, Basis, PlusTri, MinusTri)
-            SelfBasis = [];
-            SelfG = [];
-            for i=1:length(t)
-                Plus = find( PlusTri - i == 0);
-                Minus = find( MinusTri - i == 0);
-                for j=1:length(Plus)
-                    for self=1:3
-                    %Integration for selfterms
-                    v1 = p(t(i,1),self); v2 = p(t(i,2),self); v3 = p(t(i,3),self);
-                    rp = @(al, be) (1-al-be).*v1+al.*v2+be.*v3;
-                    v1 = p(t(i,1),self); v2 = p(t(i,2),self); v3 = p(t(i,3),self);
-                    rm = @(al, be) (1-al-be).*v1+al.*v2+be.*v3;
-                    
-                    RhoPlus = Basis{PlusTri(i), self};
-                    RhoPlus = @(be,al) RhoPlus(rp(al, be));
-                    RhoMinus = Basis{MinusTri, self+3};
-                    RhoMinus = @(be,al) RhoMinus(rm(al, be));
-                                    
-                    gp = @(be,al) exp(1i*k*rp(al, be))./(rp(al, be));
-                    gm = @(be,al) exp(1i*k*rm(al, be))./(rm(al, be));
-                    bem = @(al) 1-al;
-                    
-                    funcPP = @(be,al) RhoPlus(be,al).*gp(be,al);
-                    funcMP = @(be,al) RhoMinus(be,al).*gp(be,al);
-                    funcPM = @(be,al) RhoPlus(be,al).*gm(be,al);
-                    funcMM = @(be,al) RhoMinus(be,al).*gm(be,al);
-                    
-                    RhoGP(m,self) =(integral2( funcPP , 0, 1, 0, bem)...
-                        +integral2( funcMP , 0, 1, 0, bem));
-                    RhoGM(m,self) = (integral2( funcPM , 0, 1, 0, bem)...
-                        +integral2( funcMM , 0, 1, 0, bem));
+        function [BasisAnalytic, DistAnalytic] = SelfTermInt(t, p, Basis, PlusTri, MinusTri, EdgeList)
+            BasisAnalytic = 1:length(EdgeList); BasisAnalytic(:)=0;
+               for j=1:9
+                    for i=1:length(t)
+                    v1 = p(EdgeList(i,1),:);
+                    v2 = p(EdgeList(i,2),:);
+                    v3 = p(EdgeList(i,3),:);
+                    if j==1
+                    vm = p(EdgeList(i,1),:);
+                    vn = p(EdgeList(i,1),:);
+                    elseif j==2
+                    vm = p(EdgeList(i,2),:);
+                    vn = p(EdgeList(i,1),:);
+                    elseif j==3
+                    vm = p(EdgeList(i,3),:);
+                    vn = p(EdgeList(i,1),:);
+                    elseif j==4
+                    vm = p(EdgeList(i,1),:);
+                    vn = p(EdgeList(i,2),:);
+                    elseif j==5
+                    vm = p(EdgeList(i,2),:);
+                    vn = p(EdgeList(i,2),:);
+                    elseif j==6
+                    vm = p(EdgeList(i,3),:);
+                    vn = p(EdgeList(i,2),:);
+                    elseif j==7
+                    vm = p(EdgeList(i,1),:);
+                    vn = p(EdgeList(i,3),:);
+                    elseif j==8
+                    vm = p(EdgeList(i,2),:);
+                    vn = p(EdgeList(i,3),:);
+                    elseif j==9
+                    vm = p(EdgeList(i,3),:);
+                    vn = p(EdgeList(i,3),:);
+                    end
+                    a = dot((v3-v1),(v3-v1));
+                    b = dot((v3-v1),(v3-v2));
+                    c = dot((v3-v2),(v3-v2));
+    
+                    l1 = sqrt(c);
+                    l2 = sqrt(a);
+                    l3 = sqrt(a-2*b+c);
+                                 
+                    ln1 = log(((l1+l2)^2-l3^2)/(l2^2-(l3-l1)^2));
+                    ln2 = log(((l2+l3)^2-l1^2)/(l3^2-(l1-l2)^2));
+                    ln3 = log(((l3+l1)^2-l2^2)/(l1^2-(l2-l3)^2));
+              
+                    I11 = 1/(20*l1)*ln1 + (l1^2+5*l2^2-l3^2)/(120*l2^3)*ln2...
+                    +(l1^2-l2^2+5*l3^2)/(120*l3^3)*ln3+(l3-l1)/(60*l2^2)+(l2-l1)/60*l3^2;
+                     
+                    I12 = (3*l1^2+l2^2-l3^2)/(80*l1^2)*ln1+(l1^2+3*l2^2-l3^2)/(80*l2^3)*ln2...
+                    +1/(40*l3)*ln3+(l3-l2)/(40*l1^2)+(l3-l1)/(40*l2^2);
                 
-                    %Integration for selfterms
-                    gintP(m) = (integral2( gp, 0, 1, 0, bem)...
-                        +integral2( gp, 0, 1, 0, bem));
-                    gintM(m) = (integral2( gm , 0, 1, 0, bem)...
-                        +integral2( gm , 0, 1, 0, bem));   
-                end
-                end
-                for j=1:length(Minus) 
-                    for self=1:3
-                    %Integration for selfterms
-                    v1 = p(t(i,1),self); v2 = p(t(i,2),self); v3 = p(t(i,3),self);
-                    rp = @(al, be) (1-al-be).*v1+al.*v2+be.*v3;
-                    v1 = p(t(i,1),self); v2 = p(t(i,2),self); v3 = p(t(i,3),self);
-                    rm = @(al, be) (1-al-be).*v1+al.*v2+be.*v3;
+                    I = 1/(8*l2)*ln1 + (l1^2+5*l2^2-l3^2)/(48*l2^3)*ln2...
+                    +(l1^2-l2^2+5*l3^2)/(48*l3^3)*ln3 + (l3-l1)/(24*l2^2)+(l2-l1)/(24*l3^2);
+                    %1/r integral/EibertShort
+                    I2 = 1/(3*l1)*ln1 + 1/(3*l2)*ln2 + 1/(3*l3)*ln3;
                     
-                    RhoPlus = Basis{PlusTri, self};
-                    RhoPlus = @(be,al) RhoPlus(rp(al, be));
-                    RhoMinus = Basis{MinusTri, self+3};
-                    RhoMinus = @(be,al) RhoMinus(rm(al, be));
-                                    
-                    gp = @(be,al) exp(1i*k*rp(al, be))./(rp(al, be));
-                    gm = @(be,al) exp(1i*k*rm(al, be))./(rm(al, be));
-                    bem = @(al) 1-al;
+                    a11 = dot(v1,v1); a12 = dot(v1,v2); a13 = dot(v1,v3);
+                    a22 = dot(v2,v2); a23 = dot(v2,v3); a33 = dot(v3,v3);
+                    a1n = dot(v1,vn); a1m = dot(v1,vm); a2n = dot(v2,vn);
+                    a2m = dot(v2,vm); a3m = dot(v3,vm); a3n = dot(v3,vn);
+                    anm = dot(vn,vm);
                     
-                    funcPP = @(be,al) RhoPlus(be,al).*gp(be,al);
-                    funcMP = @(be,al) RhoMinus(be,al).*gp(be,al);
-                    funcPM = @(be,al) RhoPlus(be,al).*gm(be,al);
-                    funcMM = @(be,al) RhoMinus(be,al).*gm(be,al);
-                    
-                    RhoGP(m,self) =(integral2( funcPP , 0, 1, 0, bem)...
-                        +integral2( funcMP , 0, 1, 0, bem));
-                    RhoGM(m,self) = (integral2( funcPM , 0, 1, 0, bem)...
-                        +integral2( funcMM , 0, 1, 0, bem));
-                
-                    %Integration for selfterms
-                    gintP(m) = (integral2( gp, 0, 1, 0, bem)...
-                        +integral2( gp, 0, 1, 0, bem));
-                    gintM(m) = (integral2( gm , 0, 1, 0, bem)...
-                        +integral2( gm , 0, 1, 0, bem));   
-                end
-                end
-            end
-            
+                    BasisAnalytic(i) =  (I11*(a11-2*a12+a22)+I11*(a11-2*a13+a33)...
+                                                +I12*(a11-a13-a12+a23)+I12*(a11-a12-a13+a23)...
+                                                +I*(-a11+a1n+a12-a2n)+I*(-a11+a1n+a13-a3n)+...
+                                                I*(-a11+a1m+a12-a2m)+I*(-a11+a1m+a13-a3m)+a11-a1n-a1m+anm)*I2 + BasisAnalytic(i);
+                    DistAnalytic(i) = I2;
+                    end
+               end
+%             SelfBasis = [];
+%             SelfG = [];
+%             for i=1:length(t)
+%                 Plus = find( PlusTri - i == 0);
+%                 Minus = find( MinusTri - i == 0);
+%                 for j=1:length(Plus)
+%                     for self=1:3
+%                     Integration for selfterms
+%                     v1 = p(t(i,1),self); v2 = p(t(i,2),self); v3 = p(t(i,3),self);
+%                     rp = @(al, be) (1-al-be).*v1+al.*v2+be.*v3;
+%                     v1 = p(t(i,1),self); v2 = p(t(i,2),self); v3 = p(t(i,3),self);
+%                     rm = @(al, be) (1-al-be).*v1+al.*v2+be.*v3;
+%                     
+%                     RhoPlus = Basis{PlusTri(i), self};
+%                     RhoPlus = @(be,al) RhoPlus(rp(al, be));
+%                     RhoMinus = Basis{MinusTri, self+3};
+%                     RhoMinus = @(be,al) RhoMinus(rm(al, be));
+%                                     
+%                     gp = @(be,al) exp(1i*k*rp(al, be))./(rp(al, be));
+%                     gm = @(be,al) exp(1i*k*rm(al, be))./(rm(al, be));
+%                     bem = @(al) 1-al;
+%                     
+%                     funcPP = @(be,al) RhoPlus(be,al).*gp(be,al);
+%                     funcMP = @(be,al) RhoMinus(be,al).*gp(be,al);
+%                     funcPM = @(be,al) RhoPlus(be,al).*gm(be,al);
+%                     funcMM = @(be,al) RhoMinus(be,al).*gm(be,al);
+%                     
+%                     RhoGP(m,self) =(integral2( funcPP , 0, 1, 0, bem)...
+%                         +integral2( funcMP , 0, 1, 0, bem));
+%                     RhoGM(m,self) = (integral2( funcPM , 0, 1, 0, bem)...
+%                         +integral2( funcMM , 0, 1, 0, bem));
+%                 
+%                     Integration for selfterms
+%                     gintP(m) = (integral2( gp, 0, 1, 0, bem)...
+%                         +integral2( gp, 0, 1, 0, bem));
+%                     gintM(m) = (integral2( gm , 0, 1, 0, bem)...
+%                         +integral2( gm , 0, 1, 0, bem));   
+%                     end
+%                 end
+%                 for j=1:length(Minus) 
+%                     for self=1:3
+%                     Integration for selfterms
+%                     v1 = p(t(i,1),self); v2 = p(t(i,2),self); v3 = p(t(i,3),self);
+%                     rp = @(al, be) (1-al-be).*v1+al.*v2+be.*v3;
+%                     v1 = p(t(i,1),self); v2 = p(t(i,2),self); v3 = p(t(i,3),self);
+%                     rm = @(al, be) (1-al-be).*v1+al.*v2+be.*v3;
+%                     
+%                     RhoPlus = Basis{PlusTri, self};
+%                     RhoPlus = @(be,al) RhoPlus(rp(al, be));
+%                     RhoMinus = Basis{MinusTri, self+3};
+%                     RhoMinus = @(be,al) RhoMinus(rm(al, be));
+%                                     
+%                     gp = @(be,al) exp(1i*k*rp(al, be))./(rp(al, be));
+%                     gm = @(be,al) exp(1i*k*rm(al, be))./(rm(al, be));
+%                     bem = @(al) 1-al;
+%                     
+%                     funcPP = @(be,al) RhoPlus(be,al).*gp(be,al);
+%                     funcMP = @(be,al) RhoMinus(be,al).*gp(be,al);
+%                     funcPM = @(be,al) RhoPlus(be,al).*gm(be,al);
+%                     funcMM = @(be,al) RhoMinus(be,al).*gm(be,al);
+%                     
+%                     RhoGP(m,self) =(integral2( funcPP , 0, 1, 0, bem)...
+%                         +integral2( funcMP , 0, 1, 0, bem));
+%                     RhoGM(m,self) = (integral2( funcPM , 0, 1, 0, bem)...
+%                         +integral2( funcMM , 0, 1, 0, bem));
+%                 
+%                     Integration for selfterms
+%                     gintP(m) = (integral2( gp, 0, 1, 0, bem)...
+%                         +integral2( gp, 0, 1, 0, bem));
+%                     gintM(m) = (integral2( gm , 0, 1, 0, bem)...
+%                         +integral2( gm , 0, 1, 0, bem));   
+%                 end
+%                 end
+%             end
+%             
         end
            
         function [Jface] = CurrentCalc(t, EdgeList, a, BasisLA, RhoP, RhoM)
