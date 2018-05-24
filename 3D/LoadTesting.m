@@ -181,7 +181,7 @@ end
 fprintf('\n')
 disp('MoM')
 if vectorized
-    [Z, a, b] = ArbitraryAntenna.MoMVectorized(w, mu0, t, p, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Basis, Center, k, SubTri, Ei, Reflector, GIxx, GIxy, GIxz, GIyx, GIyy, GIyz, GIzx, GIzy, GIzz, eps0);
+    [Z, a, b] = ArbitraryAntenna.MoMVectorized(w, mu0, t, p, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, BasisCoord, Center, k, SubTri, Ei, Reflector, GIxx, GIxy, GIxz, GIyx, GIyy, GIyz, GIzx, GIzy, GIzz, eps0);
     
 %     [Z, a, b] = ArbitraryAntenna.MoMOtherVectorized(w, mu0, t, p, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, BasisCoord, Center, k, SubTri, Ei, Reflector, GIxx, GIxy, GIxz, GIyx, GIyy, GIyz, GIzx, GIzy, GIzz, eps0);
 
