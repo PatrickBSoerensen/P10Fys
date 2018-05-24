@@ -538,7 +538,7 @@
             
             a = Z\b;
         end
-        
+    
         function [Z, a, b] = MoMVectorized(w, mu, t, p, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Basis, Center, k, SubTri, Ei,...
                 Reflector, GIxx, GIxy, GIxz, GIyx, GIyy, GIyz, GIzx, GIzy, GIzz, eps0)
             % alocating space
@@ -553,8 +553,8 @@
             [BasisAnalytic, DistAnalytic] = ArbitraryAntenna.SelfTermInt(t, p, k, Basis, PlusTri, MinusTri, EdgeList);
             
             for m=1:EdgesTotal
-                mPdist = sqrt(sum((Center(PlusTri(m),:)-SubTri).^2,2));
-                mMdist = sqrt(sum((Center(MinusTri(m),:)-SubTri).^2,2));
+                mPdist = sqrt(sum((Center(PlusTri(m),:)-SubTri(:,:,:)).^2,2));
+                mMdist = sqrt(sum((Center(MinusTri(m),:)-SubTri(:,:,:)).^2,2));
                 rhomP = repmat(RhoP(m,:),length(EdgeList),1);
                 rhomM = repmat(RhoM(m,:),length(EdgeList),1);
                 
@@ -575,22 +575,22 @@
                 PMA = permute(sum(RhoP_.*gmMnP/(2*Quad)),[3 2 1]);
                 MMA = permute(sum(RhoM_.*gmMnM/(2*Quad)),[3 2 1]);
                 
-                AmnP = Acnst*(BasisLA(:,2).*PPA+BasisLA(:,2).*MPA);
-                AmnM = Acnst*(BasisLA(:,2).*PMA+BasisLA(:,2).*MMA);
+                AmnP = Acnst.*BasisLA(:,2).*(PPA+MPA);
+                AmnM = Acnst.*BasisLA(:,2).*(PMA+MMA);
                 
                 Pcnst = -1/(4*pi*1i*w*eps0); 
-                PPPhi = BasisLA(:,2).*permute(sum(gmPnP),[3 2 1])/Quad;
-                PMPhi = BasisLA(:,2).*permute(sum(gmPnM),[3 2 1])/Quad;
-                MPPhi = BasisLA(:,2).*permute(sum(gmMnP),[3 2 1])/Quad;
-                MMPhi = BasisLA(:,2).*permute(sum(gmMnM),[3 2 1])/Quad;
+                PPPhi = permute(sum(gmPnP),[3 2 1])/(2*Quad);
+                PMPhi = permute(sum(gmPnM),[3 2 1])/(2*Quad);
+                MPPhi = permute(sum(gmMnP),[3 2 1])/(2*Quad);
+                MMPhi = permute(sum(gmMnM),[3 2 1])/(2*Quad);
                 
                 PPPhi(SamenPmP) = DistAnalytic(PlusTri(m));
                 PMPhi(SamenMmP) = DistAnalytic(PlusTri(m));
                 MMPhi(SamenMmM) = DistAnalytic(MinusTri(m));
                 MPPhi(SamenPmM) = DistAnalytic(MinusTri(m));
                 
-                PhiP = Pcnst*(PPPhi-PMPhi);
-                PhiM = Pcnst*(MPPhi-MMPhi);
+                PhiP = Pcnst*BasisLA(:,2).*(PPPhi-PMPhi);
+                PhiM = Pcnst*BasisLA(:,2).*(MPPhi-MMPhi);
                 
                 if Reflector
                     GIx = [GIxx(:,PlusTri(m),:) GIxy(:,PlusTri(m),:) GIxz(:,PlusTri(m),:)];
@@ -624,16 +624,18 @@
                         +PhiM;   
                 end
                 
-            PlusDotProd = BasisLA(m,2).*dot(AmnP,rhomP,2);
-            MinusDotProd = BasisLA(m,2).*dot(AmnM,rhomM,2);
-            PlusDotProd(m) = BasisAnalytic(m,1);
-            MinusDotProd(m) = BasisAnalytic(m,2);
+            PlusDotProd = dot(AmnP,rhomP,2);
+            MinusDotProd = dot(AmnM,rhomM,2);
+                
+                PlusDotProd(SamenPmP)  = BasisAnalytic(PlusTri(m));
+                PlusDotProd(SamenMmP)  = BasisAnalytic(PlusTri(m));
+                MinusDotProd(SamenMmM) = BasisAnalytic(MinusTri(m));
+                MinusDotProd(SamenPmM) = BasisAnalytic(MinusTri(m));
             
-          
-                Z(m,:) = (1i*w*(PlusDotProd/2+MinusDotProd/2)+PhiM-PhiP);
+                Z(m,:) = BasisLA(m,2).*(1i*w*(PlusDotProd/2+MinusDotProd/2)+PhiM-PhiP);
             end
             b = BasisLA(:,2).*(dot(Ei(PlusTri,:),RhoP,2)/2+dot(Ei(MinusTri,:),RhoM,2)/2);
-            
+
             %System solution
             a=Z\b;
         end
@@ -705,8 +707,7 @@
         end
    
         function [BasisAnalytic, DistAnalytic] = SelfTermInt(t, p, k, Basis, PlusTri, MinusTri, EdgeList)
-            BasisAnalytic = 1:length(EdgeList); BasisAnalytic(:)=0;
-            BasisAnalytic = [BasisAnalytic', BasisAnalytic'];
+            BasisAnalytic = 1:length(t); BasisAnalytic(:)=0;
             DistAnalytic = 1:length(t); DistAnalytic(:)=0;
             for i=1:length(t)
                     v1 = p(t(i,1),:);
@@ -729,94 +730,149 @@
                     
                     DistAnalytic(i) = 1i*k+I2;
             end
-            for j =1:2
-            for i=1:length(EdgeList)
-                    First = EdgeList(i,1);
-                    Second = EdgeList(i,2);
-                    v1 = p(EdgeList(i,1),:);
-                    v2 = p(EdgeList(i,2),:);
-                    if j ==1
-                    Third = EdgeList(i,3);
-                    v3 = p(EdgeList(i,3),:);
-                    elseif j==2
-                    Third = EdgeList(i,4);
-                    v3 = p(EdgeList(i,4),:);
-                    end
-                    TriPoints = [First, Second, Third];
-                    
-                    vn = v3;
-                    vm = v3;
-                    
-                    a = dot((v3-v1),(v3-v1));
-                    b = dot((v3-v1),(v3-v2));
-                    c = dot((v3-v2),(v3-v2));
-                    
-                    l1 = sqrt(c);
-                    l2 = sqrt(a);
-                    l3 = sqrt(a-2*b+c);
-                    
-                    ln1 = log(((l1+l2)^2-l3^2)/(l2^2-(l3-l1)^2));
-                    ln2 = log(((l2+l3)^2-l1^2)/(l3^2-(l1-l2)^2));
-                    ln3 = log(((l3+l1)^2-l2^2)/(l1^2-(l2-l3)^2));
-              
-                    I11 = 1/(20*l1)*ln1 + (l1^2+5*l2^2-l3^2)/(120*l2^3)*ln2...
-                    +(l1^2-l2^2+5*l3^2)/(120*l3^3)*ln3+(l3-l1)/(60*l2^2)+(l2-l1)/60*l3^2;
-                     
-                    I12 = (3*l1^2+l2^2-l3^2)/(80*l1^2)*ln1+(l1^2+3*l2^2-l3^2)/(80*l2^3)*ln2...
-                    +1/(40*l3)*ln3+(l3-l2)/(40*l1^2)+(l3-l1)/(40*l2^2);
-                
-                    I = 1/(8*l2)*ln1 + (l1^2+5*l2^2-l3^2)/(48*l2^3)*ln2...
-                    +(l1^2-l2^2+5*l3^2)/(48*l3^3)*ln3 + (l3-l1)/(24*l2^2)+(l2-l1)/(24*l3^2);
-                    
-                    a11 = dot(v1,v1); a12 = dot(v1,v2); a13 = dot(v1,v3);
-                    a22 = dot(v2,v2); a23 = dot(v2,v3); a33 = dot(v3,v3);
-                    a1n = dot(v1,vn); a1m = dot(v1,vm); a2n = dot(v2,vn);
-                    a2m = dot(v2,vm); a3m = dot(v3,vm); a3n = dot(v3,vn);
-                    anm = dot(vn,vm);
-                    
-                    TriPoint = sort(TriPoints);
-                    Triangle1 = t(:,1)==TriPoint(1);
-                    Triangle2 = t(:,2)==TriPoint(2);
-                    Triangle3 = t(:,3)==TriPoint(3);
-                    Triangle = find(Triangle1.*Triangle2.*Triangle3);
-                    BasisAnalytic(i,j) =  (DistAnalytic(Triangle))*(I11*(a11-2*a12+a22)+I11*(a11-2*a13+a33)...
-                                                +I12*(a11-a13-a12+a23)+I12*(a11-a12-a13+a23)...
-                                                +I*(-a11+a1n+a12-a2n)+I*(-a11+a1n+a13-a3n)+...
-                                                I*(-a11+a1m+a12-a2m)+I*(-a11+a1m+a13-a3m)+a11-a1n-a1m+anm)...
-                                                + BasisAnalytic(i,j);
-            end
-            end
             
-%                if j==1
-%                     vm = p(t(i,1),:);
-%                     vn = p(t(i,1),:);
+            for i=1:length(t)
+                v1 = p(t(i,1),:);
+                v2 = p(t(i,2),:);
+                v3 = p(t(i,3),:);
+                
+                Plus = find(PlusTri-i==0);
+                Minus = find(MinusTri-i==0);
+                
+                for n = 1:3
+                    vn = p(t(i,n),:);
+                    for m=1:3
+                        vm = p(t(i,m),:);
+
+                        a = dot((v3-v1),(v3-v1));
+                        b = dot((v3-v1),(v3-v2));
+                        c = dot((v3-v2),(v3-v2));
+                    
+                        l1 = sqrt(c);
+                        l2 = sqrt(a);
+                        l3 = sqrt(a-2*b+c);
+                    
+                        ln1 = log(((l1+l2)^2-l3^2)/(l2^2-(l3-l1)^2));
+                        ln2 = log(((l2+l3)^2-l1^2)/(l3^2-(l1-l2)^2));
+                        ln3 = log(((l3+l1)^2-l2^2)/(l1^2-(l2-l3)^2));
+              
+                        I11 = 1/(20*l1)*ln1 + (l1^2+5*l2^2-l3^2)/(120*l2^3)*ln2...
+                        +(l1^2-l2^2+5*l3^2)/(120*l3^3)*ln3+(l3-l1)/(60*l2^2)+(l2-l1)/60*l3^2;
+    
+                        I12 = (3*l1^2+l2^2-l3^2)/(80*l1^2)*ln1+(l1^2+3*l2^2-l3^2)/(80*l2^3)*ln2...
+                        +1/(40*l3)*ln3+(l3-l2)/(40*l1^2)+(l3-l1)/(40*l2^2);
+                
+                        I = 1/(8*l2)*ln1 + (l1^2+5*l2^2-l3^2)/(48*l2^3)*ln2...
+                        +(l1^2-l2^2+5*l3^2)/(48*l3^3)*ln3 + (l3-l1)/(24*l2^2)+(l2-l1)/(24*l3^2);
+                        %%
+                        a11 = dot(v1,v1); a12 = dot(v1,v2); a13 = dot(v1,v3);
+                        a22 = dot(v2,v2); a23 = dot(v2,v3); a33 = dot(v3,v3);
+                        a1n = dot(v1,vn); a1m = dot(v1,vm); a2n = dot(v2,vn);
+                        a2m = dot(v2,vm); a3m = dot(v3,vm); a3n = dot(v3,vn);
+                        anm = dot(vn,vm);
+                        
+                        BasisChecknP = sum(EdgeList(Plus,3)==t(i,n));
+                        BasisChecknM = sum(EdgeList(Minus,4)==t(i,n));
+                        
+                        BasisCheckmP = sum(EdgeList(Plus,3)==t(i,m));
+                        BasisCheckmM = sum(EdgeList(Minus,4)==t(i,m));
+                        
+                        if BasisChecknP==BasisCheckmP
+                        BasisAnalytic(i) =  (DistAnalytic(i))*(...
+                                                I11*(a11-2*a12+a22)+...
+                                                I11*(a11-2*a13+a33)...
+                                                +I12*(a11-a13-a12+a23)+...
+                                                I12*(a11-a12-a13+a23)...
+                                                +I*(-a11+a1n+a12-a2n)+...
+                                                I*(-a11+a1n+a13-a3n)+...
+                                                I*(-a11+a1m+a12-a2m)+...
+                                                I*(-a11+a1m+a13-a3m)+...
+                                                a11-a1n-a1m+anm)...
+                                                + BasisAnalytic(i); 
+                        else
+                        BasisAnalytic(i) =  -(DistAnalytic(i))*(...
+                                                I11*(a11-2*a12+a22)+...
+                                                I11*(a11-2*a13+a33)...
+                                                +I12*(a11-a13-a12+a23)+...
+                                                I12*(a11-a12-a13+a23)...
+                                                +I*(-a11+a1n+a12-a2n)+...
+                                                I*(-a11+a1n+a13-a3n)+...
+                                                I*(-a11+a1m+a12-a2m)+...
+                                                I*(-a11+a1m+a13-a3m)+...
+                                                a11-a1n-a1m+anm)...
+                                                + BasisAnalytic(i); 
+                        end
+                    end
+                end
+            end
+%             for j = 1:2
+%                 for i=1:length(EdgeList)
+%                     First = EdgeList(i,1);
+%                     Second = EdgeList(i,2);
+%                 
+%                     v1 = p(EdgeList(i,1),:);
+%                     v2 = p(EdgeList(i,2),:);
+%                     if j ==1
+%                         Third = EdgeList(i,3);
+%                         v3 = p(EdgeList(i,3),:);
 %                     elseif j==2
-%                     vm = p(t(i,2),:);
-%                     vn = p(t(i,1),:);
-%                     elseif j==3
-%                     vm = p(t(i,3),:);
-%                     vn = p(t(i,1),:);
-%                     elseif j==4
-%                     vm = p(t(i,1),:);
-%                     vn = p(t(i,2),:);
-%                     elseif j==5
-%                     vm = p(t(i,2),:);
-%                     vn = p(t(i,2),:);
-%                     elseif j==6
-%                     vm = p(t(i,3),:);
-%                     vn = p(t(i,2),:);
-%                     elseif j==7
-%                     vm = p(t(i,1),:);
-%                     vn = p(t(i,3),:);
-%                     elseif j==8
-%                     vm = p(t(i,2),:);
-%                     vn = p(t(i,3),:);
-%                     elseif j==9
-%                     vm = p(t(i,3),:);
-%                     vn = p(t(i,3),:);
+%                         Third = EdgeList(i,4);
+%                         v3 = p(EdgeList(i,4),:);
 %                     end
+%                     TriPoints = [First, Second, Third];
+%                     for l=1:3
+%                         vm = p(TriPoints(l),:);
+%                         for o=1:3
+%                         vn = p(TriPoints(o),:);
+%                     %%
+%                     a = dot((v3-v1),(v3-v1));
+%                     b = dot((v3-v1),(v3-v2));
+%                     c = dot((v3-v2),(v3-v2));
 %                     
-               %%
+%                     l1 = sqrt(c);
+%                     l2 = sqrt(a);
+%                     l3 = sqrt(a-2*b+c);
+%                     
+%                     ln1 = log(((l1+l2)^2-l3^2)/(l2^2-(l3-l1)^2));
+%                     ln2 = log(((l2+l3)^2-l1^2)/(l3^2-(l1-l2)^2));
+%                     ln3 = log(((l3+l1)^2-l2^2)/(l1^2-(l2-l3)^2));
+%               
+%                     I11 = 1/(20*l1)*ln1 + (l1^2+5*l2^2-l3^2)/(120*l2^3)*ln2...
+%                     +(l1^2-l2^2+5*l3^2)/(120*l3^3)*ln3+(l3-l1)/(60*l2^2)+(l2-l1)/60*l3^2;
+%                      
+%                     I12 = (3*l1^2+l2^2-l3^2)/(80*l1^2)*ln1+(l1^2+3*l2^2-l3^2)/(80*l2^3)*ln2...
+%                     +1/(40*l3)*ln3+(l3-l2)/(40*l1^2)+(l3-l1)/(40*l2^2);
+%                 
+%                     I = 1/(8*l2)*ln1 + (l1^2+5*l2^2-l3^2)/(48*l2^3)*ln2...
+%                     +(l1^2-l2^2+5*l3^2)/(48*l3^3)*ln3 + (l3-l1)/(24*l2^2)+(l2-l1)/(24*l3^2);
+%                     %%
+%                     a11 = dot(v1,v1); a12 = dot(v1,v2); a13 = dot(v1,v3);
+%                     a22 = dot(v2,v2); a23 = dot(v2,v3); a33 = dot(v3,v3);
+%                     a1n = dot(v1,vn); a1m = dot(v1,vm); a2n = dot(v2,vn);
+%                     a2m = dot(v2,vm); a3m = dot(v3,vm); a3n = dot(v3,vn);
+%                     anm = dot(vn,vm);
+%                     
+%                     TriPoint = sort(TriPoints);
+%                     Triangle1 = t(:,1)==TriPoint(1);
+%                     Triangle2 = t(:,2)==TriPoint(2);
+%                     Triangle3 = t(:,3)==TriPoint(3);
+%                     Triangle = find(Triangle1.*Triangle2.*Triangle3);
+%                     
+%                     BasisAnalytic(i,j) =  (DistAnalytic(Triangle))*(...
+%                                                 I11*(a11-2*a12+a22)+...
+%                                                 I11*(a11-2*a13+a33)...
+%                                                 +I12*(a11-a13-a12+a23)+...
+%                                                 I12*(a11-a12-a13+a23)...
+%                                                 +I*(-a11+a1n+a12-a2n)+...
+%                                                 I*(-a11+a1n+a13-a3n)+...
+%                                                 I*(-a11+a1m+a12-a2m)+...
+%                                                 I*(-a11+a1m+a13-a3m)+...
+%                                                 a11-a1n-a1m+anm)...
+%                                                 + BasisAnalytic(i,j);
+%                         end
+%                     end
+%                 end
+%             end
 %             SelfBasis = [];
 %             SelfG = [];
 %             for i=1:length(t)
