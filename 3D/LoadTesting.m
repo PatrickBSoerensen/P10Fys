@@ -9,9 +9,9 @@
 
 % stl = stlread('antennas/test/720.stl');
 % stl = stlread('antennas/Dipole10cmT180.stl');
-stl = stlread('antennas/Dipole10cmT264.stl');
+% stl = stlread('antennas/Dipole10cmT264.stl');
 % stl = stlread('antennas/Dipole10cmT580.stl'); %ok
-% stl = stlread('antennas/Dipole10cmT722.stl'); %god
+stl = stlread('antennas/Dipole10cmT722.stl'); %god
 % stl = stlread('antennas/Dipole10cmT744.stl'); %
 % stl = stlread('antennas/Dipole10cmT904.stl'); %
 % stl = stlread('antennas/Dipole10cmT924.stl'); %god
@@ -74,7 +74,7 @@ Yagi=0;
 OGSize = size(t);
 OGSize = OGSize(1)*1.5;
 % If set to one use 81 sub triangles pr element, if 0 use 9
-SubSubTri = 1;
+SubSubTri = 0;
 sub = 0;
 % if 1 use fast MoM
 vectorized = 1;
@@ -182,6 +182,9 @@ fprintf('\n')
 disp('MoM')
 if vectorized
     [Z, a, b] = ArbitraryAntenna.MoMVectorized(w, mu0, t, p, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, BasisCoord, Center, k, SubTri, Ei, Reflector, GIxx, GIxy, GIxz, GIyx, GIyy, GIyz, GIzx, GIzy, GIzz, eps0);
+    
+%     [Z, a, b] = ArbitraryAntenna.MoMOtherVectorized(w, mu0, t, p, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, BasisCoord, Center, k, SubTri, Ei, Reflector, GIxx, GIxy, GIxz, GIyx, GIyy, GIyz, GIzx, GIzy, GIzz, eps0);
+
 else
     [Z, a, b] = ArbitraryAntenna.MoM(w, mu0, t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k,  SubTri, Ei, eps0);
 end
