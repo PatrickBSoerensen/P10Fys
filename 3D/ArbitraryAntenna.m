@@ -628,12 +628,16 @@
                 
             PlusDotProd = dot(AmnP,rhomP,2);
             MinusDotProd = dot(AmnM,rhomM,2);
+%                 PlusDotProd(SamenPmP)  = Acnst.*BasisLA(SamenPmP,2).*EdgeLevelBasisPlus(SamenPmP);%PlusTri(m)
+%                 PlusDotProd(SamenMmP)  = -Acnst.*BasisLA(SamenMmP,2).*EdgeLevelBasisPlus(SamenMmP);% ;PlusTri(m)
+%                 MinusDotProd(SamenMmM) = -Acnst.*BasisLA(SamenMmM,2).*EdgeLevelBasisMinus(SamenMmM);%;MinusTri(m)
+%                 MinusDotProd(SamenPmM) = Acnst.*BasisLA(SamenPmM,2).*EdgeLevelBasisMinus(SamenPmM);%;MinusTri(m)
+             
+%                 PlusDotProd(SamenPmP)  = -Acnst/BasisLA(SamenPmP,2).*BasisAnalytic(PlusTri(m))/BasisLA(m,2);
+%                 PlusDotProd(SamenMmP)  = -Acnst/BasisLA(SamenMmP,2).*BasisAnalytic(PlusTri(m))/BasisLA(m,2);
+%                 MinusDotProd(SamenMmM) = Acnst/BasisLA(SamenMmM,2).*BasisAnalytic(MinusTri(m))/BasisLA(m,2);
+%                 MinusDotProd(SamenPmM) = Acnst/BasisLA(SamenPmM,2).*BasisAnalytic(MinusTri(m))/BasisLA(m,2);
                 
-                PlusDotProd(SamenPmP)  = Acnst.*BasisLA(SamenPmP,2).*EdgeLevelBasisPlus(SamenPmP);%PlusTri(m)
-                PlusDotProd(SamenMmP)  = -Acnst.*BasisLA(SamenMmP,2).*EdgeLevelBasisPlus(SamenMmP);% ;PlusTri(m)
-                MinusDotProd(SamenMmM) = -Acnst.*BasisLA(SamenMmM,2).*EdgeLevelBasisMinus(SamenMmM);%;MinusTri(m)
-                MinusDotProd(SamenPmM) = Acnst.*BasisLA(SamenPmM,2).*EdgeLevelBasisMinus(SamenPmM);%;MinusTri(m)
-%             
                 Z(m,:) = BasisLA(m,2).*(1i*w*(PlusDotProd/2+MinusDotProd/2)+PhiM-PhiP);
             end
             b = BasisLA(:,2).*(dot(Ei(PlusTri,:),RhoP,2)/2+dot(Ei(MinusTri,:),RhoM,2)/2);
@@ -732,15 +736,21 @@
                     
                     DistAnalytic(i) = 1i*k+I2;
             end
-            
+            for j=1:2
             for i=1:length(t)
-                v1 = p(t(i,1),:);
-                v2 = p(t(i,2),:);
-                v3 = p(t(i,3),:);
-                
-                Plus = find(PlusTri-i==0);
-                Minus = find(MinusTri-i==0);
-                a = dot((v3-v1),(v3-v1));
+                A = t(i,1);
+                B = t(i,2);
+                C = t(i,3);
+                if j==1
+                    v1 = p(A,:);
+                    v2 = p(B,:);
+                    v3 = p(C,:);
+                elseif j ==2
+                    v1 = p(A,:);
+                    v2 = p(C,:);
+                    v3 = p(B,:);
+                end
+                        a = dot((v3-v1),(v3-v1));
                         b = dot((v3-v1),(v3-v2));
                         c = dot((v3-v2),(v3-v2));
                     
@@ -752,59 +762,50 @@
                         ln2 = log(((l2+l3)^2-l1^2)/(l3^2-(l1-l2)^2));
                         ln3 = log(((l3+l1)^2-l2^2)/(l1^2-(l2-l3)^2));
               
-                        I11 = 1/(20*l1)*ln1 + (l1^2+5*l2^2-l3^2)/(120*l2^3)*ln2...
+                        L1L1 = 1/(20*l1)*ln1 + (l1^2+5*l2^2-l3^2)/(120*l2^3)*ln2...
                         +(l1^2-l2^2+5*l3^2)/(120*l3^3)*ln3+(l3-l1)/(60*l2^2)+(l2-l1)/60*l3^2;
     
-                        I12 = (3*l1^2+l2^2-l3^2)/(80*l1^2)*ln1+(l1^2+3*l2^2-l3^2)/(80*l2^3)*ln2...
+                        L1L2 = (3*l1^2+l2^2-l3^2)/(80*l1^2)*ln1+(l1^2+3*l2^2-l3^2)/(80*l2^3)*ln2...
                         +1/(40*l3)*ln3+(l3-l2)/(40*l1^2)+(l3-l1)/(40*l2^2);
                 
-                        I = 1/(8*l2)*ln1 + (l1^2+5*l2^2-l3^2)/(48*l2^3)*ln2...
+                        LI = 1/(8*l2)*ln1 + (l1^2+5*l2^2-l3^2)/(48*l2^3)*ln2...
                         +(l1^2-l2^2+5*l3^2)/(48*l3^3)*ln3 + (l3-l1)/(24*l2^2)+(l2-l1)/(24*l3^2);
                 for n = 1:3
                     vn = p(t(i,n),:);
                     for m=1:3
                         vm = p(t(i,m),:);
-
                         
-                        a11 = dot(v1,v1); a12 = dot(v1,v2); a13 = dot(v1,v3);
-                        a22 = dot(v2,v2); a23 = dot(v2,v3); a33 = dot(v3,v3);
-                        a1n = dot(v1,vn); a1m = dot(v1,vm); a2n = dot(v2,vn);
-                        a2m = dot(v2,vm); a3m = dot(v3,vm); a3n = dot(v3,vn);
+%                         a11 = dot(v1,v1); a12 = dot(v1,v2); a13 = dot(v1,v3);
+%                         a22 = dot(v2,v2); a23 = dot(v2,v3); a33 = dot(v3,v3);
+%                         a1n = dot(v1,vn); a1m = dot(v1,vm); a2n = dot(v2,vn);
+%                         a2m = dot(v2,vm); a3m = dot(v3,vm); a3n = dot(v3,vn);
+%                         anm = dot(vn,vm);
+
+                        a11 = dot(p(A,:),p(A,:)); a12 = dot(p(A,:),p(B,:)); a13 = dot(p(A,:),p(C,:));
+                        a22 = dot(p(B,:),p(B,:)); a23 = dot(p(B,:),p(C,:)); a33 = dot(p(C,:),p(C,:));
+                        a1n = dot(p(A,:),vn); a1m = dot(p(A,:),vm); a2n = dot(p(B,:),vn);
+                        a2m = dot(p(B,:),vm); a3m = dot(p(C,:),vm); a3n = dot(p(C,:),vn);
                         anm = dot(vn,vm);
                         
-                        BasisChecknP = sum(EdgeList(Plus,3)==t(i,n));
-                        BasisChecknM = sum(EdgeList(Minus,4)==t(i,n));
-                        
-                        BasisCheckmP = sum(EdgeList(Plus,3)==t(i,m));
-                        BasisCheckmM = sum(EdgeList(Minus,4)==t(i,m));
-                        
-%                         if BasisChecknP==BasisCheckmP
+                        if j==1
                         BasisAnalytic(i) =  (DistAnalytic(i))*(...
-                                                I11*(a11-2*a12+a22)+...
-                                                I11*(a11-2*a13+a33)...
-                                                +I12*(a11-a13-a12+a23)+...
-                                                I12*(a11-a12-a13+a23)...
-                                                +I*(-a11+a1n+a12-a2n)+...
-                                                I*(-a11+a1n+a13-a3n)+...
-                                                I*(-a11+a1m+a12-a2m)+...
-                                                I*(-a11+a1m+a13-a3m)+...
+                                                L1L1*(a11-2*a12+a22)+...
+                                                +L1L2*(a11-a13-a12+a23)+...
+                                                +LI*(-a11+a1n+a12-a2n)+...
+                                                LI*(-a11+a1m+a12-a2m)+...
                                                 a11-a1n-a1m+anm)...
                                                 + BasisAnalytic(i); 
-%                         else
-%                         BasisAnalytic(i) =  -(DistAnalytic(i))*(...
-%                                                 I11*(a11-2*a12+a22)+...
-%                                                 I11*(a11-2*a13+a33)...
-%                                                 +I12*(a11-a13-a12+a23)+...
-%                                                 I12*(a11-a12-a13+a23)...
-%                                                 +I*(-a11+a1n+a12-a2n)+...
-%                                                 I*(-a11+a1n+a13-a3n)+...
-%                                                 I*(-a11+a1m+a12-a2m)+...
-%                                                 I*(-a11+a1m+a13-a3m)+...
-%                                                 a11-a1n-a1m+anm)...
-%                                                 + BasisAnalytic(i); 
-%                         end
+                        elseif j==2
+                        BasisAnalytic(i) =  (DistAnalytic(i))*(...
+                                                L1L1*(a11-2*a13+a33)...
+                                                +L1L2*(a11-a12-a13+a23)...
+                                                +LI*(-a11+a1n+a13-a3n)+...
+                                                LI*(-a11+a1m+a13-a3m))...
+                                                + BasisAnalytic(i); 
+                        end
                     end
                 end
+            end
             end
 %             for j = 1:2
 %                 for i=1:length(EdgeList)
@@ -1273,11 +1274,12 @@
             phiH = -xH.*sin(phi)+yH.*cos(phi);
             thetaH = (xH.*cos(phi)+yH.*sin(phi)).*cos(theta)-zH.*sin(theta);
             rHat = (xH.*cos(phi)+yH.*sin(phi)).*sin(theta)+zH.*cos(theta);
+            
             EscTheta = zeros(steps);
             EscPhi = zeros(steps);
            for i=1:length(Center)
                 IntegralTerm = 1i*w*mu*(exp(1i*k*r)/(4*pi*r))...
-                *exp(-1i*k*sum(rHat.*Center(i,:),2)).*J(i,:); 
+                *exp(-1i*k*dot(rHat,repmat(Center(i,:),length(rHat),1),2)).*J(i,:);
                            
                 EscTheta = dot(thetaH,IntegralTerm,2) + EscTheta;
             
@@ -1293,55 +1295,103 @@
             title('EscPhi^2+EscTheta^2')
         end
         
-        function [Esc, EscPhi, EscTheta] = AngularFarFieldSurf(w, mu, k, r, Center, J, steps, xdist, eps2, eps1, lambda, n)
-            phi = linspace(-pi, 2*pi, steps)';
-            theta = linspace(-pi, 2*pi, steps)';
+        function [Esc] = AngularFarFieldSurf(w, mu, k, r, Center, J, steps, dist, eps2, eps1, lambda, n)
             
-            SurfAngle = acos(xdist);
-            under = phi<=SurfAngle;
-            over = phi>=2*pi-SurfAngle;
+            phi = linspace(-2*pi, 2*pi, steps)';
+            theta = linspace(-2*pi, 2*pi, steps)';
+            
+            SurfAngle = acos(dist);
+            under = theta<=SurfAngle;
+            over = theta>=2*pi-SurfAngle;
             UseTrans = logical(under+over);
+            %%
+            k1 = k;
+            k2 = k*n;
+            kz1 = k1*cos(theta);
+            krho = k1*sin(theta);
+            kz2 = sqrt(k2^2-krho.^2);
             
+            refS = (kz1-kz2)/(kz1+kz2);
+            refP = (eps2.*kz1-eps1.*kz2)/(eps2.*kz1+eps1.*kz2);
+            traS = 1+refS;
+            traP = 1+refP;
+            %%
             xH = [1, 0, 0];
             yH = [0, 1, 0];
             zH = [0, 0, 1];
             phiH = -xH.*sin(phi)+yH.*cos(phi);
-            thetaH = (xH.*cos(phi)+yH.*sin(phi)).*cos(theta)-zH.*sin(theta);
+            thetaHD = (xH.*cos(phi)+yH.*sin(phi)).*cos(theta)-zH.*sin(theta);
+            
+            thetaHT = (xH.*cos(phi).*(cos(theta).*kz1.*kz2/k1^2-sin(theta).*kz1.*krho/k1^2))...
+                +yH.*sin(phi).*(cos(theta).*kz1.*kz2/k1^2-sin(theta).*kz1.*krho/k1^2)...
+                +zH.*(-sin(theta).*krho.^2/k1^2+cos(theta).*kz1.*krho/k1^2);
+            
+            rHatT = -xH.*cos(phi).*(sin(theta).*kz1.*kz2/k1^2 ...
+            +cos(theta).*kz1.*krho/k1^2)...
+            -yH.*sin(phi).*(sin(theta).*kz1.*kz2/k1^2+cos(theta).*kz1.*krho/k1^2) ...
+            +zH.*(cos(theta).*krho.^2/k1^2+sin(theta).*kz1.*krho/k1^2);
+            
+            thetaHI = zH.*krho/k1+xH.*cos(phi).*kz1/k1+yH.*sin(phi).*kz1/k1;
+        
             rHat = (xH.*cos(phi)+yH.*sin(phi)).*sin(theta)+zH.*cos(theta);
-            EscTheta = zeros(steps);
-            EscPhi = zeros(steps);
+            EscThetaD = zeros(steps);
+            EscPhiD = zeros(steps);
+            
+            EscThetaI = zeros(steps);
+            EscPhiI = zeros(steps);
+            
+            EscThetaT = zeros(steps);
+            EscPhiT = zeros(steps);
+            EscrT = zeros(steps);
             rhoH = xH.*cos(phi)+yH.*sin(phi);
-            krho = 4;
-            
-            kL2 = 2*pi/(lambda*n);
-          kz1=k;
-          k1=k;
-            refS = (k-kL2)/(k+kL2);
-            refP = (eps2.*k-eps1.*kL2)/(eps2.*k+eps1.*kL2);
+        
+            %%
            for i=1:length(Center)
-                NormalGreens = 1i*w*mu*(exp(1i*k*r)/(4*pi*r))...
-                *exp(-1i*k*sum(rHat.*Center(i,:),2)).*J(i,:); 
+               z = Center(i,3)-dist;
+               
+                DirectGreens = J(i,:).* 1i*w*mu*(exp(1i*k*r)/(4*pi*r))...
+                .*exp(-1i*k*dot(rHat,repmat(Center(i,:),length(rHat),1),2)); 
                 
-                IndirectGreens = exp(1i*k*r)/(4*pi*r)*exp(-1i*krho*rhoH.*Center(i,:)).*exp(1i*kz1*xdist).*...
-                    (refS*phiH.*phiH-refP*thetaH.*(zH*krho/k1+rhoH*kz1/k1));
+                IndirectGreens = J(i,:).*exp(1i*k1*r)/(4*pi*r)...
+                    .*exp(-1i*krho.*dot(rhoH,repmat(Center(i,:),length(rhoH),1),2))...
+                    .*exp(1i*kz1.*z).*...
+                    (refS*phiH.*phiH-...
+                    refP*thetaHI.*(zH.*krho/k1+rhoH.*kz1/k1));
                 
-                TransmitGreens = 0;
-                
-                Greens = NormalGreens+IndirectGreens;
-                Greens(UseTrans,:) = TransmitGreens;
-                
-                EscTheta = dot(thetaH,Greens,2) + EscTheta;
+                TransmitGreens = J(i,:).*exp(1i*k2*r)/(4*pi*r).*exp(1i*kz1.*z).*...
+                    exp(-1i*krho.*dot(rhoH,repmat(Center(i,:),length(rhoH),1),2)).*...
+                    kz2./kz1.*(traS*phiH.*phiH+traP*eps1/eps2*...
+                    rHat.*(zH.*(cos(theta).*krho.^2/k1^2+sin(theta).*kz1.*krho/k1^2)...
+                    -rhoH.*(sin(theta).*kz1.*kz2/k1^2+cos(theta).*kz1.*krho/k1^2)...
+                    +thetaHT.*(zH.*(-sin(theta).*krho.^2/k1^2+cos(theta).*kz1.*krho/k1.^2))...
+                    +rhoH.*(cos(theta).*kz1.*kz2/k1^2-sin(theta).*kz1.*krho/k1^2)));
             
-                EscPhi = dot(phiH,Greens,2) + EscPhi;
+                Greens = DirectGreens + IndirectGreens;
+                Greens(UseTrans,:) = TransmitGreens(UseTrans,:);
+                Greens = Greens;
+                
+                EscThetaD = dot(thetaHD,DirectGreens,2) + EscThetaD;
+                EscPhiD = dot(phiH,DirectGreens,2) + EscPhiD;
+                
+                EscThetaI = dot(thetaHI,DirectGreens,2) + EscThetaI;
+                EscPhiI = dot(phiH,DirectGreens,2) + EscPhiI;
+                
+                EscThetaT = dot(thetaHT,DirectGreens,2) + EscThetaT;
+                EscPhiT = dot(phiH,DirectGreens,2) + EscPhiT;
+                EscrT = dot(rHatT,DirectGreens,2) + EscrT;
             end
             
-            Esc = EscPhi.^2+EscTheta.^2;
+            EscD = EscPhiD.^2+EscThetaD.^2;
+            EscI = EscPhiI.^2+EscThetaI.^2;
+            EscT = EscPhiT.^2+EscThetaT.^2+EscrT.^2;
             
-            figure(4)
+            Esc = EscD+EscI;
+            Esc(UseTrans,:) = EscT(UseTrans,:);
+            
+            figure(5)
             plot(phi, abs(Esc).^2*r^2)
             xlabel('Phi')
             ylabel('E')
-            title('EscPhi^2+EscTheta^2')
         end
         
         
