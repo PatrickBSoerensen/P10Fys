@@ -550,9 +550,9 @@
             EdgesTotal = length(EdgeList);
             [PlusTri, MinusTri] = ArbitraryAntenna.PMTri(t, EdgeList);
 
-            [BasisAnalytic, DistAnalytic] = ArbitraryAntenna.SelfTermInt(t, p, k, Basis, PlusTri, MinusTri, EdgeList);
-            EdgeLevelBasisPlus = BasisAnalytic(PlusTri).';
-            EdgeLevelBasisMinus = BasisAnalytic(MinusTri).';
+%             [BasisAnalytic, DistAnalytic] = ArbitraryAntenna.SelfTermInt(t, p, k, Basis, PlusTri, MinusTri, EdgeList);
+%             EdgeLevelBasisPlus = BasisAnalytic(PlusTri).';
+%             EdgeLevelBasisMinus = BasisAnalytic(MinusTri).';
             
             for m=1:EdgesTotal
                 mPdist = sqrt(sum((Center(PlusTri(m),:)-SubTri(:,:,:)).^2,2));
@@ -585,12 +585,12 @@
                 PMPhi = permute(sum(gmPnM),[3 2 1])/(2*Quad);
                 MPPhi = permute(sum(gmMnP),[3 2 1])/(2*Quad);
                 MMPhi = permute(sum(gmMnM),[3 2 1])/(2*Quad);
-                
-                PPPhi(SamenPmP) = DistAnalytic(PlusTri(m));
-                PMPhi(SamenMmP) = DistAnalytic(PlusTri(m));
-                MMPhi(SamenMmM) = DistAnalytic(MinusTri(m));
-                MPPhi(SamenPmM) = DistAnalytic(MinusTri(m));
-                
+%                 
+%                 PPPhi(SamenPmP) = DistAnalytic(PlusTri(m));
+%                 PMPhi(SamenMmP) = DistAnalytic(PlusTri(m));
+%                 MMPhi(SamenMmM) = DistAnalytic(MinusTri(m));
+%                 MPPhi(SamenPmM) = DistAnalytic(MinusTri(m));
+%                 
                 PhiP = Pcnst*BasisLA(:,2).*(PPPhi-PMPhi);
                 PhiM = Pcnst*BasisLA(:,2).*(MPPhi-MMPhi);
                 

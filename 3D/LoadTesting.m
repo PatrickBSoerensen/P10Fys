@@ -10,13 +10,13 @@
 % stl = stlread('antennas/test/720.stl');
 % stl = stlread('antennas/Dipole10cmT180.stl');
 % stl = stlread('antennas/Dipole10cmT264.stl');
-stl = stlread('antennas/Dipole10cmT580.stl'); %ok
+% stl = stlread('antennas/Dipole10cmT580.stl'); %ok
 % stl = stlread('antennas/Dipole10cmT722.stl'); %god
 % stl = stlread('antennas/Dipole10cmT744.stl'); %
 % stl = stlread('antennas/Dipole10cmT904.stl'); %
 % stl = stlread('antennas/Dipole10cmT924.stl'); %god
 % stl = stlread('antennas/Dipole10cmT1060.stl'); %god
-% stl = stlread('antennas/Dipole10cmT1104.stl'); %god
+stl = stlread('antennas/Dipole10cmT1104.stl'); %god
 % stl = stlread('antennas/Dipole10cmT1458.stl'); %god 
 % stl = stlread('antennas/Dipole10cmT1680.stl'); 
 % stl = stlread('antennas/Dipole10cmT1922.stl'); %god
@@ -61,12 +61,15 @@ Length = maxmaxp+abs(minp(maxaxis));
 % Controls amount of antenna
 % p(:,1) = p(:,1)+0.03;
 p1 = p;
-% p2 = p;
-% p = [p1; p2; p3; p4];
-% t = [t; t+length(p1); t+length(p1)+length(p2); t+length(p1)+length(p2)+length(p3)];
+p1(:,1) = p1(:,1)-0.20;
+p2 = p;
+p2(:,1) = p2(:,1)+0.20;
+p(:,2) = p(:,2)*1;
+p = [p; p1; p2];
+t = [t; t+length(p1); t+length(p1)+length(p1)];
 % Should source be dipole, if 0 a plane wave propagating in +x direction used
 UseDipole = 0;
-DipolePoint = [-Length,0,0];
+DipolePoint = [0,0,0];
 UseFeed = 0;
 FeedPos = [0,0,0];
 
@@ -158,16 +161,17 @@ if Reflector
 else
     GIxx=0; GIxy=0; GIxz=0; GIyx=0; GIyy=0; GIyz=0; GIzx=0; GIzy=0; GIzz=0;
     GI = [];
+    GIx=0; GIy=0; GIz=0;
 end
 if UseDipole
-    [Ei] = ArbitraryAntenna.PointSource(w, mu0, k, Center, SubTri, sub, DipolePoint, [0,1,0], Reflector, GIx, GIy, GIz);
+    [Ei] = ArbitraryAntenna.PointSource(w, mu0, k, Center, SubTri, sub, DipolePoint, [0,1,0]);
 end
 if UseFeed
     [Ei, v] = ArbitraryAntenna.VoltageFeed(t, p, Center, DipolePoint, 1, EdgeList, BasisLA, Yagi, OGSize);
 end
 if ~UseFeed && ~UseDipole
     Ei(:,1) = 0.*exp(1i*k.*(Center(:,2)));
-    Ei(:,2) = 1.*exp(1i*k.*(Center(:,1)));
+    Ei(:,2) = 1.*exp(1i*k.*(Center(:,3)));
     Ei(:,3) = 0.*exp(1i*k.*(Center(:,1)));
 end
 toc;
@@ -220,11 +224,10 @@ axis('equal');
 rotate3d
 
 %%
-if Reflector
 [Esc] = ArbitraryAntenna.AngularFarFieldSurf(w, mu0, k, 5, Center, Jface, steps, RefDist, epsR, eps0, lambda, n);
-else
+
 [Esc, EscPhi, EscTheta] = ArbitraryAntenna.AngularFarField(w, mu0, k, 5, Center, Jface, steps);
-end
+
 %% Calculating E   
 tic;
 fprintf('\n')
