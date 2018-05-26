@@ -10,13 +10,13 @@
 % stl = stlread('antennas/test/720.stl');
 % stl = stlread('antennas/Dipole10cmT180.stl');
 % stl = stlread('antennas/Dipole10cmT264.stl');
-% stl = stlread('antennas/Dipole10cmT580.stl'); %ok
+stl = stlread('antennas/Dipole10cmT580.stl'); %ok
 % stl = stlread('antennas/Dipole10cmT722.stl'); %god
 % stl = stlread('antennas/Dipole10cmT744.stl'); %
 % stl = stlread('antennas/Dipole10cmT904.stl'); %
 % stl = stlread('antennas/Dipole10cmT924.stl'); %god
 % stl = stlread('antennas/Dipole10cmT1060.stl'); %god
-stl = stlread('antennas/Dipole10cmT1104.stl'); %god
+% stl = stlread('antennas/Dipole10cmT1104.stl'); %god
 % stl = stlread('antennas/Dipole10cmT1458.stl'); %god 
 % stl = stlread('antennas/Dipole10cmT1680.stl'); 
 % stl = stlread('antennas/Dipole10cmT1922.stl'); %god
@@ -65,8 +65,8 @@ p1(:,1) = p1(:,1)-0.20;
 p2 = p;
 p2(:,1) = p2(:,1)+0.20;
 p(:,2) = p(:,2)*1;
-p = [p; p1; p2];
-t = [t; t+length(p1); t+length(p1)+length(p1)];
+% p = [p; p1; p2];
+% t = [t; t+length(p1); t+length(p1)+length(p1)];
 % Should source be dipole, if 0 a plane wave propagating in +x direction used
 UseDipole = 0;
 DipolePoint = [0,0,0];
@@ -92,7 +92,7 @@ PointArea = xmax^2/steps;
 % Reflector surface params
 n = 3.9;
 epsR = 11.68;
-Reflector = 0;
+Reflector = 1;
 FromAnt = 0.01;
 RefDist = radius+FromAnt;
 % Determines if points should be lifted to surf of antenna, this is semi
