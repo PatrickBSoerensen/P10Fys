@@ -1,5 +1,5 @@
 %% load STL file into matlab
-% stl = stlread('antennas/Dipole1mm/Dipole10cm552T1mm.stl');
+stl = stlread('antennas/Dipole1mm/Dipole10cm552T1mm.stl');
 % stl = stlread('antennas/Dipole1mm/Dipole10cm702T1mm.stl'); %ok
 % stl = stlread('antennas/Dipole1mm/Dipole10cm900T1mm.stl'); %god
 
@@ -16,7 +16,7 @@
 % stl = stlread('antennas/Dipole10cmT904.stl'); %
 % stl = stlread('antennas/Dipole10cmT924.stl'); %god
 % stl = stlread('antennas/Dipole10cmT1060.stl'); %god
-stl = stlread('antennas/Dipole10cmT1104.stl'); %god
+% stl = stlread('antennas/Dipole10cmT1104.stl'); %god
 % stl = stlread('antennas/Dipole10cmT1458.stl'); %god 
 % stl = stlread('antennas/Dipole10cmT1680.stl'); 
 % stl = stlread('antennas/Dipole10cmT1922.stl'); %god
@@ -45,6 +45,7 @@ disp('Removing duplicate points')
 % p = [p; p1];
 % t = [t; t1];
 
+OGSize = max(max(t));
 p(:,1) = p(:,1);
 p(:,2) = p(:,2);
 p(:,3) = p(:,3);
@@ -61,21 +62,19 @@ Length = maxmaxp+abs(minp(maxaxis));
 % Controls amount of antenna
 % p(:,1) = p(:,1)+0.03;
 p1 = p;
-p1(:,1) = p1(:,1)-0.20;
+p1(:,1) = p1(:,1)-0.05;
 p2 = p;
-p2(:,1) = p2(:,1)+0.20;
+p2(:,1) = p2(:,1)+0.05;
 p(:,2) = p(:,2)*1;
-p = [p; p1; p2];
+p = [p; p1; p2]; 
 t = [t; t+length(p1); t+length(p1)+length(p1)];
 % Should source be dipole, if 0 a plane wave propagating in +x direction used
 UseDipole = 0;
 DipolePoint = [0,0,0];
-UseFeed = 0;
+UseFeed = 1;
 FeedPos = [0,0,0];
 
-Yagi=0;
-OGSize = size(t);
-OGSize = OGSize(1)*1.5;
+Yagi=1;
 % If set to one use 81 sub triangles pr element, if 0 use 9
 SubSubTri = 0;
 sub = 0;
