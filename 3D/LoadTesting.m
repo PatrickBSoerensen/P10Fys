@@ -1,5 +1,5 @@
 %% load STL file into matlab
-stl = stlread('antennas/Dipole1mm/Dipole10cm552T1mm.stl');
+% stl = stlread('antennas/Dipole1mm/Dipole10cm552T1mm.stl');
 % stl = stlread('antennas/Dipole1mm/Dipole10cm702T1mm.stl'); %ok
 % stl = stlread('antennas/Dipole1mm/Dipole10cm900T1mm.stl'); %god
 
@@ -68,15 +68,13 @@ p2(:,1) = p2(:,1)+0.05;
 p(:,2) = p(:,2)*1;
 % p = [p; p1; p2];
 % t = [t; t+length(p1); t+length(p1)+length(p1)];
-p = [p; p1; p2]; 
-t = [t; t+length(p1); t+length(p1)+length(p1)];
 % Should source be dipole, if 0 a plane wave propagating in +x direction used
 UseDipole = 0;
 DipolePoint = [0,0,0];
-UseFeed = 1;
+UseFeed = 0;
 FeedPos = [0,0,0];
 
-Yagi=1;
+Yagi=0;
 % If set to one use 81 sub triangles pr element, if 0 use 9
 SubSubTri = 0;
 sub = 0;
