@@ -599,21 +599,24 @@
                     GIx = [GIxx(:,PlusTri(m),:) GIxy(:,PlusTri(m),:) GIxz(:,PlusTri(m),:)];
                     GIy = [GIyx(:,PlusTri(m),:) GIyy(:,PlusTri(m),:) GIyz(:,PlusTri(m),:)];
                     GIz = [GIzx(:,PlusTri(m),:) GIzy(:,PlusTri(m),:) GIzz(:,PlusTri(m),:)];
-                    GImP = GIx+ GIy + GIz;
-                    
+                    GImP = GIx + GIy + GIz;
+                    GImP = [GIxx(:,PlusTri(m),:) GIyy(:,PlusTri(m),:) GIzz(:,PlusTri(m),:)];
                     GIx = [GIxx(:,MinusTri(m),:) GIxy(:,MinusTri(m),:) GIxz(:,MinusTri(m),:)];
                     GIy = [GIyx(:,MinusTri(m),:) GIyy(:,MinusTri(m),:) GIyz(:,MinusTri(m),:)];
                     GIz = [GIzx(:,MinusTri(m),:) GIzy(:,MinusTri(m),:) GIzz(:,MinusTri(m),:)];
                     GImM = GIx+GIy+GIz;
-
+                    GImM = [GIxx(:,MinusTri(m),:) GIyy(:,MinusTri(m),:) GIzz(:,MinusTri(m),:)];
+             
                     GImPnP = GImP(:,:,PlusTri);
                     GImMnP = GImM(:,:,MinusTri);
                     
                     GImPnM = GImP(:,:,PlusTri);
                     GImMnM = GImM(:,:,MinusTri);
                     
-                    Z(m,:) = 1i*w*mu/(4*pi).*BasisLA(:,2).*BasisLA(m,2).*(permute(sum(RhoP_.*GImPnP/(2*Quad)),[3 2 1])...
-                        +permute(sum(RhoM_.*GImPnM/(2*Quad)),[3 2 1]));   
+                    Z(m,:) = (1i*w*mu/(4*pi).*BasisLA(:,2).*BasisLA(m,2).*(dot(permute(sum(RhoP_.*GImPnP/(2*Quad)),[3 2 1])...
+                        +permute(sum(RhoM_.*GImPnM/(2*Quad)),[3 2 1]),rhomP,2)+...
+                        dot(permute(sum(RhoP_.*GImMnP/(2*Quad)),[3 2 1])...
+                        +permute(sum(RhoM_.*GImMnM/(2*Quad)),[3 2 1]),rhomM,2))).';   
                 end
                 
             PlusDotProd = dot(AmnP,rhomP,2);
@@ -628,7 +631,7 @@
 %                 MinusDotProd(SamenMmM) = Acnst/BasisLA(SamenMmM,2).*BasisAnalytic(MinusTri(m))/BasisLA(m,2);
 %                 MinusDotProd(SamenPmM) = Acnst/BasisLA(SamenPmM,2).*BasisAnalytic(MinusTri(m))/BasisLA(m,2);
                 
-                Z(m,:) = BasisLA(m,2).*(1i*w*(PlusDotProd/2+MinusDotProd/2)+PhiM-PhiP);
+                Z(m,:) = BasisLA(m,2).*(1i*w*(PlusDotProd/2+MinusDotProd/2)+PhiM-PhiP).'+Z(m,:);
             end
             b = BasisLA(:,2).*(dot(Ei(PlusTri,:),RhoP,2)/2+dot(Ei(MinusTri,:),RhoM,2)/2);
 

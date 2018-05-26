@@ -92,7 +92,7 @@ PointArea = xmax^2/steps;
 n = 3.9;
 epsR = 11.68;
 Reflector = 1;
-FromAnt = 0.01;
+FromAnt = 0.005;
 RefDist = radius+FromAnt;
 % Determines if points should be lifted to surf of antenna, this is semi
 % hardcoded to a predetermined structure, if in doubt set to 0
@@ -156,7 +156,7 @@ RefCoef = (1-n)/(1+n);
 if Reflector
     [GIxx, GIxy, GIxz, GIyx, GIyy, GIyz, GIzx, GIzy, GIzz] = ArbitraryAntenna.IDGreens(k, RefDist, Length, 2*radius, 0.003, 15, lambda, n, epsR, eps0, Center, SubTri);
 %  0.003, 15 OR 0.002, 20
-    GI = GIx+GIy+GIz;
+%     GI = GIx+GIy+GIz;
 else
     GIxx=0; GIxy=0; GIxz=0; GIyx=0; GIyy=0; GIyz=0; GIzx=0; GIzy=0; GIzz=0;
     GI = [];
