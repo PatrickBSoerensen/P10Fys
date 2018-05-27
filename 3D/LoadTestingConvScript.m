@@ -3,28 +3,29 @@ J =[];
 center = [];
 ExyCrossX = [];
 ExzCrossZ =[];
-ESC = [];
+ESCAng = [];
+EscRef = [];
 %3mm
-% stl1 = stlread('antennas/Dipole10cmT264.stl');
-% stl2 = stlread('antennas/Dipole10cmT580.stl'); %ok
-% stl3 = stlread('antennas/Dipole10cmT722.stl'); %god
-% stl4 = stlread('antennas/Dipole10cmT924.stl'); %god
-% stl5 = stlread('antennas/Dipole10cmT1060.stl'); %god
-% stl6 = stlread('antennas/Dipole10cmT1104.stl');
-% stl7 = stlread('antennas/Dipole10cmT1922.stl'); %god
-% Amount = 7;
-%1mm
-stl1 = stlread('antennas/Dipole1mm/Dipole10cm552T1mm.stl');
-stl2 = stlread('antennas/Dipole1mm/Dipole10cm702T1mm.stl'); %ok
-stl3 = stlread('antennas/Dipole1mm/Dipole10cm900T1mm.stl'); %god
-stl4 = stlread('antennas/Dipole1mm/Dipole10cm1190T1mm.stl'); %god
-stl5 = stlread('antennas/Dipole1mm/Dipole10cm1296T1mm.stl'); %god
-stl6 = stlread('antennas/Dipole1mm/Dipole10cm1444T1mm.stl');
-stl7 = stlread('antennas/Dipole1mm/Dipole10cm1560T1mm.stl'); %god
-stl8 = stlread('antennas/Dipole1mm/Dipole10cm1936T1mm.stl'); %god
-stl9 = stlread('antennas/Dipole1mm/Dipole10cm2070T1mm.stl');
-stl10 = stlread('antennas/Dipole1mm/Dipole10cm2704T1mm.stl'); %god
-Amount = 10;
+stl1 = stlread('antennas/Dipole10cmT264.stl');
+stl2 = stlread('antennas/Dipole10cmT580.stl'); %ok
+stl3 = stlread('antennas/Dipole10cmT722.stl'); %god
+stl4 = stlread('antennas/Dipole10cmT924.stl'); %god
+stl5 = stlread('antennas/Dipole10cmT1060.stl'); %god
+stl6 = stlread('antennas/Dipole10cmT1104.stl');
+stl7 = stlread('antennas/Dipole10cmT1922.stl'); %god
+Amount = 7;
+% 1mm
+% stl1 = stlread('antennas/Dipole1mm/Dipole10cm552T1mm.stl');
+% stl2 = stlread('antennas/Dipole1mm/Dipole10cm702T1mm.stl'); %ok
+% stl3 = stlread('antennas/Dipole1mm/Dipole10cm900T1mm.stl'); %god
+% stl4 = stlread('antennas/Dipole1mm/Dipole10cm1190T1mm.stl'); %god
+% stl5 = stlread('antennas/Dipole1mm/Dipole10cm1296T1mm.stl'); %god
+% stl6 = stlread('antennas/Dipole1mm/Dipole10cm1444T1mm.stl');
+% stl7 = stlread('antennas/Dipole1mm/Dipole10cm1560T1mm.stl'); %god
+% stl8 = stlread('antennas/Dipole1mm/Dipole10cm1936T1mm.stl'); %god
+% stl9 = stlread('antennas/Dipole1mm/Dipole10cm2070T1mm.stl');
+% stl10 = stlread('antennas/Dipole1mm/Dipole10cm2704T1mm.stl'); %god
+% Amount = 10;
 % 0.5mm
 % stl1 = stlread('antennas/DipoleHalfmm/Dipole10CM576T.stl');
 % stl2 = stlread('antennas/DipoleHalfmm/Dipole10CM700T.stl'); %ok
@@ -86,7 +87,7 @@ epsR = 11.68;
 Reflector = 0;
 Lift=0;
 
-FileName= 'WaveTest1mm';
+FileName= 'Wave3mmWAngular';
 
 %% Loop
 for convloop=1:Amount
@@ -193,7 +194,6 @@ tic;
 fprintf('\n')
 disp('Calculating IncidentField and ID Greens if Reflector')
 clear Ei
-RefCoef = (1-n)/(1+n);
 if Reflector
     [GIxx, GIxy, GIxz, GIyx, GIyy, GIyz, GIzx, GIzy, GIzz] = ArbitraryAntenna.IDGreens(k, RefDist, Length, 2*radius, 0.003, 15, lambda, n, epsR, eps0, Center, SubTri);
 %  0.003, 15 OR 0.002, 20
@@ -214,11 +214,6 @@ if ~UseFeed && ~UseDipole
     Ei(:,3) = 0.*exp(1i*k.*(Center(:,1)));
 end
 toc;
-if Reflector
-    Ei(:,1) = Ei(:,1) + Ei(:,1).*RefCoef;        
-    Ei(:,2) = Ei(:,2) + Ei(:,2).*RefCoef;
-    Ei(:,3) = Ei(:,3) + Ei(:,3).*RefCoef;
-end
 %% MoM
 tic;
 fprintf('\n')
@@ -241,7 +236,10 @@ disp('Calculating Current')
 [Jface] = ArbitraryAntenna.CurrentCalc(t, EdgeList, a, BasisLA, RhoP, RhoM);
 toc;
 %%
-[Esc, EscPhi, EscTheta] = ArbitraryAntenna.AngularFarField(w, mu0, k, 30, Center, Jface, 300);
+
+[EscRef] = ArbitraryAntenna.AngularFarFieldSurf(w, mu0, k, 5, Center, Jface, steps, RefDist, epsR, eps0, lambda, n);
+
+[Esc, EscPhi, EscTheta] = ArbitraryAntenna.AngularFarField(w, mu0, k, 5, Center, Jface, steps);
 close all
 %% Calculating E
 tic;
