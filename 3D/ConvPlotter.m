@@ -1,6 +1,6 @@
 close all
 PlottetLabels = {};
-normalize = 1;
+normalize = 0;
 
 % fonts properties
     iFontSize       = 17;
@@ -33,7 +33,7 @@ hold on
 %%
 Amount = size(ExyCrossX);
 start=1;
-Minus=1;
+Minus=5;
 Jcount = 2*start;
 if normalize
 for i=start:Amount(2)-Minus
@@ -83,13 +83,13 @@ legend(PlottetLabels, 'FontSize', 11, 'box', 'off')
 set(h,'Units','Inches');
 pos = get(h,'Position');
 set(h,'PaperPositionMode','Auto','PaperUnits','Inches','PaperSize',[pos(3), pos(4)])
-print(h,'Jy3mmFeed','-dpdf','-r0')
+print(h,'JyPoint1mmPoint','-dpdf','-r0')
 h=figure(2);
 legend(PlottetLabels, 'FontSize', 11, 'box', 'off')
 set(h,'Units','Inches');
 pos = get(h,'Position');
 set(h,'PaperPositionMode','Auto','PaperUnits','Inches','PaperSize',[pos(3), pos(4)])
-print(h,'Eyx3mmFeed','-dpdf','-r0')
+print(h,'EyxPoint1mmPoint','-dpdf','-r0')
 
 
 
