@@ -1271,28 +1271,30 @@
             EscTheta = 1:steps; EscTheta(:) =0;
             EscPhi = 1:steps; EscPhi(:) = 0;
            for i=1:length(Center)
-                IntegralTerm = -1i*w*mu*(exp(1i*k*r)/(4*pi*r))...
-                *exp(-1i*k*dot(rHat,repmat(Center(i,:),length(rHat),1),2)).*J(i,:);
                            
-                EscTheta = Area(i).*dot(thetaH,IntegralTerm,2).' + EscTheta;
+                DirectGreens = J(i,:).*(exp(1i*k*r)/(4*pi*r))...
+                .*exp(-1i*k*dot(rHat,repmat(Center(i,:),length(rHat),1),2));
             
-                EscPhi = Area(i).*dot(repmat(phiH,steps,1),IntegralTerm,2).' + EscPhi;
+                DirectGreensTheta = dot(DirectGreens,thetaH,2);
+                
+                DirectGreensPhi = dot(DirectGreens,repmat(phiH,steps,1),2);
+                
+                EscTheta = -1i*w*mu*Area(i).*DirectGreensTheta.' + EscTheta;
+            
+                EscPhi = -1i*w*mu*Area(i).*DirectGreensPhi.' + EscPhi;
             end
             
-            Esc = EscPhi.^2+EscTheta.^2;
+            Esc = EscPhi+EscTheta;
             
             figure(4)
-            plot(theta, abs(Esc)*r^2)
+            plot(theta, 1/2*abs(Esc).^2*r^2)
             xlabel('Theta')
             ylabel('E')
         end
         
         function [Esc] = AngularFarFieldSurf(w, mu, k, r, Center, J, steps, Area, dist, eps2, eps1, n)
             
-%                 SurfAngle = acos(z-dist);
-%                 under = abs(theta)<=SurfAngle;
-%                 over = theta>=2*pi-SurfAngle;
-                phi = pi/2;%linspace(-pi, 2*pi, steps)';
+                phi = pi/2;
                 theta = linspace(-pi, 2*pi, steps)';
             
                 under = theta>=pi/2;
@@ -1300,12 +1302,12 @@
                 UseTrans = logical(under.*over);
             %%
             eps2=eps2*eps1;
-            eps1 = 1;
             k1 = k;
             k2 = k*n;
             kz1 = k1*cos(theta);
             krho = k1*sin(theta);
-            kz2 = sqrt(k2^2-krho.^2);
+            krho2 = k2*sin(theta);
+            kz2 = k2*cos(theta);
             
             refS = (kz1-kz2)./(kz1+kz2);
             refP = (eps2.*kz1-eps1.*kz2)./(eps2.*kz1+eps1.*kz2);
@@ -1318,21 +1320,21 @@
             phiH = -xH.*sin(phi)+yH.*cos(phi);
             thetaHD = (xH.*cos(phi)+yH.*sin(phi)).*cos(theta)-zH.*sin(theta);
             
-            thetaHT = xH.*cos(phi).*(cos(theta).*kz1.*kz2/k1^2-sin(theta).*kz1.*krho/k1^2)...
-                +yH.*sin(phi).*(cos(theta).*kz1.*kz2/k1^2-sin(theta).*kz1.*krho/k1^2)...
-                +zH.*(-sin(theta).*krho.^2/k1^2+cos(theta).*kz1.*krho/k1^2);
+            thetaHT = xH.*cos(phi).*(cos(theta).*kz1.*kz2/k1^2-sin(theta).*kz1.*krho2/k1^2)...
+                +yH.*sin(phi).*(cos(theta).*kz1.*kz2/k1^2-sin(theta).*kz1.*krho2/k1^2)...
+                +zH.*(-sin(theta).*krho2.^2/k1^2+cos(theta).*kz1.*krho2/k1^2);
             
             rHatT = -xH.*cos(phi).*(sin(theta).*kz1.*kz2/k1^2 ...
-            +cos(theta).*kz1.*krho/k1^2)...
-            -yH.*sin(phi).*(sin(theta).*kz1.*kz2/k1^2+cos(theta).*kz1.*krho/k1^2) ...
-            +zH.*(cos(theta).*krho.^2/k1^2+sin(theta).*kz1.*krho/k1^2);
+            +cos(theta).*kz1.*krho2/k1^2)...
+            -yH.*sin(phi).*(sin(theta).*kz1.*kz2/k1^2+cos(theta).*kz1.*krho2/k1^2) ...
+            +zH.*(cos(theta).*krho2.^2/k1^2+sin(theta).*kz1.*krho2/k1^2);
             
             thetaHI = zH.*krho/k1+xH.*cos(phi).*kz1/k1+yH.*sin(phi).*kz1/k1;
         
             rHat = (xH.*cos(phi)+yH.*sin(phi)).*sin(theta)+zH.*cos(theta);
             
             rhoH = xH.*cos(theta)+yH.*sin(theta);
-            
+    %%        
             EscThetaD = 1:steps; EscThetaD(:) =0;
             EscPhiD = 1:steps; EscPhiD(:) = 0;
 
@@ -1343,10 +1345,8 @@
             EscPhiT = 1:steps; EscPhiT(:) = 0;
             EscrT = 1:steps; EscrT(:) = 0;
             
-                EscD = EscThetaD;
-                EscI = EscThetaD;
-                EscT = EscThetaD;
-                Esc = EscThetaD;
+            EscD = EscThetaD; EscI = EscThetaD;
+            EscT = EscThetaD; Esc = EscThetaD;
             %%
            for i=1:length(Center)
                z = Center(i,3);
@@ -1369,7 +1369,7 @@
                 
                     IndirectGreensPhi = dot(IDGreensBase,repmat(phiH,steps,1),2).*refS;
                 
-                    IndirectGreensTheta =  -refP.*dot(IDGreensBase,(zH.*krho/k1+ rhoH.*kz1/k1),2);
+                    IndirectGreensTheta =  -refP.*dot(IDGreensBase,thetaHI,2);
                  %%
 %                 TransmitGreens = J(i,:).*exp(1i*k2*r)/(4*pi*r).*exp(1i*kz1.*z).*...
 %                     exp(-1i*krho.*dot(rhoH,repmat(Center(i,:),length(rhoH),1),2)).*...
@@ -1379,15 +1379,14 @@
 %                     +thetaHT.*(zH.*(-sin(theta).*krho.^2/k1^2+cos(theta).*kz1.*krho/k1.^2))...
 %                     +rhoH.*(cos(theta).*kz1.*kz2/k1^2-sin(theta).*kz1.*krho/k1^2))));
                 %%
-                TransGreensBase = J(i,:).*exp(1i*k2*r)/(4*pi*r).*exp(1i*kz1.*z).*...
-                    exp(-1i*krho.*dot(rhoH,repmat(Center(i,:),length(rhoH),1),2)).*...
-                    kz2./kz1;
+                TransGreensBase = kz2./kz1.*J(i,:).*exp(1i*k2*r)/(4*pi*r).*exp(1i*kz1.*z).*...
+                    exp(-1i*krho2.*dot(rhoH,repmat(Center(i,:),length(rhoH),1),2));
                 
                 TransmitGreensPhi =  dot(TransGreensBase,repmat(phiH,steps,1),2).*traS;
                 
                 TransmitGreensTheta = dot(TransGreensBase,thetaHT,2).*traP.*eps1/eps2;
                 
-                TransmitGreensR = dot(TransGreensBase,rHat,2).*traP.*eps1/eps2;
+                TransmitGreensR = dot(TransGreensBase,rHatT,2).*traP.*eps1/eps2;
                %% 
                 EscThetaD = -1i*w*mu*Area(i).*DirectGreensTheta.' + EscThetaD;
                 EscPhiD = -1i*w*mu*Area(i).*DirectGreensPhi.' + EscPhiD;
@@ -1395,20 +1394,21 @@
                 EscThetaI = -1i*w*mu*Area(i).*IndirectGreensTheta.' + EscThetaI;
                 EscPhiI = -1i*w*mu*Area(i).*IndirectGreensPhi.' + EscPhiI;
                 
-                EscThetaT = -1i*w*mu*Area(i).*TransmitGreensTheta.' + EscThetaT;
-                EscPhiT = -1i*w*mu*Area(i).*TransmitGreensPhi.' + EscPhiT;
-                EscrT = -1i*w*mu*Area(i).*TransmitGreensR.' + EscrT;
+                EscThetaT = -1i*w*mu/n*Area(i).*TransmitGreensTheta.' + EscThetaT;
+                EscPhiT = -1i*w*mu/n*Area(i).*TransmitGreensPhi.' + EscPhiT;
+                EscrT = -1i*w*mu/n*Area(i).*TransmitGreensR.' + EscrT;
                 
            end
-                EscD = EscPhiD.^2+EscThetaD.^2 ;
-                EscI = EscPhiI.^2+EscThetaI.^2 ;
-                EscT = EscPhiT.^2+EscThetaT.^2+EscrT.^2;
+                EscD = EscPhiD+EscThetaD;
+                EscI = EscPhiI+EscThetaI;
+%                 Esc = EscD+EscI;
+                Esc = abs(EscPhiD+EscPhiI).^2+abs(EscThetaD+EscThetaI).^2;
+                EscT = abs(EscPhiT).^2+abs(EscThetaT).^2+abs(EscrT).^2;
         
-                Esc = EscD+EscI;
                 Esc(UseTrans) = EscT(UseTrans);
             
             figure(5)
-            plot(theta, abs(Esc)^2*r^2)
+            plot(theta, 1/2*Esc*r^2)
             xlabel('Theta')
             ylabel('E')
         end

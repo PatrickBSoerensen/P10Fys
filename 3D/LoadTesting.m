@@ -60,7 +60,7 @@ radius = sum(abs(maxp(radiusdet))+abs(minp(radiusdet)))/4;
 Length = maxmaxp+abs(minp(maxaxis));
 %% Parameters
 
-AntFromReflector = 3*radius;
+AntFromReflector = 2*radius;
 p(:,3) = p(:,3)+AntFromReflector;
 InterAntDist = 4*radius;
 % Controls amount of antenna
@@ -96,7 +96,7 @@ PointArea = xmax^2/steps;
 n = 3.9;
 epsR = 11.68;
 Reflector = 0;
-ReflectorZ = 0;%radius+FromAnt;
+ReflectorZ = -0;%radius+FromAnt;
 % Determines if points should be lifted to surf of antenna, this is semi
 % hardcoded to a predetermined structure, if in doubt set to 0
 Lift = 0;
@@ -172,16 +172,16 @@ if UseFeed
     [Ei, v] = ArbitraryAntenna.VoltageFeed(t, p, Center, DipolePoint, 1, EdgeList, BasisLA, Yagi, OGSize);
 end
 if ~UseFeed && ~UseDipole
-    Ei(:,1) = 0.*exp(1i*k.*(Center(:,2)));
+    Ei(:,1) = 0.*exp(1i*k.*(Center(:,3)));
     Ei(:,2) = 1.*exp(1i*k.*(Center(:,3)));
-    Ei(:,3) = 0.*exp(1i*k.*(Center(:,1)));
+    Ei(:,3) = 0.*exp(1i*k.*(Center(:,2)));
 end
 toc;
-if Reflector
-    Ei(:,1) = Ei(:,1) + Ei(:,1).*RefCoef;        
-    Ei(:,2) = Ei(:,2) + Ei(:,2).*RefCoef;
-    Ei(:,3) = Ei(:,3) + Ei(:,3).*RefCoef;
-end
+% if Reflector
+%     Ei(:,1) = Ei(:,1) + Ei(:,1).*RefCoef;        
+%     Ei(:,2) = Ei(:,2) + Ei(:,2).*RefCoef;
+%     Ei(:,3) = Ei(:,3) + Ei(:,3).*RefCoef;
+% end
 %% MoM
 % tic;
 fprintf('\n')
@@ -226,9 +226,9 @@ axis('equal');
 rotate3d
 
 %%
-[EscRef] = ArbitraryAntenna.AngularFarFieldSurf(w, mu0, k, 10, Center, Jface, steps, Area,  ReflectorZ, epsR, eps0, n);
+[EscRef] = ArbitraryAntenna.AngularFarFieldSurf(w, mu0, k, 10, Center, Jface, 4*steps, Area,  ReflectorZ, epsR, eps0, n);
 
-[Esc, EscPhi, EscTheta] = ArbitraryAntenna.AngularFarField(w, mu0, k, 10, Center, Jface, steps, Area);
+[Esc, EscPhi, EscTheta] = ArbitraryAntenna.AngularFarField(w, mu0, k, 10, Center, Jface, 4*steps, Area);
 
 ProduceAnErrorHere
 %% Calculating E   
