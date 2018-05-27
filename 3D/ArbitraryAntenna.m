@@ -1394,9 +1394,9 @@
                 EscThetaI = -1i*w*mu*Area(i).*IndirectGreensTheta.' + EscThetaI;
                 EscPhiI = -1i*w*mu*Area(i).*IndirectGreensPhi.' + EscPhiI;
                 
-                EscThetaT = -1i*w*mu/n*Area(i).*TransmitGreensTheta.' + EscThetaT;
-                EscPhiT = -1i*w*mu/n*Area(i).*TransmitGreensPhi.' + EscPhiT;
-                EscrT = -1i*w*mu/n*Area(i).*TransmitGreensR.' + EscrT;
+                EscThetaT = -1i*w*mu*Area(i).*TransmitGreensTheta.' + EscThetaT;
+                EscPhiT = -1i*w*mu*Area(i).*TransmitGreensPhi.' + EscPhiT;
+                EscrT = -1i*w*mu*Area(i).*TransmitGreensR.' + EscrT;
                 
            end
                 EscD = EscPhiD+EscThetaD;

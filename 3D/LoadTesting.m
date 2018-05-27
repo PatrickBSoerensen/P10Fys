@@ -60,7 +60,7 @@ radius = sum(abs(maxp(radiusdet))+abs(minp(radiusdet)))/4;
 Length = maxmaxp+abs(minp(maxaxis));
 %% Parameters
 
-AntFromReflector = 2*radius;
+AntFromReflector = 1*radius; %Should basically always be one radius
 p(:,3) = p(:,3)+AntFromReflector;
 InterAntDist = 4*radius;
 % Controls amount of antenna
