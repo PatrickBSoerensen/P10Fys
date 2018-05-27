@@ -59,15 +59,19 @@ radiusdet = logical(radiusdet);
 radius = sum(abs(maxp(radiusdet))+abs(minp(radiusdet)))/4;
 Length = maxmaxp+abs(minp(maxaxis));
 %% Parameters
+
+AntFromReflector = 3*radius;
+p(:,3) = p(:,3)+AntFromReflector;
+InterAntDist = 4*radius;
 % Controls amount of antenna
 % p(:,1) = p(:,1)+0.03;
 p1 = p;
-p1(:,1) = p1(:,1)-0.05;
+p1(:,1) = p1(:,1)-InterAntDist;
 p2 = p;
-p2(:,1) = p2(:,1)+0.05;
+p2(:,1) = p2(:,1)+InterAntDist;
 p(:,2) = p(:,2)*1;
-% p = [p; p1; p2];
-% t = [t; t+length(p1); t+length(p1)+length(p1)];
+% p = [ p1; p2];p;
+% t = [t; t+length(p1) ];%t+length(p1)+length(p1);
 % Should source be dipole, if 0 a plane wave propagating in +x direction used
 UseDipole = 0;
 DipolePoint = [0,0,0];
@@ -91,9 +95,8 @@ PointArea = xmax^2/steps;
 % Reflector surface params
 n = 3.9;
 epsR = 11.68;
-Reflector = 1;
-FromAnt = 0.005;
-RefDist = radius+FromAnt;
+Reflector = 0;
+ReflectorZ = 0;%radius+FromAnt;
 % Determines if points should be lifted to surf of antenna, this is semi
 % hardcoded to a predetermined structure, if in doubt set to 0
 Lift = 0;
@@ -154,7 +157,7 @@ disp('Calculating IncidentField and ID Greens if Reflector')
 clear Ei
 RefCoef = (1-n)/(1+n);
 if Reflector
-    [GIxx, GIxy, GIxz, GIyx, GIyy, GIyz, GIzx, GIzy, GIzz] = ArbitraryAntenna.IDGreens(k, RefDist, Length, 2*radius, 0.003, 15, lambda, n, epsR, eps0, Center, SubTri);
+    [GIxx, GIxy, GIxz, GIyx, GIyy, GIyz, GIzx, GIzy, GIzz] = ArbitraryAntenna.IDGreens(k, ReflectorZ, Length, 2*radius, 0.003, 15, lambda, n, epsR, eps0, Center, SubTri);
 %  0.003, 15 OR 0.002, 20
 %     GI = GIx+GIy+GIz;
 else
@@ -223,16 +226,17 @@ axis('equal');
 rotate3d
 
 %%
-[Esc] = ArbitraryAntenna.AngularFarFieldSurf(w, mu0, k, 5, Center, Jface, steps, RefDist, epsR, eps0, lambda, n);
+[EscRef] = ArbitraryAntenna.AngularFarFieldSurf(w, mu0, k, 10, Center, Jface, steps, Area,  ReflectorZ, epsR, eps0, n);
 
-[Esc, EscPhi, EscTheta] = ArbitraryAntenna.AngularFarField(w, mu0, k, 5, Center, Jface, steps);
+[Esc, EscPhi, EscTheta] = ArbitraryAntenna.AngularFarField(w, mu0, k, 10, Center, Jface, steps, Area);
 
+ProduceAnErrorHere
 %% Calculating E   
 tic;
 fprintf('\n')
 disp('Calculating E-field')
 [Exy, Exz, Ezy, x, y, z, Exyx, Exzx, Eyzx, Exyy, Exzy, Eyzy, Exyz, Exzz, Eyzz] = ...
-    ArbitraryAntenna.EField(Center, w, mu0, k, Jface, xmin, xmax, ymin, ymax, zmin, zmax, steps, Area, Reflector, RefDist, n, lambda);
+    ArbitraryAntenna.EField(Center, w, mu0, k, Jface, xmin, xmax, ymin, ymax, zmin, zmax, steps, Area, Reflector, ReflectorZ, n, lambda);
 toc;
 if UseDipole
 fprintf('\n')
