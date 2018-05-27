@@ -586,12 +586,12 @@
                 PMPhi = permute(sum(gmPnM),[3 2 1])/(2*Quad);
                 MPPhi = permute(sum(gmMnP),[3 2 1])/(2*Quad);
                 MMPhi = permute(sum(gmMnM),[3 2 1])/(2*Quad);
-%                 
+                 
 %                 PPPhi(SamenPmP) = DistAnalytic(PlusTri(m));
 %                 PMPhi(SamenMmP) = DistAnalytic(PlusTri(m));
 %                 MMPhi(SamenMmM) = DistAnalytic(MinusTri(m));
 %                 MPPhi(SamenPmM) = DistAnalytic(MinusTri(m));
-%                 
+                 
                 PhiP = Pcnst*BasisLA(:,2).*(PPPhi-PMPhi);
                 PhiM = Pcnst*BasisLA(:,2).*(MPPhi-MMPhi);
                 
@@ -1318,16 +1318,17 @@
             yH = [0, 1, 0];
             zH = [0, 0, 1];
             phiH = -xH.*sin(phi)+yH.*cos(phi);
+            
             thetaHD = (xH.*cos(phi)+yH.*sin(phi)).*cos(theta)-zH.*sin(theta);
             
             thetaHT = xH.*cos(phi).*(cos(theta).*kz1.*kz2/k1^2-sin(theta).*kz1.*krho2/k1^2)...
                 +yH.*sin(phi).*(cos(theta).*kz1.*kz2/k1^2-sin(theta).*kz1.*krho2/k1^2)...
-                +zH.*(-sin(theta).*krho2.^2/k1^2+cos(theta).*kz1.*krho2/k1^2);
+                +zH.*(-sin(theta).*krho2.^2/k1^2+cos(theta).*kz2.*krho2/k1^2);
             
-            rHatT = -xH.*cos(phi).*(sin(theta).*kz1.*kz2/k1^2 ...
+            rHatT = xH.*cos(phi).*(sin(theta).*kz1.*kz2/k1^2 ...
             +cos(theta).*kz1.*krho2/k1^2)...
-            -yH.*sin(phi).*(sin(theta).*kz1.*kz2/k1^2+cos(theta).*kz1.*krho2/k1^2) ...
-            +zH.*(cos(theta).*krho2.^2/k1^2+sin(theta).*kz1.*krho2/k1^2);
+            +yH.*sin(phi).*(sin(theta).*kz1.*kz2/k1^2+cos(theta).*kz1.*krho2/k1^2) ...
+            +zH.*(cos(theta).*krho2.^2/k1^2+sin(theta).*kz2.*krho2/k1^2);
             
             thetaHI = zH.*krho/k1+xH.*cos(phi).*kz1/k1+yH.*sin(phi).*kz1/k1;
         
@@ -1351,42 +1352,36 @@
            for i=1:length(Center)
                z = Center(i,3);
                
-                DirectGreens = J(i,:).*(exp(1i*k*r)/(4*pi*r))...
+                DirectGreens = (exp(1i*k*r)/(4*pi*r))...
                 .*exp(-1i*k*dot(rHat,repmat(Center(i,:),length(rHat),1),2));
+            DirectGreensTheta = DirectGreens.*thetaHD; 
+            DirectGreensPhi = DirectGreens.*phiH;
             
-                DirectGreensTheta = dot(DirectGreens,thetaHD,2);
-                
-                DirectGreensPhi = dot(DirectGreens,repmat(phiH,steps,1),2);
-  %%              
-%                 IndirectGreens = J(i,:).*exp(1i*k1*r)/(4*pi*r)...
-%                     .*exp(-1i*krho.*dot(rhoH,repmat(Center(i,:),length(rhoH),1),2))...
-%                     .*exp(1i*kz1.*z).*...
-%                     (refS*phiH.*phiH-...
-%                     refP*thetaHI.*(zH.*krho/k1+rhoH.*kz1/k1));
+                DirectGreensTheta = dot(DirectGreensTheta, repmat(J(i,:),steps,1),2);
+                DirectGreensPhi = dot(DirectGreensPhi, repmat(J(i,:),steps,1),2);
+              
 %%
-                    IDGreensBase = J(i,:).*exp(1i*k1*r)/(4*pi*r)...
+                    IDGreensBase = exp(1i*k1*r)/(4*pi*r)...
                     .*exp(-1i*krho.*dot(rhoH,repmat(Center(i,:),length(rhoH),1),2)).*exp(1i*kz1.*z);
                 
-                    IndirectGreensPhi = dot(IDGreensBase,repmat(phiH,steps,1),2).*refS;
+                IDGreensBaseTheta = IDGreensBase.*thetaHI;
+                IDGreensBasePhi = IDGreensBase.*phiH;
                 
-                    IndirectGreensTheta =  -refP.*dot(IDGreensBase,thetaHI,2);
-                 %%
-%                 TransmitGreens = J(i,:).*exp(1i*k2*r)/(4*pi*r).*exp(1i*kz1.*z).*...
-%                     exp(-1i*krho.*dot(rhoH,repmat(Center(i,:),length(rhoH),1),2)).*...
-%                     kz2./kz1.*(traS*phiH.*phiH+traP*eps1/eps2*...
-%                     (rHat.*((zH.*(cos(theta).*krho.^2/k1^2+sin(theta).*kz1.*krho/k1^2)...
-%                     -rhoH.*(sin(theta).*kz1.*kz2/k1^2+cos(theta).*kz1.*krho/k1^2))...
-%                     +thetaHT.*(zH.*(-sin(theta).*krho.^2/k1^2+cos(theta).*kz1.*krho/k1.^2))...
-%                     +rhoH.*(cos(theta).*kz1.*kz2/k1^2-sin(theta).*kz1.*krho/k1^2))));
+                    IndirectGreensPhi = dot(IDGreensBasePhi,repmat(J(i,:),steps,1),2).*refS;
+                
+                    IndirectGreensTheta =  -refP.*dot(IDGreensBaseTheta,repmat(J(i,:),steps,1),2);
                 %%
-                TransGreensBase = kz2./kz1.*J(i,:).*exp(1i*k2*r)/(4*pi*r).*exp(1i*kz1.*z).*...
+                TransGreensBase = kz2./kz1.*exp(1i*k2*r)/(4*pi*r).*exp(1i*kz1.*z).*...
                     exp(-1i*krho2.*dot(rhoH,repmat(Center(i,:),length(rhoH),1),2));
+                TransGreensPhi = TransGreensBase .*phiH;
+                TransGreensTheta = TransGreensBase .*thetaHT;
+                TransGreensR = TransGreensBase .*rHatT;
                 
-                TransmitGreensPhi =  dot(TransGreensBase,repmat(phiH,steps,1),2).*traS;
+                TransmitGreensPhi =  dot(TransGreensPhi,repmat(J(i,:),steps,1),2).*traS;
                 
-                TransmitGreensTheta = dot(TransGreensBase,thetaHT,2).*traP.*eps1/eps2;
+                TransmitGreensTheta = dot(TransGreensTheta,repmat(J(i,:),steps,1),2).*traP.*eps1/eps2;
                 
-                TransmitGreensR = dot(TransGreensBase,rHatT,2).*traP.*eps1/eps2;
+                TransmitGreensR = dot(TransGreensR,repmat(J(i,:),steps,1),2).*traP.*eps1/eps2;
                %% 
                 EscThetaD = -1i*w*mu*Area(i).*DirectGreensTheta.' + EscThetaD;
                 EscPhiD = -1i*w*mu*Area(i).*DirectGreensPhi.' + EscPhiD;
@@ -1407,7 +1402,7 @@
         
                 Esc(UseTrans) = EscT(UseTrans);
             
-            figure(5)
+            figure(6)
             plot(theta, 1/2*Esc*r^2)
             xlabel('Theta')
             ylabel('E')

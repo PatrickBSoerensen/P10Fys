@@ -10,9 +10,12 @@
 % stl = stlread('antennas/test/720.stl');
 % stl = stlread('antennas/Dipole10cmT180.stl');
 % stl = stlread('antennas/Dipole10cmT264.stl');
-stl = stlread('antennas/Dipole10cmT580.stl'); %ok
+% stl = stlread('antennas/Dipole10cmT580.stl'); %ok
 % stl = stlread('antennas/Dipole10cmT722.stl'); %god
 % stl = stlread('antennas/Dipole10cmT744.stl'); %
+% stl = stlread('antennas/Dipole10cmT904.stl'); %
+
+% stl = stlread('antennas/NASAALmond4768T.stl'); %god
 % stl = stlread('antennas/Dipole10cmT904.stl'); %
 % stl = stlread('antennas/Dipole10cmT924.stl'); %god
 % stl = stlread('antennas/Dipole10cmT1060.stl'); %god
@@ -20,9 +23,10 @@ stl = stlread('antennas/Dipole10cmT580.stl'); %ok
 % stl = stlread('antennas/Dipole10cmT1458.stl'); %god 
 % stl = stlread('antennas/Dipole10cmT1680.stl'); 
 % stl = stlread('antennas/Dipole10cmT1922.stl'); %god
+% stl = stlread('antennas/3mm1984T.stl'); %god
 % stl = stlread('antennas/Dipole10cmT2312.stl'); %god
 % stl = stlread('antennas/Dipole10cmT2888.stl'); %god
-% stl = stlread('antennas/Dipole10cmT3528.stl');4
+% stl = stlread('antennas/Dipole10cmT3528.stl');
 % stl = stlread('antennas/Dipole10cmT2888.stl'); %god
 % stl = stlread('antennas/Dipole10cmT3528.stl');
 % stl = stlread('antennas/AntBinMesh2556.stl');
@@ -60,9 +64,9 @@ radius = sum(abs(maxp(radiusdet))+abs(minp(radiusdet)))/4;
 Length = maxmaxp+abs(minp(maxaxis));
 %% Parameters
 
-AntFromReflector = 1*radius; %Should basically always be one radius
+AntFromReflector = radius; %Should basically always be one radius
 p(:,3) = p(:,3)+AntFromReflector;
-InterAntDist = 4*radius;
+InterAntDist = Length/2;
 % Controls amount of antenna
 % p(:,1) = p(:,1)+0.03;
 p1 = p;
@@ -96,7 +100,7 @@ PointArea = xmax^2/steps;
 n = 3.9;
 epsR = 11.68;
 Reflector = 0;
-ReflectorZ = -0;%radius+FromAnt;
+ReflectorZ = 0;%radius+FromAnt;
 % Determines if points should be lifted to surf of antenna, this is semi
 % hardcoded to a predetermined structure, if in doubt set to 0
 Lift = 0;
@@ -230,7 +234,7 @@ rotate3d
 
 [Esc, EscPhi, EscTheta] = ArbitraryAntenna.AngularFarField(w, mu0, k, 10, Center, Jface, 4*steps, Area);
 
-ProduceAnErrorHere
+
 %% Calculating E   
 tic;
 fprintf('\n')
