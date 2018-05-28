@@ -180,21 +180,13 @@ if ~UseFeed && ~UseDipole
     Ei(:,2) = 1.*exp(1i*k.*(Center(:,3)));
     Ei(:,3) = 0.*exp(1i*k.*(Center(:,2)));
 end
-toc;
-% if Reflector
-%     Ei(:,1) = Ei(:,1) + Ei(:,1).*RefCoef;        
-%     Ei(:,2) = Ei(:,2) + Ei(:,2).*RefCoef;
-%     Ei(:,3) = Ei(:,3) + Ei(:,3).*RefCoef;
-% end
+toc
 %% MoM
 % tic;
 fprintf('\n')
 disp('MoM')
 if vectorized
     [Z, a, b] = ArbitraryAntenna.MoMVectorized(w, mu0, t, p, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, BasisCoord, Center, k, SubTri, Ei, Reflector, GIxx, GIxy, GIxz, GIyx, GIyy, GIyz, GIzx, GIzy, GIzz, eps0);
-    
-%     [Z, a, b] = ArbitraryAntenna.MoMOtherVectorized(w, mu0, t, p, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, BasisCoord, Center, k, SubTri, Ei, Reflector, GIxx, GIxy, GIxz, GIyx, GIyy, GIyz, GIzx, GIzy, GIzz, eps0);
-
 else
     [Z, a, b] = ArbitraryAntenna.MoM(w, mu0, t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k,  SubTri, Ei, eps0);
 end

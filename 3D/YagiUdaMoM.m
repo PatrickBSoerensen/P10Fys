@@ -28,6 +28,8 @@ maxp = max(p);
 [maxmaxp, maxaxis] = max(max(p));
 radius = sum(abs(maxp(radiusdet))+abs(minp(radiusdet)))/4;
 Length = (maxmaxp-minp(maxaxis));
+
+OGSize = max(max(t));
 %% Parameters
 % Controls amount of antenna
 p1 = p;
@@ -67,13 +69,11 @@ t = [t; t+length(p1); t+length(p1)+length(p2);...
     t+length(p1)+length(p2)+length(p3)+length(p4)+length(p5)+length(p6)+length(p7);...
     t+length(p1)+length(p2)+length(p3)+length(p4)+length(p5)+length(p6)+length(p7)+length(p8)];
 % Should source be dipole, if 0 a plane wave propagating in +x direction used
-UseDipole = 1;
+UseDipole = 0;
 DipolePoint = [radius,0,0];
-UseFeed = 0;
+UseFeed = 1;
 FeedPos = [0,0,0];
 Yagi=1;
-OGSize = size(t);
-OGSize = OGSize(1)*1.5;
 % If set to one use 81 sub triangles pr element, if 0 use 9
 SubSubTri = 0;
 % if 1 use fast (but more inacurate) MoM
@@ -146,7 +146,20 @@ disp('Evaluating basis functions in center points')
 [RhoP, RhoM, RhoP_, RhoM_] = ArbitraryAntenna.BasisEvalCenter(t, EdgeList, Basis, Center, SubTri);
 toc;
 %% Calculating Dipole strength on antenna points
+tic;
+fprintf('\n')
+disp('Calculating IncidentField and ID Greens if Reflector')
 clear Ei
+RefCoef = (1-n)/(1+n);
+if Reflector
+    [GIxx, GIxy, GIxz, GIyx, GIyy, GIyz, GIzx, GIzy, GIzz] = ArbitraryAntenna.IDGreens(k, ReflectorZ, Length, 2*radius, 0.003, 15, lambda, n, epsR, eps0, Center, SubTri);
+%  0.003, 15 OR 0.002, 20
+%     GI = GIx+GIy+GIz;
+else
+    GIxx=0; GIxy=0; GIxz=0; GIyx=0; GIyy=0; GIyz=0; GIzx=0; GIzy=0; GIzz=0;
+    GI = [];
+    GIx=0; GIy=0; GIz=0;
+end
 if UseDipole
     [Ei] = ArbitraryAntenna.PointSource(w, mu0, k, Center, SubTri, sub, DipolePoint, [0,1,0]);
 end
@@ -154,23 +167,17 @@ if UseFeed
     [Ei, v] = ArbitraryAntenna.VoltageFeed(t, p, Center, DipolePoint, 1, EdgeList, BasisLA, Yagi, OGSize);
 end
 if ~UseFeed && ~UseDipole
-    Ei(:,1) = 0.*exp(1i*k.*(Center(:,2)));
-    Ei(:,2) = 1.*exp(1i*k.*(Center(:,1)));
-    Ei(:,3) = 0.*exp(1i*k.*(Center(:,1)));
+    Ei(:,1) = 0.*exp(1i*k.*(Center(:,3)));
+    Ei(:,2) = 1.*exp(1i*k.*(Center(:,3)));
+    Ei(:,3) = 0.*exp(1i*k.*(Center(:,2)));
 end
-if Reflector   
-    [GIx, GIy, GIz] = ArbitraryAntenna.IDGreens(k, distx, Length, 2*radius, 0.005, 50, lambda, n, epsR, eps0, Center, SubTri);
- 
-    GI = GIx+GIy+GIz;
-else
-    GI = [];
-end
+toc
 %% MoM
 tic;
 fprintf('\n')
 disp('MoM')
 if vectorized
-    [Z, a, b] = ArbitraryAntenna.MoMVectorized(w, mu0, t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k, SubTri, Ei, Reflector, GI, n, eps0);
+    [Z, a, b] = ArbitraryAntenna.MoMVectorized(w, mu0, t, p, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, BasisCoord, Center, k, SubTri, Ei, Reflector, GIxx, GIxy, GIxz, GIyx, GIyy, GIyz, GIzx, GIzy, GIzz, eps0);
 else
     [Z, a, b] = ArbitraryAntenna.MoM(w, mu0, t, EdgeList, BasisLA, RhoP, RhoM, RhoP_, RhoM_, Center, k,  SubTri, Ei, eps0);
 end
@@ -207,7 +214,7 @@ rotate3d
 tic;
 fprintf('\n')
 disp('Angular far field calc')
-ArbitraryAntenna.AngularFarField(w, mu0, k, 50, Center, Jface, 500);
+[Esc, EscPhi, EscTheta] = ArbitraryAntenna.AngularFarField(w, mu0, k, 10, Center, Jface, steps, Area);
 toc
 %% Calculating E
 tic;
