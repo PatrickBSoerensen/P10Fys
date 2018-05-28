@@ -1,19 +1,21 @@
 %% load STL file into matlab
 J =[];
 center = [];
-ExyCrossX = [];
+EzyCrossZ = [];
 ExzCrossZ =[];
 ESCAng = [];
 EscRef = [];
+EzyFull = [];
+ExzFull = [];
 %3mm
-stl1 = stlread('antennas/Dipole10cmT264.stl');
-stl2 = stlread('antennas/Dipole10cmT580.stl'); %ok
-stl3 = stlread('antennas/Dipole10cmT722.stl'); %god
-stl4 = stlread('antennas/Dipole10cmT924.stl'); %god
-stl5 = stlread('antennas/Dipole10cmT1060.stl'); %god
-stl6 = stlread('antennas/Dipole10cmT1104.stl');
-stl7 = stlread('antennas/Dipole10cmT1922.stl'); %god
-Amount = 7;
+% stl1 = stlread('antennas/Dipole10cmT264.stl');
+% stl2 = stlread('antennas/Dipole10cmT580.stl'); %ok
+% stl3 = stlread('antennas/Dipole10cmT722.stl'); %god
+% stl4 = stlread('antennas/Dipole10cmT924.stl'); %god
+% stl5 = stlread('antennas/Dipole10cmT1060.stl'); %god
+% stl6 = stlread('antennas/Dipole10cmT1104.stl');
+% stl7 = stlread('antennas/Dipole10cmT1922.stl'); %god
+% Amount = 7;
 % 1mm
 % stl1 = stlread('antennas/Dipole1mm/Dipole10cm552T1mm.stl');
 % stl2 = stlread('antennas/Dipole1mm/Dipole10cm702T1mm.stl'); %ok
@@ -39,17 +41,17 @@ Amount = 7;
 % stl10 = stlread('antennas/DipoleHalfmm/Dipole10CM4416T.stl'); %god
 % Amount = 10;
 %0.1mm
-% stl1 = stlread('antennas/Dipole0.1mm/Dipole10cm2502T01mm.stl');
-% stl2 = stlread('antennas/Dipole0.1mm/Dipole10cm3060T01mm.stl'); %ok
-% stl3 = stlread('antennas/Dipole0.1mm/Dipole10cm3696T01mm.stl'); %god
-% stl4 = stlread('antennas/Dipole0.1mm/Dipole10cm4392T01mm.stl'); %god
-% stl5 = stlread('antennas/Dipole0.1mm/Dipole10cm5200T01mm.stl'); %god
-% stl6 = stlread('antennas/Dipole0.1mm/Dipole10cm6020T01mm.stl');
-% stl7 = stlread('antennas/Dipole0.1mm/Dipole10cm6870T01mm.stl'); %god
-% stl8 = stlread('antennas/Dipole0.1mm/Dipole10cm7808T01mm.stl'); %god
-% stl9 = stlread('antennas/Dipole0.1mm/Dipole10cm8874T01mm.stl');
-% stl10 = stlread('antennas/Dipole0.1mm/Dipole10cm9936T01mm.stl'); %god
-% Amount = 10;
+stl1 = stlread('antennas/Dipole0.1mm/Dipole10cm2502T01mm.stl');
+stl2 = stlread('antennas/Dipole0.1mm/Dipole10cm3060T01mm.stl'); %ok
+stl3 = stlread('antennas/Dipole0.1mm/Dipole10cm3696T01mm.stl'); %god
+stl4 = stlread('antennas/Dipole0.1mm/Dipole10cm4392T01mm.stl'); %god
+stl5 = stlread('antennas/Dipole0.1mm/Dipole10cm5200T01mm.stl'); %god
+stl6 = stlread('antennas/Dipole0.1mm/Dipole10cm6020T01mm.stl');
+stl7 = stlread('antennas/Dipole0.1mm/Dipole10cm6870T01mm.stl'); %god
+stl8 = stlread('antennas/Dipole0.1mm/Dipole10cm7808T01mm.stl'); %god
+stl9 = stlread('antennas/Dipole0.1mm/Dipole10cm8874T01mm.stl');
+stl10 = stlread('antennas/Dipole0.1mm/Dipole10cm9936T01mm.stl'); %god
+Amount = 10;
 %% Parameters
 % Controls amount of antenna
 % p1 = p;
@@ -85,9 +87,10 @@ PointArea = xmax^2/steps;
 n = 3.9;
 epsR = 11.68;
 Reflector = 0;
+ReflectorZ = 0;
 Lift=0;
 
-FileName= 'Wave3mmWAngular';
+FileName= 'WavePoint1mmWAngular';
 
 %% Loop
 for convloop=1:Amount
@@ -127,6 +130,7 @@ fprintf('\n')
 disp('Removing duplicate points')
 [p, t] = ArbitraryAntenna.RemoveDuplicatePoints(stl);
 %%
+
 radiusdet = [1 1 1];
 minp = min(p);
 maxp = max(p);
@@ -135,6 +139,12 @@ radiusdet(maxaxis) = 0;
 radiusdet = logical(radiusdet);
 radius = sum(abs(maxp(radiusdet))+abs(minp(radiusdet)))/4;
 Length = maxmaxp+abs(minp(maxaxis));
+
+%% Parameters
+
+AntFromReflector = radius; %Should basically always be one radius
+p(:,3) = p(:,3)+AntFromReflector;
+InterAntDist = Length/2;
 
 DipolePoint = [-Length,0,0];
 
@@ -195,7 +205,7 @@ fprintf('\n')
 disp('Calculating IncidentField and ID Greens if Reflector')
 clear Ei
 if Reflector
-    [GIxx, GIxy, GIxz, GIyx, GIyy, GIyz, GIzx, GIzy, GIzz] = ArbitraryAntenna.IDGreens(k, RefDist, Length, 2*radius, 0.003, 15, lambda, n, epsR, eps0, Center, SubTri);
+    [GIxx, GIxy, GIxz, GIyx, GIyy, GIyz, GIzx, GIzy, GIzz] = ArbitraryAntenna.IDGreens(k, ReflectorZ, Length, 2*radius, 0.003, 15, lambda, n, epsR, eps0, Center, SubTri);
 %  0.003, 15 OR 0.002, 20
     GI = GIx+GIy+GIz;
 else
@@ -210,8 +220,8 @@ if UseFeed
 end
 if ~UseFeed && ~UseDipole
     Ei(:,1) = 0.*exp(1i*k.*(Center(:,2)));
-    Ei(:,2) = 1.*exp(1i*k.*(Center(:,1)));
-    Ei(:,3) = 0.*exp(1i*k.*(Center(:,1)));
+    Ei(:,2) = 1.*exp(1i*k.*(Center(:,3)));
+    Ei(:,3) = 0.*exp(1i*k.*(Center(:,3)));
 end
 toc;
 %% MoM
@@ -237,9 +247,9 @@ disp('Calculating Current')
 toc;
 %%
 
-[EscRef] = ArbitraryAntenna.AngularFarFieldSurf(w, mu0, k, 5, Center, Jface, steps, RefDist, epsR, eps0, lambda, n);
+[EscR] = ArbitraryAntenna.AngularFarFieldSurf(w, mu0, k, 10, Center, Jface, steps, Area, ReflectorZ, epsR, eps0, n);
 
-[Esc, EscPhi, EscTheta] = ArbitraryAntenna.AngularFarField(w, mu0, k, 5, Center, Jface, steps);
+[Esc, EscPhi, EscTheta] = ArbitraryAntenna.AngularFarField(w, mu0, k, 10, Center, Jface, steps, Area);
 close all
 %% Calculating E
 tic;
@@ -266,9 +276,12 @@ sx = size(center);
 sy = size(Center);
 a = max(sx(1),sy(1));
 center = [[center ;zeros(abs([a 0]-sx))],[Center;zeros(abs([a,0]-sy))]];
-ExyCrossX= [ExyCrossX Exy(:,steps/2)];
+EzyCrossZ= [EzyCrossZ Ezy(:,steps/2)];
 ExzCrossZ = [ExzCrossZ  Exz(:,steps/2)];
-ESC = [ESC Esc];
+ESCAng = [ESCAng; Esc];
+EscRef = [EscRef; EscR];
 
+EzyFull = cat(3, EzyFull, Ezy);
+ExzFull = cat(3, ExzFull, Exz);
 end
-save(FileName, 'J', 'center', 'ExyCrossX', 'ExzCrossZ', 'ESC', 'UseDipole', 'SubSubTri', 'vectorized');
+save(FileName, 'J', 'center', 'EzyCrossZ', 'ExzCrossZ', 'UseDipole', 'SubSubTri', 'vectorized', 'ESCAng', 'EscRef', 'EzyFull', 'ExzFull');

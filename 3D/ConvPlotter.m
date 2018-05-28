@@ -1,6 +1,8 @@
 close all
 PlottetLabels = {};
 normalize = 0;
+AddFile = '3mmWave';
+Minus=0;
 
 % fonts properties
     iFontSize       = 17;
@@ -29,11 +31,31 @@ hold on
     % in order to make matlab to do not "cut" latex-interpreted axes labels
     set(gca, 'Units', 'normalized', 'Position', [0.15 0.15 0.75 0.75]);
     set(gca, 'FontName', strFontName, 'FontSize', 12);
-
 %%
-Amount = size(ExyCrossX);
+figure(3)
+hold on
+    xlabel( '\bf{Theta}', 'FontName', strFontName, 'FontSize', iFontSize, 'Interpreter', strInterpreter);
+    ylabel( '$\bf{|E_{sc}|}$ (arb. units)', 'FontName', strFontName, 'FontSize', iFontSize, 'Interpreter', strInterpreter);
+    set(get(gca, 'XLabel'), 'Rotation', fXLabelRotation);
+    set(get(gca, 'YLabel'), 'Rotation', fYLabelRotation);
+    % in order to make matlab to do not "cut" latex-interpreted axes labels
+    set(gca, 'Position', [0.15 0.15 0.75 0.75]);
+    % general properties
+    set(gca, 'FontName', strFontName, 'FontSize', 12);
+    %%
+figure(4)
+hold on
+    xlabel( '\bf{Theta}', 'FontName', strFontName, 'FontSize', iFontSize, 'Interpreter', strInterpreter);
+    ylabel( '$\bf{|E_{sc}|}$ (arb. units)', 'FontName', strFontName, 'FontSize', iFontSize, 'Interpreter', strInterpreter);
+    set(get(gca, 'XLabel'), 'Rotation', fXLabelRotation);
+    set(get(gca, 'YLabel'), 'Rotation', fYLabelRotation);
+    % in order to make matlab to do not "cut" latex-interpreted axes labels
+    set(gca, 'Position', [0.15 0.15 0.75 0.75]);
+    % general properties
+    set(gca, 'FontName', strFontName, 'FontSize', 12);
+%%
+Amount = size(EzyCrossZ);
 start=1;
-Minus=5;
 Jcount = 2*start;
 if normalize
 for i=start:Amount(2)-Minus
@@ -48,8 +70,12 @@ for i=start:Amount(2)-Minus
     figure(1)
     plot(TriCent*100,abs(TriAmount)/max(abs(TriAmount)),'.', 'markersize', 11)
     figure(2)
-    plot(linspace(-2,2,200),abs(ExyCrossX(:,i))/max(abs(ExyCrossX(:,i))), 'linewidth', 1.5)
-   
+    plot(linspace(-2,2,200),abs(EzyCrossZ(:,i))/max(abs(EzyCrossZ(:,i))), 'linewidth', 1.5)
+    figure(3)
+    plot(linspace(-pi,2*pi,200),abs(ESCAng(i,:))/max(abs(ESCAng(i,:))), 'linewidth', 1.5)
+    figure(4)
+    plot(linspace(-pi,2*pi,200),abs(EscRef(i,:))/max(abs(EscRef(i,:))), 'linewidth', 1.5)
+    
     TriAmount = int2str(length(TriAmount));
     PlottetLabels = [PlottetLabels, strcat(TriAmount, 'T')];
     end
@@ -69,7 +95,11 @@ for i=start:Amount(2)-Minus
         figure(1)
         plot(TriCent,abs(TriAmount),'.', 'markersize', 15)
         figure(2)
-        plot(linspace(-2,2,200),abs(ExyCrossX(:,i)), 'linewidth', 1.5)
+        plot(linspace(-2,2,200),abs(EzyCrossZ(:,i)), 'linewidth', 1.5) 
+        figure(3)
+        plot(linspace(-pi,2*pi,200),abs(ESCAng(i,:)), 'linewidth', 1.5)
+        figure(4)
+        plot(linspace(-pi,2*pi,200),abs(EscRef(i,:)), 'linewidth', 1.5)
     
         TriAmount = int2str(length(TriAmount));
         PlottetLabels = [PlottetLabels, strcat(TriAmount, 'T')];
@@ -83,13 +113,25 @@ legend(PlottetLabels, 'FontSize', 11, 'box', 'off')
 set(h,'Units','Inches');
 pos = get(h,'Position');
 set(h,'PaperPositionMode','Auto','PaperUnits','Inches','PaperSize',[pos(3), pos(4)])
-print(h,'JyPoint1mmPoint','-dpdf','-r0')
+print(h,strcat('Jy',AddFile),'-dpdf','-r0')
 h=figure(2);
 legend(PlottetLabels, 'FontSize', 11, 'box', 'off')
 set(h,'Units','Inches');
 pos = get(h,'Position');
 set(h,'PaperPositionMode','Auto','PaperUnits','Inches','PaperSize',[pos(3), pos(4)])
-print(h,'EyxPoint1mmPoint','-dpdf','-r0')
+print(h,strcat('Eyx',AddFile),'-dpdf','-r0')
+h=figure(3);
+legend(PlottetLabels, 'FontSize', 11, 'box', 'off')
+set(h,'Units','Inches');
+pos = get(h,'Position');
+set(h,'PaperPositionMode','Auto','PaperUnits','Inches','PaperSize',[pos(3), pos(4)])
+print(h,strcat('Angular',AddFile),'-dpdf','-r0')
+h=figure(4);
+legend(PlottetLabels, 'FontSize', 11, 'box', 'off')
+set(h,'Units','Inches');
+pos = get(h,'Position');
+set(h,'PaperPositionMode','Auto','PaperUnits','Inches','PaperSize',[pos(3), pos(4)])
+print(h,strcat('AngularRef', AddFile),'-dpdf','-r0')
 
 
 

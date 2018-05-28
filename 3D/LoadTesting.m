@@ -229,8 +229,8 @@ colorbar;
 axis('equal');
 rotate3d
 
-%%
-[EscRef] = ArbitraryAntenna.AngularFarFieldSurf(w, mu0, k, 10, Center, Jface, 4*steps, Area,  ReflectorZ, epsR, eps0, n);
+%% w, mu, k, r, Center, J, steps, Area, dist, eps2, eps1, n
+[EscRef] = ArbitraryAntenna.AngularFarFieldSurf(w, mu0, k, 10, Center, Jface, 4*steps, Area, ReflectorZ, epsR, eps0, n);
 
 [Esc, EscPhi, EscTheta] = ArbitraryAntenna.AngularFarField(w, mu0, k, 10, Center, Jface, 4*steps, Area);
 
