@@ -1194,7 +1194,7 @@
    
         function [Esc, EscPhi, EscTheta] = AngularFarField(w, mu, k, r, Center, J, steps, Area)
             phi = pi/2;% linspace(-pi, 2*pi, steps)';
-            theta = linspace(-pi, 2*pi, steps)';
+            theta = linspace(0, 2*pi, steps)';
             xH = [1, 0, 0];
             yH = [0, 1, 0];
             zH = [0, 0, 1];
@@ -1206,16 +1206,16 @@
             EscPhi = 1:steps; EscPhi(:) = 0;
            for i=1:length(Center)
                            
-                DirectGreens = J(i,:).*(exp(1i*k*r)/(4*pi*r))...
+                DirectGreens = (exp(1i*k*r)/(4*pi*r))...
                 .*exp(-1i*k*dot(rHat,repmat(Center(i,:),length(rHat),1),2));
             
-                DirectGreensTheta = dot(DirectGreens,thetaH,2);
+                DirectGreensTheta = DirectGreens.*thetaH;
                 
-                DirectGreensPhi = dot(DirectGreens,repmat(phiH,steps,1),2);
+                DirectGreensPhi = DirectGreens.*phiH;
                 
-                EscTheta = -1i*w*mu*Area(i).*DirectGreensTheta.' + EscTheta;
+                EscTheta = -1i*w*mu*Area(i).*dot(DirectGreensTheta,repmat(J(i,:),steps,1),2).' + EscTheta;
             
-                EscPhi = -1i*w*mu*Area(i).*DirectGreensPhi.' + EscPhi;
+                EscPhi = -1i*w*mu*Area(i).*dot(DirectGreensPhi,repmat(J(i,:),steps,1),2).' + EscPhi;
             end
             
             Esc = EscPhi+EscTheta;
@@ -1224,12 +1224,15 @@
             plot(theta, 1/2*abs(Esc).^2*r^2)
             xlabel('Theta')
             ylabel('E')
+            
+            figure(42)
+            polarplot(theta, 1/2*abs(Esc)*r^2);
         end
         
         function [Esc] = AngularFarFieldSurf(w, mu, k, r, Center, J, steps, Area, dist, eps2, eps1, n)
             
                 phi = pi/2;
-                theta = linspace(-pi, 2*pi, steps)';
+                theta = linspace(0, 2*pi, steps)';
             
                 under = theta>=pi/2;
                 over = theta<=3/2*pi;
@@ -1340,6 +1343,8 @@
             plot(theta, 1/2*Esc*r^2)
             xlabel('Theta')
             ylabel('E')
+            figure(7)
+            polarplot(theta, 1/2*Esc*r^2);
         end
         
         
@@ -1421,9 +1426,6 @@
                 rho = sqrt(x.^2+y.^2);
                 phi = atan2(y,x);
                     
-                if max(max(tab_z)) < max(max(max(z)))
-                   hej=4;
-                end
                 Gzz = interp2(tab_z, tab_r, GItabzz, z, rho, 'spline'); 
                 Gzr = interp2(tab_z, tab_r, GItabzr, z, rho, 'spline'); 
                 Grr = interp2(tab_z, tab_r, GItabrr, z, rho, 'spline'); 
@@ -1441,6 +1443,7 @@
                 GIzz(:,j,:) = Gzz;
             end
         end
+        
      
         end
 end

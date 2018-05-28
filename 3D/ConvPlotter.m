@@ -72,10 +72,12 @@ for i=start:Amount(2)-Minus
     figure(2)
     plot(linspace(-2,2,200),abs(EzyCrossZ(:,i))/max(abs(EzyCrossZ(:,i))), 'linewidth', 1.5)
     figure(3)
-    plot(linspace(-pi,2*pi,200),abs(ESCAng(i,:))/max(abs(ESCAng(i,:))), 'linewidth', 1.5)
+    plot(linspace(-pi,2*pi,200),(abs(ESCAng(i,:))/max(abs(ESCAng(i,:)))).^2, 'linewidth', 1.5)
     figure(4)
     plot(linspace(-pi,2*pi,200),abs(EscRef(i,:))/max(abs(EscRef(i,:))), 'linewidth', 1.5)
     
+            polarplot(theta, 1/2*Esc*r^2);
+            
     TriAmount = int2str(length(TriAmount));
     PlottetLabels = [PlottetLabels, strcat(TriAmount, 'T')];
     end
