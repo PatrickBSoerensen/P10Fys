@@ -479,7 +479,7 @@
             counter = 1;
             if Yagi
                
-                PointsOnFeed = find(abs(p(1:OG,2))<=1e-18+FeedPos(2));
+                PointsOnFeed = find(abs(p(OG/2:OG,2))<=1e-18+FeedPos(2));
             else
                 PointsOnFeed = find(abs(p(:,2))<=1e-18+FeedPos(2));
             end

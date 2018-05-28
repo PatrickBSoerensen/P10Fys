@@ -68,7 +68,7 @@ Amount = 10;
 % Should source be dipole, if 0 a plane wave propagating in +x direction used
 UseDipole = 0;
 
-UseFeed = 0;
+UseFeed = 1;
 FeedPos = [0,0,0];
 
 Yagi=0;
@@ -88,9 +88,9 @@ n = 3.9;
 epsR = 11.68;
 Reflector = 0;
 ReflectorZ = 0;
-Lift=0;
+Lift=1;
 
-FileName= 'WavePoint1mmWAngular';
+FileName= 'FeedPoint1mmWAngularLift';
 
 %% Loop
 for convloop=1:Amount

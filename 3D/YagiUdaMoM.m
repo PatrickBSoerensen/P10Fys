@@ -29,7 +29,7 @@ maxp = max(p);
 radius = sum(abs(maxp(radiusdet))+abs(minp(radiusdet)))/4;
 Length = (maxmaxp-minp(maxaxis));
 
-OGSize = max(max(t));
+OGSize = 2*max(max(t));
 %% Parameters
 % Controls amount of antenna
 p1 = p;
@@ -50,17 +50,27 @@ p8 = p;
 p8(:,2)  = p(:,2).*0.891;
 p9 = p;
 p9(:,2)  = p(:,2).*0.887;
+ 
+% p1(:,3) = p(:,3)-0.321;
+% p2(:,3) = p(:,3);
+% p3(:,3) = p(:,3)+0.135;
+% p4(:,3) = p(:,3)+0.378;
+% p5(:,3) = p(:,3)+0.729;
+% p6(:,3) = p(:,3)+1.170;
+% p7(:,3) = p(:,3)+1.674;
+% p8(:,3) = p(:,3)+2.241;
+% p9(:,3) = p(:,3)+2.874;
 
-p1(:,1) = p(:,1)-0.321;
-p2(:,1) = p(:,1);
-p3(:,1) = p(:,1)+0.135;
-p4(:,1) = p(:,1)+0.378;
-p5(:,1) = p(:,1)+0.729;
-p6(:,1) = p(:,1)+1.170;
-p7(:,1) = p(:,1)+1.674;
-p8(:,1) = p(:,1)+2.241;
-p9(:,1) = p(:,1)+2.874;
-p = [p1; p2; p3; p4; p5; p6; p7; p8; p9];
+p1(:,3) = p(:,3);
+p2(:,3) = p(:,3)+0.0321;
+p3(:,3) = p(:,3)+0.0135+0.0321;
+p4(:,3) = p(:,3)+0.0378+0.0321;
+p5(:,3) = p(:,3)+0.0729+0.0321;
+p6(:,3) = p(:,3)+0.1170+0.0321;
+p7(:,3) = p(:,3)+0.1674+0.0321;
+p8(:,3) = p(:,3)+0.2241+0.0321;
+p9(:,3) = p(:,3)+0.2874+0.0321;
+p = [p2; p1; p3; p4; p5; p6; p7; p8; p9];
 t = [t; t+length(p1); t+length(p1)+length(p2);...
     t+length(p1)+length(p2)+length(p3);...
     t+length(p1)+length(p2)+length(p3)+length(p4);...
@@ -70,7 +80,7 @@ t = [t; t+length(p1); t+length(p1)+length(p2);...
     t+length(p1)+length(p2)+length(p3)+length(p4)+length(p5)+length(p6)+length(p7)+length(p8)];
 % Should source be dipole, if 0 a plane wave propagating in +x direction used
 UseDipole = 0;
-DipolePoint = [radius,0,0];
+DipolePoint = [0,0,radius];
 UseFeed = 1;
 FeedPos = [0,0,0];
 Yagi=1;
@@ -342,6 +352,7 @@ end
 xlabel('x');
 ylabel('z');
 title('xz  plane E-size');
+
 %% yz
 if PlotComp
 figure(12)
