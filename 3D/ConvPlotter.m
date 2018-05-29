@@ -5,7 +5,7 @@ AddFile = '3mmWave';
 Amount = size(EzyCrossZ);
 start=1;
 Jcount = 2*start;
-Minus=0;
+Minus=6;
 
 % fonts properties
     iFontSize       = 17;

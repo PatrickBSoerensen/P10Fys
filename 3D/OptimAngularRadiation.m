@@ -14,7 +14,7 @@ ExzFull = [];
 % Amount = 7;
 % 1mm
 % stl1 = stlread('antennas/Dipole1mm/Dipole10cm552T1mm.stl');
-stl = stlread('antennas/Dipole1mm/Dipole10cm702T1mm.stl'); %ok
+% stl2 = stlread('antennas/Dipole1mm/Dipole10cm702T1mm.stl'); %ok
 % stl3 = stlread('antennas/Dipole1mm/Dipole10cm900T1mm.stl'); %god
 % stl4 = stlread('antennas/Dipole1mm/Dipole10cm1190T1mm.stl'); %god
 % stl5 = stlread('antennas/Dipole1mm/Dipole10cm1296T1mm.stl'); %god
@@ -25,7 +25,7 @@ stl = stlread('antennas/Dipole1mm/Dipole10cm702T1mm.stl'); %ok
 % stl10 = stlread('antennas/Dipole1mm/Dipole10cm2704T1mm.stl'); %god
 % Amount = 10;
 % 0.5mm
-% stl1 = stlread('antennas/DipoleHalfmm/Dipole10CM576T.stl');
+stl = stlread('antennas/DipoleHalfmm/Dipole10CM576T.stl');
 % stl2 = stlread('antennas/DipoleHalfmm/Dipole10CM700T.stl'); %ok
 % stl3 = stlread('antennas/DipoleHalfmm/Dipole10CM836T.stl'); %god
 % stl4 = stlread('antennas/DipoleHalfmm/Dipole10CM984T.stl'); %god
@@ -65,7 +65,7 @@ radiusdet = logical(radiusdet);
 radius = sum(abs(maxp(radiusdet))+abs(minp(radiusdet)))/4;
 Length = maxmaxp+abs(minp(maxaxis));
 
-dist = linspace(radius,3*Length,40);
+dist = linspace(radius,Length,10);
 
 
 %% Parameters
@@ -81,7 +81,7 @@ OGSize = OGSize(1)*1.5;
 
 xdist = radius+0;
 
-for DistIndex=1:20
+for DistIndex=1:10
 
 %% Parameters
 % Controls amount of antenna
@@ -116,9 +116,9 @@ n = 3.9;
 epsR = 11.68;
 Reflector = 0;
 ReflectorZ = 0;
-Lift=0;
+Lift=1;
 
-FileName= 'AngularOptim1mmFromRadto3Lengt';
+FileName= 'AngularOptim1mmFromRadto3LengtHalf';
 
 
 %% constants
@@ -152,7 +152,7 @@ toc;
 tic;
 fprintf('\n')
 disp('Lifting subtriangles and center points')
-[Center, SubTri] = ArbitraryAntenna.CenterLift(Center, SubTri, radius, Lift);
+[Center, SubTri] = ArbitraryAntenna.CenterLift(Center, SubTri, radius, Lift, AntFromReflector);
 
 %% Basis Function setup
 tic;

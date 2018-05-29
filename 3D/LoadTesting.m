@@ -10,7 +10,7 @@
 % stl = stlread('antennas/test/720.stl');
 % stl = stlread('antennas/Dipole10cmT180.stl');
 % stl = stlread('antennas/Dipole10cmT264.stl');
-stl = stlread('antennas/Dipole10cmT580.stl'); %ok
+% stl = stlread('antennas/Dipole10cmT580.stl'); %ok
 % stl = stlread('antennas/Dipole10cmT722.stl'); %god
 % stl = stlread('antennas/Dipole10cmT744.stl'); %
 % stl = stlread('antennas/Dipole10cmT904.stl'); %
@@ -18,7 +18,7 @@ stl = stlread('antennas/Dipole10cmT580.stl'); %ok
 % stl = stlread('antennas/NASAALmond4768T.stl'); %god
 % stl = stlread('antennas/Dipole10cmT904.stl'); %
 % stl = stlread('antennas/Dipole10cmT924.stl'); %god
-% stl = stlread('antennas/Dipole10cmT1060.stl'); %god
+stl = stlread('antennas/Dipole10cmT1060.stl'); %god
 % stl = stlread('antennas/Dipole10cmT1104.stl'); %god
 % stl = stlread('antennas/Dipole10cmT1458.stl'); %god 
 % stl = stlread('antennas/Dipole10cmT1680.stl'); 
@@ -63,8 +63,7 @@ radiusdet = logical(radiusdet);
 radius = sum(abs(maxp(radiusdet))+abs(minp(radiusdet)))/4;
 Length = maxmaxp+abs(minp(maxaxis));
 %% Parameters
-
-AntFromReflector = radius; %Should basically always be one radius
+AntFromReflector = 0; %Should basically always be one radius
 p(:,3) = p(:,3)+AntFromReflector;
 InterAntDist = Length/2;
 % Controls amount of antenna
@@ -103,7 +102,7 @@ Reflector = 0;
 ReflectorZ = 0;%radius+FromAnt;
 % Determines if points should be lifted to surf of antenna, this is semi
 % hardcoded to a predetermined structure, if in doubt set to 0
-Lift = 0;
+Lift = 1;
 %% Visual check
 figure(1)
 plot3(p(:,1),p(:,2),p(:,3),'*')
@@ -140,7 +139,17 @@ toc;
 tic;
 fprintf('\n')
 disp('Lifting subtriangles and center points')
-[Center, SubTri] = ArbitraryAntenna.CenterLift(Center, SubTri, radius, Lift);
+[Center, SubTri] = ArbitraryAntenna.CenterLift(Center, SubTri, radius, Lift, AntFromReflector);
+toc;
+AntFromReflector = radius; %Should basically always be one radius
+p(:,3) = p(:,3)+AntFromReflector;
+Center(:,3) = Center(:,3)+AntFromReflector;
+SubTri(:,3,:) = SubTri(:,3,:)+AntFromReflector;
+%% Visual check
+figure(1)
+hold on
+plot3(Center(:,1),Center(:,2),Center(:,3),'*')
+axis image
 toc;
 %% Basis Function setup
 tic;

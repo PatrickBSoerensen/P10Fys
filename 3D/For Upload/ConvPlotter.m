@@ -1,7 +1,11 @@
 close all
 PlottetLabels = {};
 normalize = 0;
-AddFile = '3mmWave';
+AddFile = 'Point1mmFeedLift';
+Amount = size(J);
+Amount = Amount(2)/3;
+start=1;
+Jcount = 2*start;
 Minus=0;
 
 % fonts properties
@@ -33,32 +37,29 @@ hold on
     set(gca, 'FontName', strFontName, 'FontSize', 12);
 %%
 figure(3)
-hold on
-    xlabel( '\bf{Theta}', 'FontName', strFontName, 'FontSize', iFontSize, 'Interpreter', strInterpreter);
-    ylabel( '$\bf{|E_{sc}|}$ (arb. units)', 'FontName', strFontName, 'FontSize', iFontSize, 'Interpreter', strInterpreter);
-    set(get(gca, 'XLabel'), 'Rotation', fXLabelRotation);
-    set(get(gca, 'YLabel'), 'Rotation', fYLabelRotation);
-    % in order to make matlab to do not "cut" latex-interpreted axes labels
-    set(gca, 'Position', [0.15 0.15 0.75 0.75]);
-    % general properties
-    set(gca, 'FontName', strFontName, 'FontSize', 12);
+% hold on
+%     xlabel( '\bf{Theta}', 'FontName', strFontName, 'FontSize', iFontSize, 'Interpreter', strInterpreter);
+%     ylabel( '$\bf{|E_{sc}|}$ (arb. units)', 'FontName', strFontName, 'FontSize', iFontSize, 'Interpreter', strInterpreter);
+%     set(get(gca, 'XLabel'), 'Rotation', fXLabelRotation);
+%     set(get(gca, 'YLabel'), 'Rotation', fYLabelRotation);
+%     % in order to make matlab to do not "cut" latex-interpreted axes labels
+%     set(gca, 'Position', [0.15 0.15 0.75 0.75]);
+%     % general properties
+%     set(gca, 'FontName', strFontName, 'FontSize', 12);
     %%
 figure(4)
-hold on
-    xlabel( '\bf{Theta}', 'FontName', strFontName, 'FontSize', iFontSize, 'Interpreter', strInterpreter);
-    ylabel( '$\bf{|E_{sc}|}$ (arb. units)', 'FontName', strFontName, 'FontSize', iFontSize, 'Interpreter', strInterpreter);
-    set(get(gca, 'XLabel'), 'Rotation', fXLabelRotation);
-    set(get(gca, 'YLabel'), 'Rotation', fYLabelRotation);
-    % in order to make matlab to do not "cut" latex-interpreted axes labels
-    set(gca, 'Position', [0.15 0.15 0.75 0.75]);
-    % general properties
-    set(gca, 'FontName', strFontName, 'FontSize', 12);
+% hold on
+%     xlabel( '\bf{Theta}', 'FontName', strFontName, 'FontSize', iFontSize, 'Interpreter', strInterpreter);
+%     ylabel( '$\bf{|E_{sc}|}$ (arb. units)', 'FontName', strFontName, 'FontSize', iFontSize, 'Interpreter', strInterpreter);
+%     set(get(gca, 'XLabel'), 'Rotation', fXLabelRotation);
+%     set(get(gca, 'YLabel'), 'Rotation', fYLabelRotation);
+%     % in order to make matlab to do not "cut" latex-interpreted axes labels
+%     set(gca, 'Position', [0.15 0.15 0.75 0.75]);
+%     % general properties
+%     set(gca, 'FontName', strFontName, 'FontSize', 12);
 %%
-Amount = size(EzyCrossZ);
-start=1;
-Jcount = 2*start;
 if normalize
-for i=start:Amount(2)-Minus
+for i=start:Amount-Minus
     TriAmount = J(:,Jcount);
     TriAmount(TriAmount==0)= [];
     TriCent = center(:,Jcount);
@@ -72,12 +73,16 @@ for i=start:Amount(2)-Minus
     figure(2)
     plot(linspace(-2,2,200),abs(EzyCrossZ(:,i))/max(abs(EzyCrossZ(:,i))), 'linewidth', 1.5)
     figure(3)
-    plot(linspace(-pi,2*pi,200),(abs(ESCAng(i,:))/max(abs(ESCAng(i,:)))).^2, 'linewidth', 1.5)
-    figure(4)
-    plot(linspace(-pi,2*pi,200),abs(EscRef(i,:))/max(abs(EscRef(i,:))), 'linewidth', 1.5)
-    
-            polarplot(theta, 1/2*Esc*r^2);
+%     plot(linspace(-pi,2*pi,200),1/2*(abs(ESCAng(i,:))/max(abs(ESCAng(i,:)))).^2*10^2, 'linewidth', 1.5)
+    polarplot(theta, 1/2*abs(ESCAng(i,:))*10^2, 'linewidth', 1.5);
             
+hold on
+    figure(4)
+%     plot(linspace(-pi,2*pi,200),1/2*abs(EscRef(i,:))/max(abs(EscRef(i,:)))*10^2, 'linewidth', 1.5)
+    
+        polarplot(linspace(0,2*pi,200), 1/2*10^2*abs(EscRef(i,:)), 'linewidth', 1.5);
+            
+hold on
     TriAmount = int2str(length(TriAmount));
     PlottetLabels = [PlottetLabels, strcat(TriAmount, 'T')];
     end
@@ -85,7 +90,7 @@ for i=start:Amount(2)-Minus
     Jcount = Jcount+3;
 end
 else
-for i=start:Amount(2)-Minus
+for i=start:Amount-Minus
         TriAmount = J(:,Jcount);
         TriAmount(TriAmount==0) = [];
         TriCent = center(:,Jcount);
@@ -95,13 +100,20 @@ for i=start:Amount(2)-Minus
         Minus=Minus+1;
     else
         figure(1)
-        plot(TriCent,abs(TriAmount),'.', 'markersize', 15)
+        plot(TriCent,abs(TriAmount),'.', 'markersize', 8)
         figure(2)
         plot(linspace(-2,2,200),abs(EzyCrossZ(:,i)), 'linewidth', 1.5) 
         figure(3)
-        plot(linspace(-pi,2*pi,200),abs(ESCAng(i,:)), 'linewidth', 1.5)
+        polarplot(linspace(0,2*pi,200), 1/2*10^2*abs(ESCAng(i,:)).^2);
+        
+hold on
+%         plot(linspace(0,2*pi,200),1/2*10^2*abs(ESCAng(i,:)).^2, 'linewidth', 1.5)
         figure(4)
-        plot(linspace(-pi,2*pi,200),abs(EscRef(i,:)), 'linewidth', 1.5)
+        
+        polarplot(linspace(0,2*pi,200), 1/2*10^2*abs(EscRef(i,:)));
+        
+hold on
+%         plot(linspace(0,2*pi,200),1/2*10^2*abs(EscRef(i,:)), 'linewidth', 1.5)
     
         TriAmount = int2str(length(TriAmount));
         PlottetLabels = [PlottetLabels, strcat(TriAmount, 'T')];

@@ -141,7 +141,7 @@
             Atot = sqrt(sum((cross(L1,L2)).^2,2))/2;
         end
         
-        function [Center, SubTriRet] = CenterLift(Center, SubTri, R, Lift)
+        function [Center, SubTriRet] = CenterLift(Center, SubTri, R, Lift, zmoved)
             ForRe = size(SubTri);
             for k=1:length(Center)
                     CenterToMove=Center(k,:);
@@ -150,7 +150,7 @@
                 if Lift
                 if Center(k,2) >=0.05 
                     % part of spherical surface
-                    CenterOfSphere = [0, 0.05, 0];
+                    CenterOfSphere = [0, 0.05, zmoved];
                     Normal = CenterToMove-CenterOfSphere;
                     n=sqrt(Normal(1)^2+Normal(2)^2+Normal(3)^2);
                     Normal = Normal/n;
@@ -162,7 +162,7 @@
                     SubTriRet(:,:,k) = CenterOfSphere+Normal*R;
                 elseif Center(k,2) <=-0.05
                     % part of spherical surface
-                    CenterOfSphere = [0, -0.05, 0];
+                    CenterOfSphere = [0, -0.05, zmoved];
                     Normal = CenterToMove-CenterOfSphere;
                     n=sqrt(Normal(1)^2+Normal(2)^2+Normal(3)^2);
                     Normal = Normal/n;
@@ -174,7 +174,7 @@
                     SubTriRet(:,:,k) = CenterOfSphere+Normal*R;
                 else
                     % Part of Cylinder
-                    CenterOfCylinder = [0, CenterToMove(:,2), 0];
+                    CenterOfCylinder = [0, CenterToMove(:,2), zmoved];
                     Normal = CenterToMove-CenterOfCylinder;
                     n=sqrt(Normal(1)^2+Normal(2)^2+Normal(3)^2);
                     Normal = Normal/n;
